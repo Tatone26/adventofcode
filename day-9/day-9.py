@@ -9,7 +9,7 @@ def part1():
         head_pos = [0, 0]
         tail_pos = [0, 0]
         visited_by_tail = {(0, 0)}
-        for act in alive_it(actions):
+        for act in alive_it(actions, title = "Part 1"):
             d, v = act
             direct = [0, 0]
             if d == "R":
@@ -37,7 +37,7 @@ def part2():
         actions = [(a[0], int(a[1])) for a in actions]
         snake = [[0, 0] for x in range(10)]
         visited = {(0, 0)}
-        for act in alive_it(actions):
+        for act in alive_it(actions, title = "Part 2"):
             d, v = act
             direct = [0, 0]
             if d == "R":

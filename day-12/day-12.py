@@ -14,7 +14,7 @@ def part1():
         maxi_iter = matrix.shape[0] * matrix.shape[1]
         emplacements = [pos]
         visited = [pos]
-        with alive_bar(maxi_iter) as bar:
+        with alive_bar(maxi_iter, title = "Part 1") as bar:
             for i in range(maxi_iter):
                 new_emplacements = []
                 for xy in emplacements:
@@ -54,7 +54,7 @@ def part2():
         i = 0
         emplacements = [pos]
         visited = [pos]
-        with alive_bar(maxi_iter) as bar:
+        with alive_bar(maxi_iter, title = "Part 2") as bar:
             while i < maxi_iter and len(emplacements) > 0:
                 i += 1
                 new_emplacements = []
@@ -89,5 +89,5 @@ def part2():
                     break
                 bar(len(visited) - bar.current())
 
-#part1()
+part1()
 part2()

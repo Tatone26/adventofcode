@@ -72,7 +72,7 @@ np_monkeys = np.array(monkeys)
 
 def part1(monkeys):
     count = [0 for i in range(len(monkeys))]
-    for i in alive_it(range(20)):
+    for i in alive_it(range(20), title = "Part 1"):
         for j in range(len(monkeys)):
             m = monkeys[j]
             for item in m.items:
@@ -91,7 +91,7 @@ def part1(monkeys):
 def part2(monkeys):
     count = [0 for i in range(len(monkeys))]
     modulo = math.lcm(*map(lambda m: m.test, monkeys))
-    for i in alive_it(range(10000)):
+    for i in alive_it(range(10000), title = "Part 2"):
         #print(i)
         for j in range(len(monkeys)):
             m = monkeys[j]
