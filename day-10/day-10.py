@@ -1,3 +1,5 @@
+from alive_progress import alive_it
+
 def add_if_needed(cycle, X) -> int:
     if cycle < 221 and cycle % 40 == 20:
         return cycle*X
@@ -23,7 +25,7 @@ with open("day-10\day-10.txt", 'r') as file:
     cycle = 0
     somme = 0
     line = ""
-    for act in actions:
+    for act in alive_it(actions):
         if len(act) == 1:
             cycle += 1
             line = line_check(cycle, X, line)

@@ -1,5 +1,7 @@
 import numpy as np
 import math
+from alive_progress import alive_it
+
 
 class Monkey:
 
@@ -70,7 +72,7 @@ np_monkeys = np.array(monkeys)
 
 def part1(monkeys):
     count = [0 for i in range(len(monkeys))]
-    for i in range(20):
+    for i in alive_it(range(20)):
         for j in range(len(monkeys)):
             m = monkeys[j]
             for item in m.items:
@@ -89,7 +91,7 @@ def part1(monkeys):
 def part2(monkeys):
     count = [0 for i in range(len(monkeys))]
     modulo = math.lcm(*map(lambda m: m.test, monkeys))
-    for i in range(10000):
+    for i in alive_it(range(10000)):
         #print(i)
         for j in range(len(monkeys)):
             m = monkeys[j]
@@ -107,4 +109,5 @@ def part2(monkeys):
     max2 = np.max(count_test)
     print("The monkey business after 10000 rounds is: ", int(max1)*int(max2))
 
+part1(monkeys)
 part2(np_monkeys)

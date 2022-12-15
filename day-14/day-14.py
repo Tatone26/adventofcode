@@ -1,3 +1,5 @@
+from alive_progress import alive_bar
+
 def part1():
 
     with open("day-14\day-14.txt","r") as f:
@@ -20,23 +22,25 @@ def part1():
         maxy = max(y)
         
         count = 0
-        while True:
-            sand_pos = [500, 0]
-            while sand_pos[1] < maxy + 3:
-                if (sand_pos[0], sand_pos[1] + 1) not in walls:
-                    sand_pos[1] += 1
-                elif (sand_pos[0] - 1, sand_pos[1] + 1) not in walls:
-                    sand_pos[0] -= 1
-                    sand_pos[1] += 1
-                elif (sand_pos[0] + 1, sand_pos[1] + 1) not in walls:
-                    sand_pos[0] += 1
-                    sand_pos[1] += 1
-                else:
-                    walls.add((sand_pos[0], sand_pos[1]))
+        with alive_bar() as bar:
+            while True:
+                sand_pos = [500, 0]
+                while sand_pos[1] < maxy + 3:
+                    if (sand_pos[0], sand_pos[1] + 1) not in walls:
+                        sand_pos[1] += 1
+                    elif (sand_pos[0] - 1, sand_pos[1] + 1) not in walls:
+                        sand_pos[0] -= 1
+                        sand_pos[1] += 1
+                    elif (sand_pos[0] + 1, sand_pos[1] + 1) not in walls:
+                        sand_pos[0] += 1
+                        sand_pos[1] += 1
+                    else:
+                        walls.add((sand_pos[0], sand_pos[1]))
+                        break
+                if sand_pos[1] > maxy + 1:
                     break
-            if sand_pos[1] > maxy + 1:
-                break
-            count += 1
+                count += 1
+                bar()
     print("Nombre de pieces of sand that comes to rest before going down to infinity : ", count)
 
 
@@ -64,26 +68,28 @@ def part2():
         floor = maxy + 2
         
         count = 0
-        while True:
-            sand_pos = [500, 0]
-            while sand_pos[1] < floor + 1:
-                if (sand_pos[0], sand_pos[1] + 1) not in walls:
-                    sand_pos[1] += 1
-                elif (sand_pos[0] - 1, sand_pos[1] + 1) not in walls:
-                    sand_pos[0] -= 1
-                    sand_pos[1] += 1
-                elif (sand_pos[0] + 1, sand_pos[1] + 1) not in walls:
-                    sand_pos[0] += 1
-                    sand_pos[1] += 1
-                else:
-                    walls.add((sand_pos[0], sand_pos[1]))
+        with alive_bar() as bar:
+            while True:
+                sand_pos = [500, 0]
+                while sand_pos[1] < floor + 1:
+                    if (sand_pos[0], sand_pos[1] + 1) not in walls:
+                        sand_pos[1] += 1
+                    elif (sand_pos[0] - 1, sand_pos[1] + 1) not in walls:
+                        sand_pos[0] -= 1
+                        sand_pos[1] += 1
+                    elif (sand_pos[0] + 1, sand_pos[1] + 1) not in walls:
+                        sand_pos[0] += 1
+                        sand_pos[1] += 1
+                    else:
+                        walls.add((sand_pos[0], sand_pos[1]))
+                        break
+                    if sand_pos[1] == floor - 1:
+                        walls.add((sand_pos[0], sand_pos[1]))
+                        break
+                if sand_pos == [500, 0]:
                     break
-                if sand_pos[1] == floor - 1:
-                    walls.add((sand_pos[0], sand_pos[1]))
-                    break
-            if sand_pos == [500, 0]:
-                break
-            count += 1
+                count += 1
+                bar()
 
     print("Nombre de grains de sable avant d'arriver à (500, 0) :", count + 1)
 

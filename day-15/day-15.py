@@ -1,3 +1,5 @@
+from alive_progress import alive_it
+
 def part1(y):
 
     with open("day-15\day-15.txt", "r") as f:
@@ -19,14 +21,13 @@ def part1(y):
             beacons_and_sensors.add(s[1])
 
         i = 0
-        for s in sensors:
+        for s in alive_it(sensors):
             distance_max = abs(s[0][0] - s[1][0]) + abs(s[0][1] - s[1][1])
             if s[0][1] - distance_max - 1 <= y <= s[0][1] + distance_max + 1:
                 for x in range(s[0][0] - distance_max - 2, s[0][0] + distance_max + 2):
                     if abs(s[0][0] - x) + abs(s[0][1] - y) <= distance_max  :
                         cannot_contain_beacon.add((x, y))
             i += 1
-            print(i, len(sensors))
 
         count = len(set(filter(lambda x : x not in beacons_and_sensors, cannot_contain_beacon)))
 
@@ -59,7 +60,7 @@ def part2(maxy):
         it_could_be_here = set()
         
         j = 0
-        for s in sensors:
+        for s in alive_it(sensors):
             distance_max = abs(s[0][0] - s[1][0]) + abs(s[0][1] - s[1][1]) + 1
             for x in range(-distance_max, distance_max + 1):
                 tests = set()
@@ -74,18 +75,13 @@ def part2(maxy):
                                 found = False
                                 break
                         if found:
-                            print(t)
+                            print("Une case a été trouvée :", t, "; soit un résultat de :", t[0] * 4000000 + t[1])
                             it_could_be_here.add(t)
                             if len(it_could_be_here) > 1:
                                 print("F*CK")
                                 return
                             break
             j += 1
-            print(j, len(sensors))
-
-    res = list(it_could_be_here)[0]
-    print(res[0]*4000000 + res[1])
-
 
 part2(4000000)
 

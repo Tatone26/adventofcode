@@ -1,4 +1,5 @@
 import json
+from alive_progress import alive_it, alive_bar
 
 def compare(left, right):
     for i in range(min(len(left), len(right))):
@@ -32,7 +33,7 @@ def part1():
 
         good_indices = []
 
-        for i in range(0, len(actions), 2):
+        for i in alive_it(range(0, len(actions), 2)):
             #print(i//2)
             value1 = actions[i]
             value2 = actions[i+1]
@@ -56,15 +57,17 @@ def part2():
         actions.append([[6]])
 
         sorted = False
-        while not sorted:
-            sorted = True
-            for i in range(len(actions)-1):
-                temp = actions[i].copy()
-                right_order, _ = compare(actions[i], actions[i+1])
-                if not right_order:
-                    actions[i] = actions[i + 1]
-                    actions[i + 1] = temp
-                    sorted = False
+        with alive_bar() as bar:
+            while not sorted:
+                sorted = True
+                for i in range(len(actions)-1):
+                    temp = actions[i].copy()
+                    right_order, _ = compare(actions[i], actions[i+1])
+                    if not right_order:
+                        actions[i] = actions[i + 1]
+                        actions[i + 1] = temp
+                        sorted = False
+                bar()
 
         dividers_indices = []
         for i in range(len(actions)):
@@ -73,4 +76,5 @@ def part2():
         print(dividers_indices)
         print("La clé de décodeur est :", dividers_indices[0] * dividers_indices[1])
 
+part1()
 part2()

@@ -1,3 +1,6 @@
+from alive_progress import alive_it
+
+
 def part1():
     with open("day-9\day-9.txt", "r") as file:
         lines = file.readlines()
@@ -6,7 +9,7 @@ def part1():
         head_pos = [0, 0]
         tail_pos = [0, 0]
         visited_by_tail = {(0, 0)}
-        for act in actions:
+        for act in alive_it(actions):
             d, v = act
             direct = [0, 0]
             if d == "R":
@@ -34,7 +37,7 @@ def part2():
         actions = [(a[0], int(a[1])) for a in actions]
         snake = [[0, 0] for x in range(10)]
         visited = {(0, 0)}
-        for act in actions:
+        for act in alive_it(actions):
             d, v = act
             direct = [0, 0]
             if d == "R":
@@ -89,7 +92,7 @@ def part2():
                                     snake[i][0] -= 1
                 if test != snake[-1]:
                     visited.add((snake[-1][0], snake[-1][1]))
-        print(len(visited))
+        print("Nombre de cases visitées par la queue d'une GRANDE corde :", len(visited))
 
-
+part1()
 part2()

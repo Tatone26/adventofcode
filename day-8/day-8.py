@@ -1,9 +1,11 @@
+from alive_progress import alive_it
+
 with open("day-8\day-8.txt", "r") as file:
     lines = file.readlines()
     visibles = 0
     best_scenic_score = 0
     best_tree = (0, 0)
-    for j in range(1, len(lines)-1):
+    for j in alive_it(range(1, len(lines)-1)):
         for i in range(1, len(lines[0])-2):
             val = int(lines[j][i])
             visible_left = False

@@ -1,3 +1,6 @@
+from alive_progress import alive_it
+
+
 def dir_size(sub_struct)->int:
     # lets goo
     somme = 0
@@ -34,7 +37,7 @@ with open("day-7\day-7.txt", "r") as file:
     lines = file.readlines()
     struct = dict()  # complete struct
     actual_dir = "/"
-    for line in lines:
+    for line in alive_it(lines):
         if line[:4] == "$ cd":
             if line[5:-1] != "/" and line[5:-1] != "..":
                 actual_dir = actual_dir + line[5:-1] + "/"
@@ -67,7 +70,6 @@ with open("day-7\day-7.txt", "r") as file:
                     else:
                         break
                 sub_struct[line[len(number)+1:-1]] = int(number)
-    print("Complete structure :", struct) # struct is good !
     total_size = dir_size(struct)
     print("Total size :", total_size)
 
