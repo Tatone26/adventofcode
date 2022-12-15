@@ -1,5 +1,5 @@
 def compte_score():
-    with open("day-1.txt", "r") as file:
+    with open("day-2\day-2.txt", "r") as file:
         lines = file.readlines()
         score = 0
         for line in lines:
@@ -30,7 +30,7 @@ def compte_score():
     print("Avec la première règle, le score sera :", score)
 
 def compte_score_2():
-    with open("day-2.txt", "r") as file:
+    with open("day-2\day-2.txt", "r") as file:
         lines = file.readlines()
         score = 0
         for line in lines:

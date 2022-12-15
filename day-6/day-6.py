@@ -1,4 +1,4 @@
-with open("day-6.txt", "r") as file:
+with open("day-6\day-6.txt", "r") as file:
     line = file.readlines()[0]
     for i in range(3, len(line)):
         last_four_chars = line[i-3:i+1]

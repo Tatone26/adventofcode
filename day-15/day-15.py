@@ -1,6 +1,6 @@
 def part1(y):
 
-    with open("day-15.txt", "r") as f:
+    with open("day-15\day-15.txt", "r") as f:
 
         lines = f.readlines()
         split = [line[12:].strip("\n").split(", y=") for line in lines]
@@ -38,7 +38,7 @@ def part1(y):
 
 def part2(maxy):
 
-    with open("day-15.txt", "r") as f:
+    with open("day-15\day-15.txt", "r") as f:
 
         lines = f.readlines()
         split = [line[12:].strip("\n").split(", y=") for line in lines]

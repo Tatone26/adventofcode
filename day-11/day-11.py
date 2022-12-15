@@ -27,7 +27,7 @@ class Monkey:
         self.items = np.append(self.items, x)
 
 def get_monkeys():
-    with open("day-11.txt", "r") as f:
+    with open("day-11\day-11.txt", "r") as f:
         lines = f.readlines()
         monkeys = []
         test_items = np.empty(0, dtype = np.int64)

@@ -1,7 +1,7 @@
 import numpy as np
 
 def part1():
-    with open("day-12.txt", "r") as f:
+    with open("day-12\day-12.txt", "r") as f:
         lines = [x.strip() for x in f.readlines()]
         matrix_text = [[y for y in x] for x in lines]
         matrix = np.array([[ord(x) - ord("a") for x in y] for y in matrix_text])
@@ -42,7 +42,7 @@ def part1():
         print(i)
 
 def part2():
-    with open("day-12.txt", "r") as f:
+    with open("day-12\day-12.txt", "r") as f:
         lines = [x.strip() for x in f.readlines()]
         matrix_text = [[y for y in x] for x in lines]
         matrix = np.array([[ord(x) - ord("a") for x in y] for y in matrix_text])

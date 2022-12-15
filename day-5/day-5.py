@@ -7,7 +7,7 @@ def get_indices(line):
             indices[c] = i
     return indices
 
-with open("day-5.txt") as file:
+with open("day-5\day-5.txt") as file:
     lines = file.readlines()
     crates_indices = dict()
     for line in lines:

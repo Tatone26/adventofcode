@@ -22,7 +22,7 @@ def compare(left, right):
     return len(left) < len(right), len(left) != len(right)
 
 def part1():
-    with open("day-13.txt", "r") as f:
+    with open("day-13\day-13.txt", "r") as f:
         lines = f.readlines()
         good_lines = [line.strip("\n") for line in lines]
         actions = []
@@ -45,7 +45,7 @@ def part1():
 
 
 def part2():
-    with open("day-13.txt", "r") as f:
+    with open("day-13\day-13.txt", "r") as f:
         lines = f.readlines()
         good_lines = [line.strip("\n") for line in lines]
         actions = []

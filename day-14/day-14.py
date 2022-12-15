@@ -1,6 +1,6 @@
 def part1():
 
-    with open("day-14.txt","r") as f:
+    with open("day-14\day-14.txt","r") as f:
         lines = [l.strip("\n").split(" -> ") for l in f.readlines()]
 
         # get a set with all walls represented by (x, y)
@@ -42,7 +42,7 @@ def part1():
 
 def part2():
 
-    with open("day-14.txt","r") as f:
+    with open("day-14\day-14.txt","r") as f:
         lines = [l.strip("\n").split(" -> ") for l in f.readlines()]
 
         # get a set with all walls represented by (x, y)

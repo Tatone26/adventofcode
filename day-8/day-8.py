@@ -1,4 +1,4 @@
-with open("day-8.txt", "r") as file:
+with open("day-8\day-8.txt", "r") as file:
     lines = file.readlines()
     visibles = 0
     best_scenic_score = 0

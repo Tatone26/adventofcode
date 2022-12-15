@@ -17,7 +17,7 @@ def compte_calories(lines):
     return maxi, maxi_indice, maxi_indice_fin
 
 def compte_triple_calories():
-    with open('day-1.txt', 'r') as file:
+    with open('day-1\day-1.txt', 'r') as file:
         lines = file.readlines()
     first_score, start, end = compte_calories(lines)
     lines = lines[:start] + lines[end:]
@@ -28,7 +28,7 @@ def compte_triple_calories():
     print("Calories totales :", first_score + second_score + third_score)
     
 
-with open('day-1.txt', 'r') as file:
+with open('day-1\day-1.txt', 'r') as file:
     lines = file.readlines()
     maxi, maxi_indice, maxi_indice_fin = compte_calories(lines)
     print(maxi, "calories entre la ligne", maxi_indice, "et la ligne", maxi_indice_fin)

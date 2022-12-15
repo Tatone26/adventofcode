@@ -29,7 +29,7 @@ def smallest_dir_to_delete(sub_struct, total)->int:
                 smallest_size = smaller
     return smallest_size
 
-with open("day-7.txt", "r") as file:
+with open("day-7\day-7.txt", "r") as file:
     # a dir is a Dict[str, (int or Dict[str, (int or ...)])]
     lines = file.readlines()
     struct = dict()  # complete struct

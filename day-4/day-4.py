@@ -1,4 +1,4 @@
-with open("day-4.txt", "r") as file:
+with open("day-4\day-4.txt", "r") as file:
     lines = file.readlines()
     count = 0
     count_overlap = 0

@@ -1,6 +1,6 @@
 def find_shared_items():
     res = []
-    with open("day-3.txt", "r") as file:
+    with open("day-3\day-3.txt", "r") as file:
         lines = file.readlines()
         for line in lines:
             partone = line[:len(line)//2]
@@ -24,7 +24,7 @@ def sum_of_priorities(letters):
 
 def find_group_items():
     res = []
-    with open("day-3.txt", 'r') as file:
+    with open("day-3\day-3.txt", 'r') as file:
         lines = file.readlines()
         for i in range(0, len(lines), 3):
             lineone = lines[i]

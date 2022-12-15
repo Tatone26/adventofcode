@@ -16,7 +16,7 @@ def line_check(cycle, x, line) -> str:
         return line + " "
 
 
-with open("day-10.txt", 'r') as file:
+with open("day-10\day-10.txt", 'r') as file:
     lines = file.readlines()
     actions = [line.strip().split(" ") for line in lines]
     X = 1

@@ -1,5 +1,5 @@
 def part1():
-    with open("day-9.txt", "r") as file:
+    with open("day-9\day-9.txt", "r") as file:
         lines = file.readlines()
         actions = [line.strip().split(" ") for line in lines]
         actions = [(a[0], int(a[1])) for a in actions]
@@ -28,7 +28,7 @@ def part1():
 
 
 def part2():
-    with open("day-9.txt", "r") as file:
+    with open("day-9\day-9.txt", "r") as file:
         lines = file.readlines()
         actions = [line.strip().split(" ") for line in lines]
         actions = [(a[0], int(a[1])) for a in actions]
