@@ -11,8 +11,11 @@ def part1(y):
             act[1] = act[1].split(": closest beacon is at x=")
 
         sensors = [((int(x[0]), int(x[1][0])), (int(x[1][1]), int(x[2]))) for x in split]
+
         cannot_contain_beacon = set()
         beacons_and_sensors = set()
+
+        covered_ranges = set()
 
         for s in sensors:
 
@@ -21,23 +24,20 @@ def part1(y):
             beacons_and_sensors.add(s[0])
             beacons_and_sensors.add(s[1])
 
-        with alive_bar(len(sensors), title = "Part 1") as bar:
 
-            def search(s):
-                distance_max = abs(s[0][0] - s[1][0]) + abs(s[0][1] - s[1][1])
-                if s[0][1] - distance_max - 1 <= y <= s[0][1] + distance_max + 1:
-                    for x in range(s[0][0] - distance_max - 2, s[0][0] + distance_max + 2):
-                        if abs(s[0][0] - x) + abs(s[0][1] - y) <= distance_max  :
-                            cannot_contain_beacon.add((x, y))
-                bar()
-
-            p = dummy.Pool(4)
-            p.map(search, sensors)
-            p.close()
+        for s in alive_it(sensors, title = "Part 1"):
+            distance_max = abs(s[0][0] - s[1][0]) + abs(s[0][1] - s[1][1])
+            shortest_distance_to_y =  abs(s[0][1] - y)
+            if shortest_distance_to_y <= distance_max: # could be mathematically optimised a LOT
+                delta_x = distance_max - shortest_distance_to_y
+                covered_ranges.add((s[0][0] - delta_x, s[0][0] + delta_x))
                 
-        print("Counting...")
-        count = len(set(filter(lambda x : x not in beacons_and_sensors, cannot_contain_beacon)))
-        print(count)
+        left = set(map(lambda x: x[0], covered_ranges))
+        right = set(map(lambda x : x[1], covered_ranges))
+        left_most = min(left)
+        right_most = max(right)
+        count = abs(right_most) + abs(left_most)
+        print("->", count)
 
 
 part1(2000000)
@@ -62,8 +62,6 @@ def part2(maxy):
             cannot_contain_beacon.add(s[1])
             beacons_and_sensors.add(s[0])
             beacons_and_sensors.add(s[1])
-
-        it_could_be_here = set()
         
         with alive_bar(len(sensors)) as bar:
 
@@ -84,17 +82,13 @@ def part2(maxy):
                                     break
                             if found:
                                 print("Une case a été trouvée :", t, "; soit un résultat de :", t[0] * 4000000 + t[1])
-                                it_could_be_here.add(t)
-                                if len(it_could_be_here) > 1:
-                                    print("got a problem sir")
-                                    return
                                 return # change to break to test every single possible position
 
             p = dummy.Pool(4)
             p.map(search, sensors)
             p.close()
 
-# part2(4000000)
+part2(4000000)
 
 
 # LETS GOOO JE L'AI TROUVE JUSTE APRES LE 6e SENSOR LETS GOOO
