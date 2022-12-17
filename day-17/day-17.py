@@ -150,6 +150,7 @@ def part2(turns):
                                         period_height = max_height - test[4]
                                         print("Height gained :", period_height)
                                         gain_max_height = ((turns-test[3])//period - 1) * period_height
+                                        print("Starting at :", test[3])
                             tests.append(t)
                         break
                 y += 1
