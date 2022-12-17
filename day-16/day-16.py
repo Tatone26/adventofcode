@@ -182,7 +182,7 @@ def part2():
                 if t.isdisjoint(b):
                     best_score = max(visitedListBisWithScores[b]+visitedListBisWithScores[p], best_score)
             visitedListBis.remove(p)
-            
+
         print("Maximum trouvé avec un éléphant ->", best_score)
 
 
