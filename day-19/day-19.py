@@ -139,5 +139,6 @@ def part2():
             list_scores.append(maxi_score)
         print("->", list_scores[0]*list_scores[1]*list_scores[2])
         print(list_scores)
+        
 #part1()
 part2()
