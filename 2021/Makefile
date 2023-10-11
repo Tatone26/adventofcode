@@ -1,7 +1,7 @@
-CFLAGS = -Wall -g -pedantic
-#CFLAGS = -Wall -o2
+CFLAGS = -Wall -g -lm -pedantic
+#CFLAGS = -Wall -lm -o2
 
-PROGRAMS = day1 day2
+PROGRAMS = day1 day2 day3
 
 .PHONY : clean all
 
@@ -10,10 +10,11 @@ all : $(PROGRAMS)
 execute : 
 	./day1
 	./day2
+	./day3
 	
 
-% : %.c
-	gcc $(CFLAGS) -o $@ $<
+% : %.c %.txt
+	gcc  $< -o $@  $(CFLAGS)
 	./$@
 
 clean :
