@@ -1,7 +1,7 @@
 CFLAGS = -Wall -g -lm -pedantic
 #CFLAGS = -Wall -lm -o2
 
-PROGRAMS = day1 day2 day3
+PROGRAMS = day1 day2 day3 day4
 
 .PHONY : clean all
 
@@ -11,6 +11,7 @@ execute :
 	./day1
 	./day2
 	./day3
+	./day4
 	
 
 % : %.c %.txt
