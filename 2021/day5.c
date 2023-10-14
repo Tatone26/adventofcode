@@ -121,11 +121,11 @@ int main() {
 
     freeListOfPoints(list);
 
+    fclose(f);
     clock_t end = clock();
     double time_spend = (double)(end - begin)/CLOCKS_PER_SEC;
 
     printf("It took %.5f seconds (cpu time) to compute.\n", time_spend);
 
-
-    return 0;
+    return 0;   
 }
