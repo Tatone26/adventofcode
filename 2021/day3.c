@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <time.h>
 
 #define MAX_LEN 128
 
@@ -10,6 +11,8 @@
 // De plus ça n'a pas de sens comme code xD y a probablement des manières smart de le faire (avec du calcul binaire, des modulos notamment jsp)
 
 int main() {
+
+    clock_t begin = clock();
 
     FILE *f = fopen("day3.txt", "r");
     fpos_t start;
@@ -133,5 +136,10 @@ int main() {
     printf("Oxygen : %d ; CO2 : %d, Result2 : %d\n", oxygen, co2, oxygen*co2);
 
     fclose(f);  
+
+    clock_t end = clock();
+    double time_spend = (double)(end - begin)/CLOCKS_PER_SEC;
+
+    printf("It took %.5f seconds (cpu time) to compute.\n", time_spend);
     return 0;
 }
