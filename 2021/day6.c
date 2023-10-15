@@ -10,7 +10,7 @@
 #define MORE_DAYS 256
 #define MAX_STATE_START 5
 
-// First build : 133s for second part. 0.0004s for the first. Bad. WHAT IS THE MATH SOLUTION I'M SO BAD AT THIS
+// 0.0001s. Victory.
 
 int *read_inputs(FILE *f, fpos_t *start, int *size, fpos_t *end) {
     
@@ -43,22 +43,14 @@ int *read_inputs(FILE *f, fpos_t *start, int *size, fpos_t *end) {
 }
 
 // Need to do some better caching but you know, just don't care
-long int number_of_descendants(int state, int days_left) {
+long int number_of_descendants(int state, int days_left, long int cache[MORE_DAYS]) {
     if (days_left < state) return 0;
     long int count = 0;
     days_left -= state + 1;
     while (days_left >= 0) {
-        count += 1 + number_of_descendants(8, days_left);
+        count += 1 + cache[days_left];
         days_left -= 7;
     }
-    /* while(days_left > 0) {
-        state --;
-        days_left --;
-        if (state < 0) {
-            state = 6;
-            count += 1 + number_of_descendants(8, days_left);
-        }
-    } */
     return count;
 }
 
@@ -77,14 +69,20 @@ int main() {
     int size;
     fpos_t end;
     int *states = read_inputs(f, &start, &size, &end);
-    for (int i = 0; i < size; i++) {
+    /* for (int i = 0; i < size; i++) {
         printf("%d ", states[i]);
     }
-    printf("\n");
+    printf("\n"); */
+
+    // Here is the magic. Only 256 things to compute, and with a constant time for each because it always uses already computed results... 
+    long int pre_compute[MORE_DAYS];
+    for (int i = 0; i < MORE_DAYS; i++) {
+        pre_compute[i] = number_of_descendants(8, i, pre_compute);
+    }
 
     int count = size;
     for (int i = 0; i < size; i++) {
-        count += number_of_descendants(states[i], DAYS);
+        count += number_of_descendants(states[i], DAYS, pre_compute);
     }
 
     printf("-- DAY 6 --\nIn %d days, there will be %d fishes.\n", DAYS, count);
@@ -99,7 +97,7 @@ int main() {
             count_more += basic_cache[states[i]];
             continue;
         } 
-        basic_cache[states[i]] = number_of_descendants(states[i], MORE_DAYS);
+        basic_cache[states[i]] = number_of_descendants(states[i], MORE_DAYS, pre_compute);
         count_more += basic_cache[states[i]];
     }
 
