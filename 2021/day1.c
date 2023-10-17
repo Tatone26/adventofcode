@@ -1,10 +1,14 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <time.h>
 
-int main(){
-    
+int main()
+{
+    clock_t begin = clock();
+
     FILE *f = fopen("day1.txt", "r");
-    if (!f) {
+    if (!f)
+    {
         printf("Erreur à l'ouverture du fichier.\n");
         return 1;
     }
@@ -15,17 +19,21 @@ int main(){
     int compteur2 = 0;
     int last_three[3] = {0, 0, 0};
 
-    while (!feof(f)){
+    while (!feof(f))
+    {
         int nb;
         int test = fscanf(f, "%d\n", &nb);
-        if (test != 1) {
+        if (test != 1)
+        {
             printf("Echec lors de la lecture.\n");
             return 1;
         }
-        if (last && (nb > last)) compteur ++;
+        if (last && (nb > last))
+            compteur++;
         last = nb;
 
-        if (last_three[0] && last_three[1] && last_three[2] && ((nb + last_three[1] + last_three[2]) > (last_three[0] + last_three[1] + last_three[2]))) compteur2++;
+        if (last_three[0] && last_three[1] && last_three[2] && ((nb + last_three[1] + last_three[2]) > (last_three[0] + last_three[1] + last_three[2])))
+            compteur2++;
         last_three[0] = last_three[1];
         last_three[1] = last_three[2];
         last_three[2] = nb;
@@ -33,6 +41,12 @@ int main(){
     printf("-- Day 1 -- \n");
     printf("Resultat : %d\n", compteur);
     printf("Resultat 2 : %d\n", compteur2);
-    printf("\n\n");
+
+    fclose(f);
+
+    clock_t end = clock();
+    double time_spend = (double)(end - begin) / CLOCKS_PER_SEC;
+
+    printf("It took %.5f seconds (cpu time) to compute.\n\n\n", time_spend);
     return 0;
 }
