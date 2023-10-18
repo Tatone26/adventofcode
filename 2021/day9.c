@@ -222,19 +222,24 @@ int main()
     for (int i = 0; i < number_of_low_points; i++)
     {
         int size = measureBasinFromLowPoint(inputs, size_x, size_y, listeLowPoints[i]);
-        if (size >= max[0]) {
+        if (size >= max[0])
+        {
             max[2] = max[1];
             max[1] = max[0];
             max[0] = size;
-        } else if (size >= max[1]){
+        }
+        else if (size >= max[1])
+        {
             max[2] = max[1];
             max[1] = size;
-        } else if (size >= max[2]) {
+        }
+        else if (size >= max[2])
+        {
             max[2] = size;
         }
     }
 
-    printf("Multiplication of three largests basins (%d, %d, %d) : %d\n", max[0], max[1], max[2], max[0]*max[1]*max[2]);
+    printf("Multiplication of three largests basins (%d, %d, %d) : %d\n", max[0], max[1], max[2], max[0] * max[1] * max[2]);
 
     free(listeLowPoints);
     freeInput(inputs, size_y);
