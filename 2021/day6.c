@@ -3,7 +3,6 @@
 #include <string.h>
 #include <math.h>
 #include <assert.h>
-#include <time.h>
 
 #define MAX_LEN 128
 #define DAYS 80
@@ -70,8 +69,6 @@ long int number_of_descendants(int state, int days_left, long int cache[MORE_DAY
 int main()
 {
 
-    clock_t begin_time = clock();
-
     FILE *f = fopen("day6.txt", "r");
     fpos_t start;
     fgetpos(f, &start);
@@ -121,14 +118,11 @@ int main()
         count_more += basic_cache[states[i]];
     }
 
-    printf("In %d days, there will be %ld fishes.\n\n", MORE_DAYS, count_more);
+    printf("In %d days, there will be %ld fishes.\n", MORE_DAYS, count_more);
 
     free(states);
 
     fclose(f);
-    clock_t end_time = clock();
-    double time_spend = (double)(end_time - begin_time) / CLOCKS_PER_SEC;
 
-    printf("It took %.5f seconds (cpu time) to compute.\n\n\n", time_spend);
     return 0;
 }

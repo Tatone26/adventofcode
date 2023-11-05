@@ -1,11 +1,8 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <time.h>
 
 int main()
 {
-
-    clock_t begin = clock();
 
     FILE *f = fopen("day2.txt", "r");
     if (!f)
@@ -59,11 +56,6 @@ int main()
     printf("Arrivée 2 : %d %d, résultat 2 : %d\n", x, y2, x * y2);
 
     fclose(f);
-
-    clock_t end = clock();
-    double time_spend = (double)(end - begin) / CLOCKS_PER_SEC;
-
-    printf("It took %.5f seconds (cpu time) to compute.\n\n\n", time_spend);
 
     return 0;
 }

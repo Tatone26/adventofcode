@@ -3,7 +3,6 @@
 #include <string.h>
 #include <math.h>
 #include <assert.h>
-#include <time.h>
 
 #define MAX_LEN 256
 
@@ -191,8 +190,6 @@ int sumRiskLowPoint(int **inputs, int size_x, int size_y, int *number_of_low_poi
 int main()
 {
 
-    clock_t begin_time = clock();
-
     FILE *f = fopen("day9.txt", "r");
     fpos_t start;
     fgetpos(f, &start);
@@ -245,10 +242,6 @@ int main()
     freeInput(inputs, size_y);
 
     fclose(f);
-    clock_t end_time = clock();
-    double time_spend = (double)(end_time - begin_time) / CLOCKS_PER_SEC;
-
-    printf("It took %.5f seconds (cpu time) to compute.\n\n\n", time_spend);
 
     return 0;
 }

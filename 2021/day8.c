@@ -3,7 +3,6 @@
 #include <string.h>
 #include <math.h>
 #include <assert.h>
-#include <time.h>
 
 #define PATTERNS 10 // le nb de unique signal patterns before |
 #define DIGITS 4    // nb de digits après |
@@ -11,7 +10,7 @@
 
 char ***readInput(FILE *f, fpos_t *start, int *size)
 {
-    // Not the easiest read I might say. 
+    // Not the easiest read I might say.
     int nbOfEntries = 0;
 
     char buffer[MAX_LEN];
@@ -86,7 +85,7 @@ void freeInputs(char ***inputs, int size)
 
 char *charactersForUniqueNumber(char **input, int n)
 {
-    int l = 0;
+    long unsigned int l = 0;
     switch (n)
     {
     case 1:
@@ -127,7 +126,6 @@ int missingCharactersIn(char *test, char *fixed)
     }
     return missing;
 }
-
 
 int decryptLine(char **numbers)
 { // size is still DIGITS + PATTERNS
@@ -189,8 +187,6 @@ int decryptLine(char **numbers)
 int main()
 {
 
-    clock_t begin_time = clock();
-
     FILE *f = fopen("day8.txt", "r");
     fpos_t start;
     fgetpos(f, &start);
@@ -228,10 +224,6 @@ int main()
     freeInputs(inputs, size);
 
     fclose(f);
-    clock_t end_time = clock();
-    double time_spend = (double)(end_time - begin_time) / CLOCKS_PER_SEC;
-
-    printf("It took %.5f seconds (cpu time) to compute.\n\n\n", time_spend);
 
     return 0;
 }

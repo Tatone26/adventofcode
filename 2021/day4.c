@@ -3,7 +3,6 @@
 #include <string.h>
 #include <math.h>
 #include <assert.h>
-#include <time.h>
 
 #define MAX_LEN 128
 #define BINGO_GRID 5
@@ -174,8 +173,6 @@ int not_won(int *won, int size)
 int main()
 {
 
-    clock_t begin = clock();
-
     FILE *f = fopen("day4.txt", "r");
     fpos_t start;
     fgetpos(f, &start);
@@ -264,21 +261,16 @@ int main()
             }
         }
     }
-
+    
     int winner_board = winner_line / BINGO_GRID;
     int score_sum = score(boards, winner_board, inputs, numbers_drawn);
-    printf("Winner board : %d, sum : %d, final score : %d\n", winner_board, score_sum, score_sum * winner_number);
+    printf("-- Day 4 --\nWinner board : %d, sum : %d, final score : %d\n", winner_board, score_sum, score_sum * winner_number);
     int score_sum_loser = score(boards, last_win, inputs, last_win_numbers_drawn);
     printf("Loser board : %d, sum : %d, final score : %d\n", last_win, score_sum_loser, score_sum_loser * inputs[last_win_numbers_drawn - 1]);
 
     free_board(boards, number_of_lines);
     free(inputs);
     fclose(f);
-
-    clock_t end_time = clock();
-    double time_spend = (double)(end_time - begin) / CLOCKS_PER_SEC;
-
-    printf("It took %.5f seconds (cpu time) to compute.\n\n\n", time_spend);
 
     return 0;
 }

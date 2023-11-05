@@ -3,7 +3,6 @@
 #include <string.h>
 #include <math.h>
 #include <assert.h>
-#include <time.h>
 
 // Okay. That was easy. Just gotta realise there is a very simple formula for the sum of all the ints from 1 to n.
 
@@ -74,8 +73,6 @@ int fuelBetterCost(int *positions, int size, int posToTest, int minToBeat)
 int main()
 {
 
-    clock_t begin_time = clock();
-
     FILE *f = fopen("day7.txt", "r");
     fpos_t start;
     fgetpos(f, &start);
@@ -124,10 +121,6 @@ int main()
     free(positions);
 
     fclose(f);
-    clock_t end_time = clock();
-    double time_spend = (double)(end_time - begin_time) / CLOCKS_PER_SEC;
-
-    printf("It took %.5f seconds (cpu time) to compute.\n\n\n", time_spend);
 
     return 0;
 }

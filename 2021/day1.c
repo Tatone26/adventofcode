@@ -1,10 +1,8 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <time.h>
 
 int main()
 {
-    clock_t begin = clock();
 
     FILE *f = fopen("day1.txt", "r");
     if (!f)
@@ -44,9 +42,5 @@ int main()
 
     fclose(f);
 
-    clock_t end = clock();
-    double time_spend = (double)(end - begin) / CLOCKS_PER_SEC;
-
-    printf("It took %.5f seconds (cpu time) to compute.\n\n\n", time_spend);
     return 0;
 }

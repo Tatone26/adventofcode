@@ -3,7 +3,6 @@
 #include <string.h>
 #include <math.h>
 #include <assert.h>
-#include <time.h>
 
 #define SIZE_X 10
 #define SIZE_Y 10
@@ -135,8 +134,6 @@ int step(int **world)
 int main()
 {
 
-    clock_t begin_time = clock();
-
     FILE *f = fopen("day11.txt", "r");
     fpos_t start;
     fgetpos(f, &start);
@@ -175,10 +172,6 @@ int main()
     freeInput(world, SIZE_X);
 
     fclose(f);
-    clock_t end_time = clock();
-    double time_spend = (double)(end_time - begin_time) / CLOCKS_PER_SEC;
-
-    printf("It took %.5f seconds (cpu time) to compute.\n\n\n", time_spend);
 
     return 0;
 }

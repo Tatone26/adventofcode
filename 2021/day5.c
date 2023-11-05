@@ -3,7 +3,6 @@
 #include <string.h>
 #include <math.h>
 #include <assert.h>
-#include <time.h>
 
 #define MIN(x, y) (x > y ? y : x)
 #define MAX(x, y) (x > y ? x : y)
@@ -12,8 +11,6 @@
 
 int main()
 {
-
-    clock_t begin = clock();
 
     FILE *f = fopen("day5.txt", "r");
     fpos_t start;
@@ -124,10 +121,6 @@ int main()
     }
     free(world);
     fclose(f);
-    clock_t end = clock();
-    double time_spend = (double)(end - begin) / CLOCKS_PER_SEC;
-
-    printf("It took %.5f seconds (cpu time) to compute.\n\n\n", time_spend);
 
     return 0;
 }
