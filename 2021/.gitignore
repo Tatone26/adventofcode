@@ -4,3 +4,4 @@
 !.gitignore
 !Makefile
 !/inputs
+!/inputs/foo.txt
