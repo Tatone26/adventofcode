@@ -11,7 +11,7 @@
 int main()
 {
 
-    FILE *f = fopen("day3.txt", "r");
+    FILE *f = fopen("inputs/day3.txt", "r");
     fpos_t start;
     fgetpos(f, &start);
     if (!f)

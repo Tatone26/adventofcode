@@ -69,7 +69,7 @@ long int number_of_descendants(int state, int days_left, long int cache[MORE_DAY
 int main()
 {
 
-    FILE *f = fopen("day6.txt", "r");
+    FILE *f = fopen("inputs/day6.txt", "r");
     fpos_t start;
     fgetpos(f, &start);
     if (!f)

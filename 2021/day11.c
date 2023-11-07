@@ -134,10 +134,10 @@ int step(int **world)
 int main()
 {
 
-    FILE *f = fopen("day11.txt", "r");
+    FILE *f = fopen("inputs/day11.txt", "r");
     fpos_t start;
     fgetpos(f, &start);
-    if (!f)
+    if (!f || f == NULL)
     {
         printf("FNF");
         return 1;

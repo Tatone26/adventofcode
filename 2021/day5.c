@@ -12,7 +12,7 @@
 int main()
 {
 
-    FILE *f = fopen("day5.txt", "r");
+    FILE *f = fopen("inputs/day5.txt", "r");
     fpos_t start;
     fgetpos(f, &start);
     if (!f)

@@ -73,7 +73,7 @@ int fuelBetterCost(int *positions, int size, int posToTest, int minToBeat)
 int main()
 {
 
-    FILE *f = fopen("day7.txt", "r");
+    FILE *f = fopen("inputs/day7.txt", "r");
     fpos_t start;
     fgetpos(f, &start);
     if (!f)

@@ -187,7 +187,7 @@ int decryptLine(char **numbers)
 int main()
 {
 
-    FILE *f = fopen("day8.txt", "r");
+    FILE *f = fopen("inputs/day8.txt", "r");
     fpos_t start;
     fgetpos(f, &start);
     if (!f)

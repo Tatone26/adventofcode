@@ -190,7 +190,7 @@ int sumRiskLowPoint(int **inputs, int size_x, int size_y, int *number_of_low_poi
 int main()
 {
 
-    FILE *f = fopen("day9.txt", "r");
+    FILE *f = fopen("inputs/day9.txt", "r");
     fpos_t start;
     fgetpos(f, &start);
     if (!f)

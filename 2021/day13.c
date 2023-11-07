@@ -111,7 +111,7 @@ int **fold(int **input, int xAxis, int *sizeX, int *sizeY)
 int main()
 {
 
-    FILE *f = fopen("day13.txt", "r");
+    FILE *f = fopen("inputs/day13.txt", "r");
     fpos_t start;
     fgetpos(f, &start);
     if (!f)

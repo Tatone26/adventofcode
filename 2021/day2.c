@@ -4,7 +4,7 @@
 int main()
 {
 
-    FILE *f = fopen("day2.txt", "r");
+    FILE *f = fopen("inputs/day2.txt", "r");
     if (!f)
     {
         printf("Erreur à l'ouverture du fichier.\n");

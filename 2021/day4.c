@@ -173,7 +173,7 @@ int not_won(int *won, int size)
 int main()
 {
 
-    FILE *f = fopen("day4.txt", "r");
+    FILE *f = fopen("inputs/day4.txt", "r");
     fpos_t start;
     fgetpos(f, &start);
     if (!f)

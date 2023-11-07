@@ -190,10 +190,10 @@ int compare(const void *a, const void *b)
 int main()
 {
 
-    FILE *f = fopen("day10.txt", "r");
+    FILE *f = fopen("inputs/day10.txt", "r");
     fpos_t start;
     fgetpos(f, &start);
-    if (!f)
+    if (!f || f == NULL)
     {
         printf("FNF");
         return 1;
