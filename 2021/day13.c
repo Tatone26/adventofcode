@@ -6,7 +6,7 @@
 
 #define MAX_LEN 256
 
-// Nice one. Don't know why I spent so much time on reading the input. Ouch. 
+// Nice one. Don't know why I spent so much time on reading the input. Ouch.
 
 int **readInput(FILE *f, fpos_t *start, int *sizeX, int *sizeY, fpos_t *start_actions)
 {
@@ -77,6 +77,7 @@ int **fold(int **input, int xAxis, int *sizeX, int *sizeY)
     // if !xAxis -> yAxis
 
     int **newWorld;
+    int temp = *sizeY;
     if (xAxis)
     {
         int newSizeX = (*sizeX - 1) / 2;
@@ -105,6 +106,11 @@ int **fold(int **input, int xAxis, int *sizeX, int *sizeY)
         }
         *sizeY = newSizeY;
     }
+    for (int i = 0; i < temp; i++)
+    {
+        free(input[i]);
+    }
+    free(input);
     return newWorld;
 }
 
@@ -173,7 +179,9 @@ int main()
             printf("%c", input[i][j] ? '#' : ' ');
         }
         printf("\n");
+        free(input[i]);
     }
+    free(input);
 
     fclose(f);
     return 0;
