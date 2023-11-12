@@ -14,6 +14,9 @@ typedef struct _point
     int y;
 } Point;
 
+// Could probably go with a binary tree or something, because all the time is spent trying to find a place to put the new points in
+// Right now Im' just iterating over every SINGLE points in my self-made priority queue. 
+// Which is bad.
 typedef struct _list_of_points
 {
     Point p;
@@ -63,32 +66,35 @@ void freeInput(int **tab, const Point *size)
     free(tab);
 }
 
-Point nextToMove2(pointsList **toDo)
-// second strategy : chained list.
+void insertNewPoint(pointsList **toDo, pointsList *new)
 {
-    pointsList *temp = *toDo;
-    pointsList *lastTemp = NULL;
-    pointsList *minPoint = temp;
-    pointsList *beforeMinPoint = NULL;
-    while (temp != NULL)
+    if ((*toDo) == NULL || new->score < (*toDo)->score)
     {
-        lastTemp = temp;
-        temp = temp->next;
-        if (temp == NULL)
-            continue;
-        if (temp->score < minPoint->score)
-        {
-            minPoint = temp;
-            beforeMinPoint = lastTemp;
-        }
+        new->next = *toDo;
+        *toDo = new;
+        return;
     }
-    Point newPoint = (Point){minPoint->p.x, minPoint->p.y};
-    if (beforeMinPoint == NULL)
-        *toDo = minPoint->next;
-    else
-        beforeMinPoint->next = minPoint->next;
-    free(minPoint);
-    return newPoint;
+    pointsList *temp;
+    int score = new->score;
+    for (temp = *toDo; temp->next != NULL && temp->next->score < score; temp = temp->next)
+        ;
+    new->next = temp->next;
+    temp->next = new;
+}
+
+Point nextToMove2(pointsList **toDo)
+{
+    Point realnewPoint = (Point){(*toDo)->p.x, (*toDo)->p.y};
+    pointsList *realTemp = *toDo;
+    *toDo = (*toDo)->next;
+    free(realTemp);
+    return realnewPoint;
+}
+
+int cost(int *score, int x, int y, const Point *size)
+// Minimum has priority. 
+{
+    return score[POS(x, y, size->x)];
 }
 
 void moveOneTurn2(const char **input, pointsList **toDo, int *score, const Point *size)
@@ -98,28 +104,6 @@ void moveOneTurn2(const char **input, pointsList **toDo, int *score, const Point
     int oldScore = score[POS(next.x, next.y, size->x)];
     if (next.x == 0 && next.y == 0)
         oldScore = 0;
-    if (next.x < size->x - 1)
-    {
-        newScore = oldScore + input[next.y][next.x + 1];
-        if (newScore < score[POS(next.x + 1, next.y, size->x)])
-        {
-            score[POS(next.x + 1, next.y, size->x)] = newScore;
-            pointsList *temp = malloc(sizeof(pointsList));
-            *temp = (pointsList){(Point){next.x + 1, next.y}, score[POS(next.x + 1, next.y, size->x)] - 5 * (size->y - next.y + size->x - next.x - 1), *toDo};
-            *toDo = temp;
-        }
-    }
-    if (next.y < size->y - 1)
-    {
-        newScore = oldScore + input[next.y + 1][next.x];
-        if (newScore < score[POS(next.x, next.y + 1, size->x)])
-        {
-            score[POS(next.x, next.y + 1, size->x)] = newScore;
-            pointsList *temp = malloc(sizeof(pointsList));
-            *temp = (pointsList){(Point){next.x, next.y + 1}, score[POS(next.x, next.y + 1, size->x)] - 5 * (size->y - next.y - 1 + size->x - next.x), *toDo};
-            *toDo = temp;
-        }
-    }
     if (next.y > 0)
     {
         newScore = oldScore + input[next.y - 1][next.x];
@@ -127,8 +111,8 @@ void moveOneTurn2(const char **input, pointsList **toDo, int *score, const Point
         {
             score[POS(next.x, next.y - 1, size->x)] = newScore;
             pointsList *temp = malloc(sizeof(pointsList));
-            *temp = (pointsList){(Point){next.x, next.y - 1}, score[POS(next.x, next.y - 1, size->x)] - 5 * (size->y - next.y + 1 + size->x - next.x), *toDo};
-            *toDo = temp;
+            *temp = (pointsList){(Point){next.x, next.y - 1}, cost(score, next.x, next.y - 1, size), *toDo};
+            insertNewPoint(toDo, temp);
         }
     }
     if (next.x > 0)
@@ -138,8 +122,30 @@ void moveOneTurn2(const char **input, pointsList **toDo, int *score, const Point
         {
             score[POS(next.x - 1, next.y, size->x)] = newScore;
             pointsList *temp = malloc(sizeof(pointsList));
-            *temp = (pointsList){(Point){next.x - 1, next.y}, score[POS(next.x - 1, next.y, size->x)] - 5 * (size->y - next.y + size->x - next.x + 1), *toDo};
-            *toDo = temp;
+            *temp = (pointsList){(Point){next.x - 1, next.y}, cost(score, next.x - 1, next.y, size), *toDo};
+            insertNewPoint(toDo, temp);
+        }
+    }
+    if (next.y < size->y - 1)
+    {
+        newScore = oldScore + input[next.y + 1][next.x];
+        if (newScore < score[POS(next.x, next.y + 1, size->x)])
+        {
+            score[POS(next.x, next.y + 1, size->x)] = newScore;
+            pointsList *temp = malloc(sizeof(pointsList));
+            *temp = (pointsList){(Point){next.x, next.y + 1}, cost(score, next.x, next.y + 1, size), *toDo};
+            insertNewPoint(toDo, temp);
+        }
+    }
+    if (next.x < size->x - 1)
+    {
+        newScore = oldScore + input[next.y][next.x + 1];
+        if (newScore < score[POS(next.x + 1, next.y, size->x)])
+        {
+            score[POS(next.x + 1, next.y, size->x)] = newScore;
+            pointsList *temp = malloc(sizeof(pointsList));
+            *temp = (pointsList){(Point){next.x + 1, next.y}, cost(score, next.x + 1, next.y, size), *toDo};
+            insertNewPoint(toDo, temp);
         }
     }
 }
