@@ -134,9 +134,9 @@ Point nextToMove2(BucketQueue *activePoints)
 }
 
 int cost(int *score, int x, int y, const Point *size)
-// Minimum has priority.
+// Minimum has priority. I tried to do some "A*" with some sort of heuristic... but it doesn't seem to change anything.
 {
-    return score[POS(x, y, size->x)];
+    return score[POS(x, y, size->x)] + (size->x - x) + (size->y - y);
 }
 
 void moveOneTurn2(const char **input, BucketQueue *activePoints, int *score, const Point *size)
@@ -144,11 +144,11 @@ void moveOneTurn2(const char **input, BucketQueue *activePoints, int *score, con
     Point next = nextToMove2(activePoints);
     int newScore;
     int oldScore = score[POS(next.x, next.y, size->x)];
-    if (next.x == 0 && next.y == 0) // We don't want to count the entrance score. 
+    if (next.x == 0 && next.y == 0) // We don't want to count the entrance score.
         oldScore = 0;
     // For the order of the next few things : since we want to go to the bottom right corner, the down and right movements should be prioritized.
-    // Because of the bucket list last-in first-out implementation, putting those one AFTER the up and left ones gives priority to down and right. 
-    // Probably a really small bonus. 
+    // Because of the bucket list last-in first-out implementation, putting those one AFTER the up and left ones gives priority to down and right.
+    // Probably a really small bonus.
     if (next.y > 0)
     {
         newScore = oldScore + input[next.y - 1][next.x];
@@ -222,19 +222,27 @@ int main()
     BucketQueue activePoints = (BucketQueue){array1, MAX_SIZE_BUCKET_QUEUE, 0};
     insertNewPoint(&activePoints, (Point){0, 0}, 0);
     // score[size.y - 1][size.x - 1] = 0;
-    while (score[size.y - 1][size.x - 1] == INT_MAX) // here, it stops as soon as it finds a path. But maybe it is not the best... (wait, what ?)
+    while (score[size.y - 1][size.x - 1] == INT_MAX) // here, it stops as soon as it finds a path.
     {
         moveOneTurn2(input, &activePoints, (int *)score, &size);
-        /* for (int y = 0; y < sizey; y++) {
-            for (int x = 0; x < sizex; x++) {
-                printf("%d ", activePoints[y][x]);
+        /* for (int y = 0; y < sizey; y++)
+        {
+            for (int x = 0; x < sizex; x++)
+            {
+                if (score[y][x] == INT_MAX)
+                {
+                    printf("0 ");
+                }
+                else
+                {
+                    printf("%d ", score[y][x]);
+                }
             }
             printf("\n");
         }
         printf("\n"); */
     }
     printf("-- Day 15 --\nLowest total risk : %d\n", score[size.y - 1][size.x - 1]);
-
 
     // Lets create the new input. m
     Point newSize = (Point){sizex * 5, sizey * 5};
@@ -269,7 +277,7 @@ int main()
     BucketQueue activePoints2 = (BucketQueue){array2, MAX_SIZE_BUCKET_QUEUE, 0};
     insertNewPoint(&activePoints2, (Point){0, 0}, 0);
     // score[size.y - 1][size.x - 1] = 0;
-    while (score2[newSize.y - 1][newSize.x - 1] == INT_MAX) // here, it stops as soon as it finds a path. But maybe it is not the best... (wait, what ?)
+    while (score2[newSize.y - 1][newSize.x - 1] == INT_MAX) // here, it stops as soon as it finds a path.
     {
         moveOneTurn2(input2, &activePoints2, (int *)score2, &newSize);
     }
