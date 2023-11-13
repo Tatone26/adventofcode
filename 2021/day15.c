@@ -8,21 +8,34 @@
 #define MAX_LEN 256
 #define POS(X, Y, SIZEX) (Y) * SIZEX + X
 
+// Increase this if everything explodes ! It may be because the smallest path is higher than this.
+#define MAX_SIZE_BUCKET_QUEUE 5000
+
 typedef struct _point
 {
     int x;
     int y;
 } Point;
 
-// Could probably go with a binary tree or something, because all the time is spent trying to find a place to put the new points in
-// Right now Im' just iterating over every SINGLE points in my self-made priority queue. 
-// Which is bad.
-typedef struct _list_of_points
+typedef struct _linked_point
 {
     Point p;
-    int score;
-    struct _list_of_points *next;
-} pointsList;
+    struct _linked_point *next;
+} LinkedPoint;
+
+// It was HARD to find a fast solution. I had to go through a LOT of iterations with TOTALLY DIFFERENT data structures.
+// I tried 2D array (~2s), LinkedList with sort at extraction (~1s) or insertion (~0.3s), BinaryLinkedList (~0.15s) and finally... BUCKET QUEUE ! (0.08s)
+// As often, big array is the solution !
+// I keep track of the index of the first non-null element, which represent the lowest score, so the one that have priority in the path finding algo.
+// That way, I have a O(1) time to find the list of elements that have the lowest score.
+// Just need to take care of the case where multiple points have the same score, and there we go !
+// Only downside : need to have a list big enough, but it shouldn't be a problem since it's just a list of pointers...
+typedef struct _bucket_queue
+{
+    LinkedPoint **array;
+    int size;
+    int smallest;
+} BucketQueue;
 
 char **readInput(FILE *f, fpos_t *start, int *size_x, int *size_y)
 {
@@ -57,7 +70,7 @@ char **readInput(FILE *f, fpos_t *start, int *size_x, int *size_y)
     return tab;
 }
 
-void freeInput(int **tab, const Point *size)
+void freeInput(char **tab, const Point *size)
 {
     for (int i = 0; i < size->y; i++)
     {
@@ -66,53 +79,83 @@ void freeInput(int **tab, const Point *size)
     free(tab);
 }
 
-void insertNewPoint(pointsList **toDo, pointsList *new)
+void freeLinkedPoint(LinkedPoint *queue)
 {
-    if ((*toDo) == NULL || new->score < (*toDo)->score)
-    {
-        new->next = *toDo;
-        *toDo = new;
+    if (queue == NULL)
         return;
-    }
-    pointsList *temp;
-    int score = new->score;
-    for (temp = *toDo; temp->next != NULL && temp->next->score < score; temp = temp->next)
-        ;
-    new->next = temp->next;
-    temp->next = new;
+    freeLinkedPoint(queue->next);
+    free(queue);
 }
 
-Point nextToMove2(pointsList **toDo)
+void freeBucketQueue(BucketQueue *activePoints)
 {
-    Point realnewPoint = (Point){(*toDo)->p.x, (*toDo)->p.y};
-    pointsList *realTemp = *toDo;
-    *toDo = (*toDo)->next;
-    free(realTemp);
-    return realnewPoint;
+    for (int i = 0; i < activePoints->size; i++)
+    {
+        freeLinkedPoint(activePoints->array[i]);
+    }
+    free(activePoints->array);
+}
+
+void insertNewPoint(BucketQueue *activePoints, Point point, int score)
+// BucketQueue allows for blazingly fast insertion.
+{
+    LinkedPoint *new = malloc(sizeof(LinkedPoint));
+    *new = (LinkedPoint){point, NULL};
+    // Update the smallest score.
+    if (score < activePoints->smallest)
+    {
+        activePoints->smallest = score;
+    }
+    // Last-in First-out is the best in this scenario, because if you are the last in, you may be already closer to the goal...
+    // And it cut the time by more than half from first-in first-out, and I still have the right answer. Letsgoo.
+    new->next = activePoints->array[score];
+    activePoints->array[score] = new;
+}
+
+Point nextToMove2(BucketQueue *activePoints)
+// But does it allow fast extraction as well ? -> HELL YEAH
+{
+    // Find the new point
+    int smallestScore = activePoints->smallest;
+    Point newPoint = activePoints->array[smallestScore]->p;
+
+    // Update the bucketList (put the second one in this place)
+    LinkedPoint *temp = activePoints->array[smallestScore];
+    activePoints->array[smallestScore] = activePoints->array[smallestScore]->next;
+    // Don't forget to get rid of the returned point
+    free(temp);
+
+    int j;
+    for (j = smallestScore; activePoints->array[j] == NULL && j < activePoints->size; j++)
+        ;
+    activePoints->smallest = j; // worse case scenario : the smallest is now the size of the array, so any new points will take this place. Or problem in pathfinding.
+
+    return newPoint;
 }
 
 int cost(int *score, int x, int y, const Point *size)
-// Minimum has priority. 
+// Minimum has priority.
 {
     return score[POS(x, y, size->x)];
 }
 
-void moveOneTurn2(const char **input, pointsList **toDo, int *score, const Point *size)
+void moveOneTurn2(const char **input, BucketQueue *activePoints, int *score, const Point *size)
 {
-    Point next = nextToMove2(toDo);
+    Point next = nextToMove2(activePoints);
     int newScore;
     int oldScore = score[POS(next.x, next.y, size->x)];
-    if (next.x == 0 && next.y == 0)
+    if (next.x == 0 && next.y == 0) // We don't want to count the entrance score. 
         oldScore = 0;
+    // For the order of the next few things : since we want to go to the bottom right corner, the down and right movements should be prioritized.
+    // Because of the bucket list last-in first-out implementation, putting those one AFTER the up and left ones gives priority to down and right. 
+    // Probably a really small bonus. 
     if (next.y > 0)
     {
         newScore = oldScore + input[next.y - 1][next.x];
         if (newScore < score[POS(next.x, next.y - 1, size->x)])
         {
             score[POS(next.x, next.y - 1, size->x)] = newScore;
-            pointsList *temp = malloc(sizeof(pointsList));
-            *temp = (pointsList){(Point){next.x, next.y - 1}, cost(score, next.x, next.y - 1, size), *toDo};
-            insertNewPoint(toDo, temp);
+            insertNewPoint(activePoints, (Point){next.x, next.y - 1}, cost(score, next.x, next.y - 1, size));
         }
     }
     if (next.x > 0)
@@ -121,9 +164,7 @@ void moveOneTurn2(const char **input, pointsList **toDo, int *score, const Point
         if (newScore < score[POS(next.x - 1, next.y, size->x)])
         {
             score[POS(next.x - 1, next.y, size->x)] = newScore;
-            pointsList *temp = malloc(sizeof(pointsList));
-            *temp = (pointsList){(Point){next.x - 1, next.y}, cost(score, next.x - 1, next.y, size), *toDo};
-            insertNewPoint(toDo, temp);
+            insertNewPoint(activePoints, (Point){next.x - 1, next.y}, cost(score, next.x - 1, next.y, size));
         }
     }
     if (next.y < size->y - 1)
@@ -132,9 +173,7 @@ void moveOneTurn2(const char **input, pointsList **toDo, int *score, const Point
         if (newScore < score[POS(next.x, next.y + 1, size->x)])
         {
             score[POS(next.x, next.y + 1, size->x)] = newScore;
-            pointsList *temp = malloc(sizeof(pointsList));
-            *temp = (pointsList){(Point){next.x, next.y + 1}, cost(score, next.x, next.y + 1, size), *toDo};
-            insertNewPoint(toDo, temp);
+            insertNewPoint(activePoints, (Point){next.x, next.y + 1}, cost(score, next.x, next.y + 1, size));
         }
     }
     if (next.x < size->x - 1)
@@ -143,9 +182,7 @@ void moveOneTurn2(const char **input, pointsList **toDo, int *score, const Point
         if (newScore < score[POS(next.x + 1, next.y, size->x)])
         {
             score[POS(next.x + 1, next.y, size->x)] = newScore;
-            pointsList *temp = malloc(sizeof(pointsList));
-            *temp = (pointsList){(Point){next.x + 1, next.y}, cost(score, next.x + 1, next.y, size), *toDo};
-            insertNewPoint(toDo, temp);
+            insertNewPoint(activePoints, (Point){next.x + 1, next.y}, cost(score, next.x + 1, next.y, size));
         }
     }
 }
@@ -181,15 +218,16 @@ int main()
         }
     }
     score[0][0] = 0;
-    pointsList *toDo2 = malloc(sizeof(pointsList));
-    *toDo2 = (pointsList){(Point){0, 0}, 0, NULL};
+    LinkedPoint **array1 = calloc(MAX_SIZE_BUCKET_QUEUE, sizeof(LinkedPoint));
+    BucketQueue activePoints = (BucketQueue){array1, MAX_SIZE_BUCKET_QUEUE, 0};
+    insertNewPoint(&activePoints, (Point){0, 0}, 0);
     // score[size.y - 1][size.x - 1] = 0;
     while (score[size.y - 1][size.x - 1] == INT_MAX) // here, it stops as soon as it finds a path. But maybe it is not the best... (wait, what ?)
     {
-        moveOneTurn2(input, &toDo2, (int *)score, &size);
+        moveOneTurn2(input, &activePoints, (int *)score, &size);
         /* for (int y = 0; y < sizey; y++) {
             for (int x = 0; x < sizex; x++) {
-                printf("%d ", toDo[y][x]);
+                printf("%d ", activePoints[y][x]);
             }
             printf("\n");
         }
@@ -197,6 +235,8 @@ int main()
     }
     printf("-- Day 15 --\nLowest total risk : %d\n", score[size.y - 1][size.x - 1]);
 
+
+    // Lets create the new input. m
     Point newSize = (Point){sizex * 5, sizey * 5};
 
     char **input_temp = malloc(sizeof(char *) * newSize.y);
@@ -225,29 +265,20 @@ int main()
         }
     }
     score2[0][0] = 0;
-    pointsList *toDo2_2 = malloc(sizeof(pointsList));
-    *toDo2_2 = (pointsList){(Point){0, 0}, 0, NULL};
+    LinkedPoint **array2 = calloc(MAX_SIZE_BUCKET_QUEUE, sizeof(LinkedPoint));
+    BucketQueue activePoints2 = (BucketQueue){array2, MAX_SIZE_BUCKET_QUEUE, 0};
+    insertNewPoint(&activePoints2, (Point){0, 0}, 0);
     // score[size.y - 1][size.x - 1] = 0;
     while (score2[newSize.y - 1][newSize.x - 1] == INT_MAX) // here, it stops as soon as it finds a path. But maybe it is not the best... (wait, what ?)
     {
-        moveOneTurn2(input2, &toDo2_2, (int *)score2, &newSize);
+        moveOneTurn2(input2, &activePoints2, (int *)score2, &newSize);
     }
     printf("Lowest total risk in 5*5 grid : %d\n", score2[newSize.y - 1][newSize.x - 1]);
     // Freeing everything
-    freeInput((int **)input, &size);
-    while (toDo2 != NULL)
-    {
-        pointsList *temp = toDo2->next;
-        free(toDo2);
-        toDo2 = temp;
-    }
-    freeInput((int **)input2, &newSize);
-    while (toDo2_2 != NULL)
-    {
-        pointsList *temp = toDo2_2->next;
-        free(toDo2_2);
-        toDo2_2 = temp;
-    }
+    freeInput((char **)input, &size);
+    freeBucketQueue(&activePoints);
+    freeBucketQueue(&activePoints2);
+    freeInput((char **)input2, &newSize);
     fclose(f);
     return 0;
 }

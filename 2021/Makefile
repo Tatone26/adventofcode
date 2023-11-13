@@ -36,4 +36,4 @@ valgrind :
 
 
 clean :
-	rm -f -r *.o output *.out $(PROGRAMS) callgrind.*
+	rm -f -r *.o output *.out $(PROGRAMS) *.out.*
