@@ -46,14 +46,22 @@ int **readInput(FILE *f, fpos_t *start, int *sizeX, int *sizeY, fpos_t *start_ac
     if (result == NULL)
     {
         fprintf(stderr, "Error malloc 1");
+        return NULL;
     }
     for (int i = 0; i < maxY; i++)
     {
-        result[i] = malloc(sizeof(int) * maxX);
-        if (result[i] == NULL)
+        int *p = malloc(sizeof(int) * maxX);
+        if (p == NULL)
         {
+            for (int u = 0; u < i; u++)
+            {
+                free(result[u]);
+            }
+            free(result);
             fprintf(stderr, "Error malloc 2");
+            return NULL;
         }
+        result[i] = p;
         for (int j = 0; j < maxX; j++)
         {
             result[i][j] = 0;
@@ -81,10 +89,23 @@ int **fold(int **input, int xAxis, int *sizeX, int *sizeY)
     if (xAxis)
     {
         int newSizeX = (*sizeX - 1) / 2;
+        if (newSizeX == 0)
+            return NULL;
         newWorld = malloc(sizeof(int *) * (*sizeY));
+        if (!newWorld)
+            return NULL;
         for (int i = 0; i < *sizeY; i++)
         {
             newWorld[i] = malloc(sizeof(int) * newSizeX);
+            if (!newWorld[i])
+            {
+                for (int u = 0; u < i; u++)
+                {
+                    free(newWorld[u]);
+                }
+                free(newWorld);
+                return NULL;
+            }
             for (int j = 0; j < newSizeX; j++)
             {
                 newWorld[i][j] = input[i][j] || input[i][*sizeX - j - 1];
@@ -95,10 +116,23 @@ int **fold(int **input, int xAxis, int *sizeX, int *sizeY)
     else
     {
         int newSizeY = (*sizeY - 1) / 2;
+        if (newSizeY == 0)
+            return NULL;
         newWorld = malloc(sizeof(int *) * (newSizeY));
+        if (!newWorld)
+            return NULL;
         for (int i = 0; i < newSizeY; i++)
         {
             newWorld[i] = malloc(sizeof(int) * (*sizeX));
+            if (!newWorld[i])
+            {
+                for (int u = 0; u < i; u++)
+                {
+                    free(newWorld[u]);
+                }
+                free(newWorld);
+                return NULL;
+            }
             for (int j = 0; j < *sizeX; j++)
             {
                 newWorld[i][j] = input[i][j] || input[*sizeY - i - 1][j];

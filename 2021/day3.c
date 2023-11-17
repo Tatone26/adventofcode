@@ -43,6 +43,8 @@ int main()
         }
         size_y++;
     }
+    if (size_y <= 0)
+        return 1;
 
     int result[size_x - 1];
 
@@ -59,6 +61,8 @@ int main()
     printf("-- Day 3 -- \n");
     printf("Epsilon rate : %d ; Gamma rate : %d ; Result1 : %d\n", epsilon, gamma, epsilon * gamma);
 
+    if (size_y <= 0)
+        size_y = 1;
     int not_used_oxygen[size_y];
     int not_used_co2[size_y];
     int nb_to_go_oxygen = size_y;

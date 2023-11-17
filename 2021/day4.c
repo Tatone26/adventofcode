@@ -55,8 +55,11 @@ int **read_boards(FILE *f, fpos_t *start, int *size)
         if ((strlen(buffer) > 1) && (buffer[0] != '\n'))
             (*size)++;
     }
-
+    if (*size <= 0)
+        return NULL;
     int **result = malloc(sizeof(int *) * (*size));
+    if (!result)
+        return NULL;
     assert(result);
     for (int i = 0; i < (*size); i++)
     {
@@ -161,7 +164,7 @@ int score(int **boards, int winner_board, int *inputs, int to_check)
 
 int not_won(int *won, int size)
 {
-    int compte;
+    int compte = 0;
     for (int i = 0; i < size; i++)
     {
         if (!won[i])
@@ -261,7 +264,7 @@ int main()
             }
         }
     }
-    
+
     int winner_board = winner_line / BINGO_GRID;
     int score_sum = score(boards, winner_board, inputs, numbers_drawn);
     printf("-- Day 4 --\nWinner board : %d, sum : %d, final score : %d\n", winner_board, score_sum, score_sum * winner_number);

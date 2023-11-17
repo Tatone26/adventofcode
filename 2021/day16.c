@@ -25,7 +25,7 @@ char *readInput(FILE *f, fpos_t *start)
     for (i = 0; buffer[i] != '\n' && buffer[i] != '\0'; i++)
         ;
     buffer[i] = '\0';
-    return strdup(buffer);
+    return (char *) strdup(buffer);
 }
 
 char transformChar(char a)

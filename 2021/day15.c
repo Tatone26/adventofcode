@@ -52,6 +52,8 @@ char **readInput(FILE *f, fpos_t *start, int *size_x, int *size_y)
     }
     *size_x = sizex;
     *size_y = sizey;
+    if (sizex == 0 || sizey == 0)
+        return NULL;
     char **tab = (char **)malloc(sizeof(char *) * (sizey));
     for (int i = 0; i < (sizey); i++)
     {
@@ -209,6 +211,8 @@ int main()
         }
         printf("\n");
     } */
+    if (sizex == 0 || sizey == 0)
+        return 1;
     int score[sizey][sizex];
     for (int y = 0; y < sizey; y++)
     {
@@ -218,7 +222,7 @@ int main()
         }
     }
     score[0][0] = 0;
-    LinkedPoint **array1 = calloc(MAX_SIZE_BUCKET_QUEUE, sizeof(LinkedPoint));
+    LinkedPoint **array1 = calloc(MAX_SIZE_BUCKET_QUEUE, sizeof(LinkedPoint *));
     BucketQueue activePoints = (BucketQueue){array1, MAX_SIZE_BUCKET_QUEUE, 0};
     insertNewPoint(&activePoints, (Point){0, 0}, 0);
     // score[size.y - 1][size.x - 1] = 0;
@@ -273,7 +277,7 @@ int main()
         }
     }
     score2[0][0] = 0;
-    LinkedPoint **array2 = calloc(MAX_SIZE_BUCKET_QUEUE, sizeof(LinkedPoint));
+    LinkedPoint **array2 = calloc(MAX_SIZE_BUCKET_QUEUE, sizeof(LinkedPoint *));
     BucketQueue activePoints2 = (BucketQueue){array2, MAX_SIZE_BUCKET_QUEUE, 0};
     insertNewPoint(&activePoints2, (Point){0, 0}, 0);
     // score[size.y - 1][size.x - 1] = 0;

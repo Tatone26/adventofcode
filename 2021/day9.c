@@ -20,10 +20,23 @@ int **readInput(FILE *f, fpos_t *start, int *size_x, int *size_y)
     }
     // Le tableau est de la forme int[size_y][size_x]
     // printf("%d %d\n", *size_x, *size_y);
+    if (*size_y == 0)
+        return NULL;
     int **tab = malloc(sizeof(int *) * (*size_y));
+    if (!tab)
+        return NULL;
     for (int i = 0; i < (*size_y); i++)
     {
         tab[i] = malloc(sizeof(int) * (*size_x));
+        if (!tab[i])
+        {
+            for (int u = 0; u < i; u++)
+            {
+                free(tab[u]);
+            }
+            free(tab);
+            return NULL;
+        }
         for (int j = 0; j < (*size_x); j++)
         { // security.
             tab[i][j] = 0;
@@ -67,6 +80,8 @@ typedef struct _point
 
 Point *listOfLowPoints(int **inputs, int size_x, int size_y, int number_of_low_points)
 {
+    if (number_of_low_points == 0)
+        return NULL;
     Point *liste = malloc(sizeof(Point) * number_of_low_points);
     int iter = 0;
     for (int i = 0; i < size_y; i++)

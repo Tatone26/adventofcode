@@ -41,10 +41,21 @@ int main()
     if (!world)
     {
         printf("problème malloc\n");
+        return 1;
     }
     for (int i = 0; i < maxX; i++)
     {
-        world[i] = malloc(sizeof(int) * (maxY));
+        int *p = malloc(sizeof(int) * (maxY));
+        if (!p)
+        {
+            for (int u = 0; u < i; u++)
+            {
+                free(world[u]);
+            }
+            free(world);
+            return 1;
+        }
+        world[i] = p;
         for (int j = 0; j < maxY; j++)
         {
             world[i][j] = 0;

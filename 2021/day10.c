@@ -98,6 +98,8 @@ char firstIllegalClosing(char *line)
         }
         else if (typeOfBracket == -1)
         {
+            if (opened <= 0)
+                return 0;
             if (variant(c) != openedCharacters[opened - 1])
             {
                 // printf("First illegal character in %s : %c at pos %d.\n", line, c, iter);
@@ -209,6 +211,8 @@ int main()
     }
 
     int somme = 0;
+    if (fileSize == 0)
+        return 1;
     unsigned long int resultsArray[fileSize];
     int nbOfIncompleteLines = 0;
 

@@ -23,6 +23,9 @@ char ***readInput(FILE *f, fpos_t *start, int *size)
     }
 
     *size = nbOfEntries;
+    if (nbOfEntries == 0) {
+        return NULL;
+    }
     char ***entries = malloc(sizeof(char **) * nbOfEntries);
     assert(entries != NULL);
 
