@@ -128,7 +128,7 @@ Point nextToMove2(BucketQueue *activePoints)
     free(temp);
 
     int j;
-    for (j = smallestScore; activePoints->array[j] == NULL && j < activePoints->size; j++)
+    for (j = smallestScore; j < activePoints->size && activePoints->array[j] == NULL; j++)
         ;
     activePoints->smallest = j; // worse case scenario : the smallest is now the size of the array, so any new points will take this place. Or problem in pathfinding.
 
