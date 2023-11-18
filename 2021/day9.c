@@ -46,7 +46,7 @@ int **readInput(FILE *f, fpos_t *start, int *size_x, int *size_y)
     fsetpos(f, start);
     char c;
     int x = 0, y = 0;
-    while (!feof(f))
+    while (!feof(f) && x < *size_x - 1 && y < *size_y)
     {
         c = fgetc(f);
         if (c != '\n' && c != '\0' && c != EOF)

@@ -34,8 +34,13 @@ void addBetterChar(BetterCptChar *cptChar, char c, long int nb)
 
 BetterCptChar *initBetterCptChar(char *template, InputRead *inputRead, int readInputBool)
 {
+    if (!template)
+        return NULL;
+    int safety = strlen(template);
+    if (safety == 0)
+        return NULL;
     char min = template[0], max = template[0];
-    for (int i = 0; template[i] != '\n' && template[i] != '\0'; i++)
+    for (int i = 0; i < safety && template[i] != '\n' && template[i] != '\0'; i++)
     {
         if (template[i] < min)
             min = template[i];
@@ -85,8 +90,12 @@ InputRead *readInput(FILE *f, fpos_t *start, char **template)
     char buffer[MAX_LEN];
     fgets(buffer, MAX_LEN, f);
 
+    if (strlen(buffer) <= 0)
+        return NULL;
     *template = malloc(sizeof(char) * (strlen(buffer) + 1));
-    strcpy(*template, buffer);
+    for (int i = 0; i < strlen(buffer) + 1; i++)
+        (*template)[i] = 0;
+    strncpy(*template, buffer, strlen((const char *)template) + 1);
 
     fgets(buffer, MAX_LEN, f); // Empty line.
 
@@ -100,7 +109,7 @@ InputRead *readInput(FILE *f, fpos_t *start, char **template)
         {
             InputRead *temp = result;
             result = malloc(sizeof(InputRead));
-            *result = (InputRead) {first, second, toAdd, NULL, NULL, NULL, NULL, temp};
+            *result = (InputRead){first, second, toAdd, NULL, NULL, NULL, NULL, temp};
         }
         fgets(buffer, MAX_LEN, f);
     }
@@ -139,7 +148,10 @@ char *getStringAfterNSteps(char *stringToCompute, InputRead *inputRead, int n)
 void updateCptCharWithString(char *stringInput, InputRead *inputRead, BetterCptChar *countChars, int stepsLeft)
 {
     // Steps left is multiple of 10.
-    for (int i = 0; stringInput[i] != '\0' && stringInput[i] != '\n'; i++)
+    if (!stringInput)
+        return;
+    int safety = strlen(stringInput);
+    for (int i = 0; i < safety && stringInput[i] != '\0' && stringInput[i] != '\n'; i++)
     {
         InputRead *inputIter = inputRead;
         while (inputIter != NULL)
@@ -251,7 +263,7 @@ int main()
     fpos_t start;
     fgetpos(f, &start);
 
-    char *template;
+    char *template = NULL;
     InputRead *inputRead = readInput(f, &start, &template);
     completeInputRead(inputRead);
     // printf("%s\n", template);
@@ -261,6 +273,8 @@ int main()
         printf("%c%c -> %c\n", temp->first, temp->second, temp->to_add);
         temp = temp->next;
     } */
+    if (!template)
+        return 1;
     printf("-- Day 14 --\n");
     calculateResult(template, inputRead, 10);
     calculateResult(template, inputRead, 40);

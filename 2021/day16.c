@@ -10,7 +10,7 @@
 // Always interesting to learn the basics of things like bit manipulation !
 // Oh, and ANY other language than C would make this so much easier... But I like to suffer I think (300 lines here for around 50-100 in python for exemple)
 
-// Apparently, people don't like recursion but since there is a relatively small number of packets, I don't see why it would be a problem. 
+// Apparently, people don't like recursion but since there is a relatively small number of packets, I don't see why it would be a problem.
 
 #define VERSION_POS 0
 #define TYPE_ID_POS 3
@@ -25,7 +25,7 @@ char *readInput(FILE *f, fpos_t *start)
     for (i = 0; buffer[i] != '\n' && buffer[i] != '\0'; i++)
         ;
     buffer[i] = '\0';
-    return (char *) strdup(buffer);
+    return (char *)strdup(buffer);
 }
 
 char transformChar(char a)
@@ -49,10 +49,10 @@ char transformChar(char a)
     }
     return b & mask;
 }
-// Nothing possible without https://stackoverflow.com/a/8012148, and a lot of luck. 
+// Nothing possible without https://stackoverflow.com/a/8012148, and a lot of luck.
 int getNBit(char *input, int n)
 {
-    return (input[n / 4] & (1 << (3 - n % 4))) && 1; // yeah it works don't know why lol
+    return (int)(input[n / 4] & (1 << (3 - n % 4))) > 0; // yeah it works don't know why lol
 }
 
 int getIntFromBits(char *input, int startBit, int stopBit)
@@ -123,7 +123,7 @@ int getLengthTypeID(char *input, int startBit)
 
 long int readValuePacket(char *input, int startBit, int *stopBit);
 long int *getValuesFromOperator(char *input, int startBit, int *stopBit, int *size)
-// Takes care of the two cases (Length Type Id 1 or 0) and returns a int tab with all the downward values. 
+// Takes care of the two cases (Length Type Id 1 or 0) and returns a int tab with all the downward values.
 {
     if (getTypeID(input, startBit) == 4)
         return NULL;
@@ -149,7 +149,7 @@ long int *getValuesFromOperator(char *input, int startBit, int *stopBit, int *si
         int currentBit = startBit + LENGTH_TYPE_ID_POS + 1 + 15;
         int stopBitSafe = currentBit + totalLengthInBits;
         int i = 0;
-        long int *result = malloc(sizeof(long int) * i);
+        long int *result = NULL;
         while (currentBit < stopBitSafe)
         {
             i++;
@@ -163,12 +163,12 @@ long int *getValuesFromOperator(char *input, int startBit, int *stopBit, int *si
 }
 
 long int readValuePacket(char *input, int startBit, int *stopBit)
-// Very clean and understable fonction. Refer to the problem page if doubts. 
+// Very clean and understable fonction. Refer to the problem page if doubts.
 {
     int typeID = getTypeID(input, startBit);
     if (typeID == 4)
         return getLiteralValueFromPacket(input, startBit, stopBit);
-    int size;
+    int size = 0;
     long int *listeOfValues = getValuesFromOperator(input, startBit, stopBit, &size);
     long int result = 0;
     // printf("Type ID of Operator : %d\n", typeID);
@@ -222,16 +222,22 @@ long int readValuePacket(char *input, int startBit, int *stopBit)
     };
     case 5: // greater than
     {
+        if (size < 2)
+            break;
         result = listeOfValues[0] > listeOfValues[1];
         break;
     };
     case 6: // lower than
     {
+        if (size < 2)
+            break;
         result = listeOfValues[0] < listeOfValues[1];
         break;
     };
     case 7: // equals
     {
+        if (size < 2)
+            break;
         result = listeOfValues[0] == listeOfValues[1];
         break;
     };

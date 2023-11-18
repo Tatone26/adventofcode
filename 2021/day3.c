@@ -84,6 +84,8 @@ int main()
         i++;
     }
     number_to_check++;
+    if (number_to_check >= size_x - 1)
+        return 1;
     while ((nb_to_go_oxygen > 1) || (nb_to_go_co2 > 1))
     {
         int compte_oxygen[size_x - 1][2];
@@ -102,10 +104,13 @@ int main()
             fgets(buffer, MAX_LEN, f);
             for (int i = 0; i < size_x - 1; i++)
             {
+                int c = (int)(buffer[i] - '0');
+                if (c != 0 && c != 1)
+                    return 1;
                 if (!not_used_oxygen[j])
-                    compte_oxygen[i][(int)(buffer[i] - '0')]++;
+                    compte_oxygen[i][c]++;
                 if (!not_used_co2[j])
-                    compte_co2[i][(int)(buffer[i] - '0')]++;
+                    compte_co2[i][c]++;
             }
             j++;
         }
