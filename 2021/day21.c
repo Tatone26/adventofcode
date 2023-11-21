@@ -9,7 +9,7 @@
 #define MAX_POS 10 // The max position.
 #define MIN_POS 1  // The min position.
 
-#define WIN_SCORE 28 // Win score for part two. 
+#define WIN_SCORE 21 // Win score for part two. 
 #define MAX_SCORE (WIN_SCORE - 1 + MAX_POS) // The maximum score anyone can get : 20 + 10. (part2)
 #define MIN_SCORE 0
 
@@ -152,7 +152,7 @@ int main()
     }
     long int part2 = result(startOne, startTwo, MIN_SCORE, MIN_SCORE, 0, cache);
 
-    printf("QUANTUM DIE : First player win in %ld universes.\n", part2);
+    printf("QUANTUM DIE : First player win in %ld universes. (number of alternate situations maximum : %d)\n", part2, maxHash + 1);
     fclose(f);
     return 0;
 }

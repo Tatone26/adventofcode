@@ -191,7 +191,7 @@ int main()
     fgetpos(f, &start);
 
     char *algo = readAlgorithm(f, &start); // 512 chars long.
-    printf("%s - \n\n", algo);
+    // printf("%s - \n\n", algo);
 
     int size;
     char **image = readImage(f, &start, &size);

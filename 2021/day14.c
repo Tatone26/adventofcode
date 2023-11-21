@@ -93,7 +93,7 @@ InputRead *readInput(FILE *f, fpos_t *start, char **template)
     if (strlen(buffer) <= 0)
         return NULL;
     *template = malloc(sizeof(char) * (strlen(buffer) + 1));
-    for (int i = 0; i < strlen(buffer) + 1; i++)
+    for (int i = 0; i < (int) strlen(buffer) + 1; i++)
         (*template)[i] = 0;
     strncpy(*template, buffer, strlen((const char *)template) + 1);
 
