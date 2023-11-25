@@ -16,7 +16,7 @@
 // An... EASY day ??? for the 21 ? I'm really suprised (I'm doing this in november 2023)
 // Easy to get from 27 possibles outputs to only 7 (always the sum of three dice), but that was not really a trap.
 // I guess you just needed to understand the rules to make a solution that runs in a few seconds max. 
-// To get really low, just need to save every already-computed solutions #caching
+// To get really low, just need to save every already-computed solutions #caching -> just around 186200 situations to compute. Which is instant. 
 
 // Proud of my made-up "hash table", which I have been able to make thanks to the max values of every int
 // (score <= 30 and pos <= 10), and I even made it dynamic if you want to change the parameters. (max win_score is 28 before long int)
