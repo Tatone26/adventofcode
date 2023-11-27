@@ -17,7 +17,7 @@ pub fn solve(filename: &'static str) -> SolutionPair {
 #[test]
 fn test() {
     let (Solution::U64(s1), Solution::U64(s2)) = solve("input/test_day1.txt") else {
-        panic!("Mauvais type de solutions pour le test.")
+        panic!("\x1b[1;31mMauvais type de solutions pour le test, mettez le à jour !\x1b[m")
     };
     assert_eq!(s1, 0);
     assert_eq!(s2, 0);

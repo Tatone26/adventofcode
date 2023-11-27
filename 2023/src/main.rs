@@ -17,10 +17,16 @@ pub type SolutionPair = (Solution, Solution);
 fn main() {
     let args: Vec<String> = env::args().collect();
     if args.len() < 2 {
-        panic!("Please provide the day(s) to run as a command-line argument.");
+        panic!("\x1b[1;36mPlease provide the day(s) to run as a command-line argument.\x1b[0m");
     }
 
-    let days: Vec<u8> = args[1..]
+    let days_numbers: Vec<String>;
+    if args.len() == 2 && args[1] == "all" {
+        days_numbers = (1..26).map(|x| x.to_string()).collect();
+    } else {
+        days_numbers = args[1..].to_vec();
+    }
+    let days: Vec<u8> = days_numbers
         .iter()
         .map(|x| {
             x.parse()
@@ -49,9 +55,7 @@ fn main() {
     }
     println!("Total runtime: \x1b[36m{:.4} ms\x1b[m", runtime);
 
-    // All this just to copy to clipboard.
     copy_to_clipboard(last_word);
-
 }
 
 fn get_day_solver(day: u8) -> (fn(&'static str) -> SolutionPair, &'static str) {
@@ -92,11 +96,17 @@ fn copy_to_clipboard(word: String) {
         .stdin(Stdio::piped())
         .spawn()
         .expect("\x1b[31mFailed to spawn 'xclip', ensure it is on your system.\x1b[0m");
-    let mut stdin = child.stdin.take().expect("\x1b[31mFailed to copy to clipboard.\x1b[0m");
-    std::thread::spawn(move || stdin.write_all(word.as_bytes()).expect("\x1b[31mFailed to copy to clipboard.\x1b[0m"));
+    let mut stdin = child
+        .stdin
+        .take()
+        .expect("\x1b[31mFailed to copy to clipboard.\x1b[0m");
+    std::thread::spawn(move || {
+        stdin
+            .write_all(word.as_bytes())
+            .expect("\x1b[31mFailed to copy to clipboard.\x1b[0m")
+    });
     child
         .wait_with_output()
         .expect("\x1b[31mFailed to copy to clipboard.\x1b[0m");
     println!("\x1b[2;3mResult copied to clipboard !\x1b[m");
-
 }
