@@ -1,9 +1,9 @@
 use crate::{Solution, SolutionPair};
-use std::fs::read_to_string;
+
 
 ///////////////////////////////////////////////////////////////////////////////
 
-pub fn solve(filename : &'static str) -> SolutionPair {
+pub fn solve(_filename : &'static str) -> SolutionPair {
     // Your solution here...
     let sol1: u64 = 0;
     let sol2: u64 = 0;
