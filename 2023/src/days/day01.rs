@@ -1,13 +1,16 @@
 use crate::{Solution, SolutionPair};
-use std::fs::read_to_string;
-
+use std::fs::File;
+use std::io::Read;
+use text_io::read;
 ///////////////////////////////////////////////////////////////////////////////
 
 pub fn solve(filename: &'static str) -> SolutionPair {
     // Your solution here...
-    let sol1: u64 = 0;
-    let sol2: u64 = 0;
-
+    let mut file = File::open(filename).unwrap().bytes().map(|ch| ch.unwrap());
+    let output: i32 = read!("this is test {} !", file);
+    println!("number : {:?}", output);
+    let sol1 = rand::random::<u64>();
+    let sol2 = rand::random::<u64>();
     (Solution::from(sol1), Solution::from(sol2))
 }
 
