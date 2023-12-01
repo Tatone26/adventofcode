@@ -20,19 +20,19 @@ fn main() {
         panic!("\x1b[1;36mPlease provide the day(s) to run as a command-line argument.\x1b[0m");
     }
 
-    let days_numbers: Vec<String>;
-    if args.len() == 2 && args[1] == "all" {
-        days_numbers = (1..26).map(|x| x.to_string()).collect();
-    } else {
-        days_numbers = args[1..].to_vec();
+    let days: Vec<u8> = {
+        if args.len() == 2 && args[1] == "all" {
+            (1..26).map(|x| x.to_string()).collect() // All 25 days !
+        } else {
+            args[1..].to_vec() // Given arguments
+        }
     }
-    let days: Vec<u8> = days_numbers
-        .iter()
-        .map(|x| {
-            x.parse()
-                .unwrap_or_else(|v| panic!("Not a valid day: {}", v))
-        })
-        .collect();
+    .iter()
+    .map(|x| {
+        x.parse()
+            .unwrap_or_else(|v| panic!("Not a valid day: {}", v))
+    })
+    .collect();
 
     let mut runtime = 0.0;
     let mut last_word: String = String::from_str("no result").unwrap();
@@ -58,6 +58,9 @@ fn main() {
     copy_to_clipboard(last_word);
 }
 
+/// Maps the number to the corresponding solve function and input file name.
+///
+/// Panics if given a number not between 1 and 25.
 fn get_day_solver(day: u8) -> (fn(&'static str) -> SolutionPair, &'static str) {
     match day {
         1 => (day01::solve, "input/day1.txt"),
@@ -89,13 +92,18 @@ fn get_day_solver(day: u8) -> (fn(&'static str) -> SolutionPair, &'static str) {
     }
 }
 
+/// Copies the given word to the global clipboard.
+/// * word - The word to copy.
+/// # Note
+/// I have no idea how this really works, found it on [reddit](https://www.reddit.com/r/rust/comments/ssz0gr/comment/hx0r6zd/?utm_source=share&utm_medium=web2x&context=3), which seem to be copied more or less from the [Stdio] doc.
+/// I tried to do it without std::process::Command, but to no avail.
 fn copy_to_clipboard(word: String) {
     let mut child = Command::new("xclip")
         .arg("-selection")
         .arg("clipboard")
         .stdin(Stdio::piped())
         .spawn()
-        .expect("\x1b[31mFailed to spawn 'xclip', ensure it is on your system.\x1b[0m");
+        .expect("\x1b[31mFailed to spawn 'xclip', ensure it is on your system. Did not copy to clipboard.\x1b[0m");
     let mut stdin = child
         .stdin
         .take()
