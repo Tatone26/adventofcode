@@ -1,9 +1,8 @@
 use crate::{Solution, SolutionPair};
 
-
 ///////////////////////////////////////////////////////////////////////////////
 
-pub fn solve(_filename : &'static str) -> SolutionPair {
+pub fn solve(_filename: &'static str) -> SolutionPair {
     // Your solution here...
     let sol1: u64 = 0;
     let sol2: u64 = 0;
