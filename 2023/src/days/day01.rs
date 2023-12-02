@@ -90,7 +90,7 @@ fn part_two(s: &str) -> u32 {
                 + find_first_number(line.chars().rev().collect::<String>().as_str(), true)
         })
         .sum()
-    /* s.lines()
+    /* s.lines() // Other solution, a little slower but with less edge cases
     .map(|line| {
         let mut v = find_numbers(line);
         let r = v.next().unwrap();
