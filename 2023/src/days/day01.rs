@@ -7,29 +7,6 @@ use std::io::Read;
 /// Pretty bad day1, but I have never really done any hard programming in Rust..
 /// I haven't had any problem with the overlapping numbers like some people, but blocked on the repeted text number (like sevenghj1fd5oneseven)
 
-/// Returns all the numbers of a line. Not optimised, but strong and clean.
-/* fn find_numbers(line: &str) -> impl Iterator<Item = u32> + '_ {
-    line.chars().enumerate().filter_map(|(i, c)| {
-        if let Some(x) = c.to_digit(10) {
-            Some(x)
-        } else {
-            [
-                "one", "two", "three", "four", "five", "six", "seven", "eight", "nine",
-            ]
-            .iter()
-            .enumerate()
-            .find_map(|(v, w)| {
-                if line.get(i..).unwrap().starts_with(w) {
-                    // don't like that, this get(i) is really baaaad
-                    Some((v + 1) as u32)
-                } else {
-                    None
-                }
-            })
-        }
-    })
-} */
-
 /// returns first number found in string
 fn find_first_number(line: &str, reverse: bool) -> u32 {
     line.chars()
@@ -90,13 +67,6 @@ fn part_two(s: &str) -> u32 {
                 + find_first_number(line.chars().rev().collect::<String>().as_str(), true)
         })
         .sum()
-    /* s.lines() // Other solution, a little slower but with less edge cases
-    .map(|line| {
-        let mut v = find_numbers(line);
-        let r = v.next().unwrap();
-        r * 10 + if let Some(x) = v.last() { x } else { r }
-    })
-    .sum() */
 }
 
 pub fn solve(filename: &'static str) -> SolutionPair {

@@ -38,20 +38,22 @@ fn main() {
     let mut last_word: String = String::from_str("no result").unwrap();
 
     println!("\x1b[5S"); // Like \n\n\n\n\n
-    for day in days {
-        let (func, filename) = get_day_solver(day);
+    for _ in 0..1 {
+        for day in &days {
+            let (func, filename) = get_day_solver(*day);
 
-        let time = Instant::now();
-        let (p1, p2) = func(filename);
-        let elapsed_ms = time.elapsed().as_nanos() as f64 / 1_000_000.0;
+            let time = Instant::now();
+            let (p1, p2) = func(filename);
+            let elapsed_ms = time.elapsed().as_nanos() as f64 / 1_000_000.0;
 
-        println!("\n\x1b[1m=== Day {:02} ===\x1b[0m", day);
-        println!("  · Part 1: \x1b[3;32m{}\x1b[0m", p1);
-        println!("  · Part 2: \x1b[3;32m{}\x1b[0m", p2);
-        println!("\x1b[2;3m  · Elapsed: {:.4} ms\x1b[0m", elapsed_ms);
+            println!("\n\x1b[1m=== Day {:02} ===\x1b[0m", day);
+            println!("  · Part 1: \x1b[3;32m{}\x1b[0m", p1);
+            println!("  · Part 2: \x1b[3;32m{}\x1b[0m", p2);
+            println!("\x1b[2;3m  · Elapsed: {:.4} ms\x1b[0m", elapsed_ms);
 
-        runtime += elapsed_ms;
-        last_word = p2.to_string();
+            runtime += elapsed_ms;
+            last_word = p2.to_string();
+        }
     }
     println!("Total runtime: \x1b[36m{:.4} ms\x1b[m", runtime);
 

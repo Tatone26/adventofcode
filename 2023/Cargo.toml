@@ -8,3 +8,5 @@ edition = "2021"
 [dependencies]
 text_io = "0.1.12"
 rand = "0.8.5"
+ahash = "0.8.6"
+itertools = "0.12.0"
