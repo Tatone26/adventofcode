@@ -6,78 +6,83 @@ use crate::{Solution, SolutionPair};
 /// Edge case : number on the right border.
 ///
 
-fn read_symbols(filename: &'static str) -> Vec<((u32, u32), char)> {
-    let mut buffer: String = String::new();
-    File::open(filename)
-        .unwrap()
-        .read_to_string(&mut buffer)
-        .unwrap();
-    let mut positions = Vec::new();
-    buffer.lines().enumerate().for_each(|(i, line)| {
-        line.chars().enumerate().for_each(|(j, c)| {
-            if !c.is_ascii_digit() && c != '.' {
-                positions.push(((i as u32, j as u32), c))
-            }
-        })
-    });
-    positions
-}
+type Point = (u32, u32);
+type Number = (Point, Point, u32);
+type Symbol = (Point, char);
 
-fn read_numbers(filename: &'static str) -> Vec<((u32, u32), (u32, u32), u32)> {
+fn read_symbols(filename: &'static str) -> Vec<Symbol> {
     let mut buffer: String = String::new();
     File::open(filename)
         .unwrap()
         .read_to_string(&mut buffer)
         .unwrap();
-    let mut positions = Vec::new();
-    buffer.lines().enumerate().for_each(|(i, line)| {
-        let mut number = 0;
-        let mut start_pos: (u32, u32) = (0, 0);
-        line.chars().enumerate().for_each(|(j, c)| {
-            if c.is_ascii_digit() {
-                if number == 0 {
-                    start_pos = (i as u32, j as u32);
+
+    buffer
+        .lines()
+        .enumerate()
+        .flat_map(|(i, line)| {
+            line.chars().enumerate().filter_map(move |(j, c)| {
+                if !c.is_ascii_digit() && c != '.' {
+                    Some(((i as u32, j as u32), c))
+                } else {
+                    None
                 }
-                number = number * 10 + c.to_digit(10).unwrap();
-            }
-            if (!c.is_ascii_digit() || j == line.len() - 1) && number > 0 {
-                positions.push((
-                    start_pos,
-                    (
-                        i as u32,
-                        if j == line.len() - 1 {
-                            j as u32
-                        } else {
-                            (j - 1) as u32
-                        },
-                    ),
-                    number,
-                ));
-                start_pos = (0, 0);
-                number = 0;
-            }
+            })
         })
-    });
-    positions
+        .collect()
 }
 
-fn is_close_to_symbol(
-    pos1: &(u32, u32),
-    pos2: &(u32, u32),
-    positions: &Vec<((u32, u32), char)>,
-) -> bool {
-    positions
-        .iter()
-        .find(|((i, j), _)| {
-            (i.abs_diff(pos1.0) <= 1) && (pos1.1..(pos2.1 + 1)).any(|y| j.abs_diff(y) <= 1)
+fn read_numbers(filename: &'static str) -> Vec<Number> {
+    let mut buffer: String = String::new();
+    File::open(filename)
+        .unwrap()
+        .read_to_string(&mut buffer)
+        .unwrap();
+
+    buffer
+        .lines()
+        .enumerate()
+        .flat_map(|(i, line)| {
+            let mut number = 0;
+            let mut start_pos: (u32, u32) = (0, 0);
+            line.chars().enumerate().filter_map(move |(j, c)| {
+                if c.is_ascii_digit() {
+                    if number == 0 {
+                        start_pos = (i as u32, j as u32);
+                    }
+                    number = number * 10 + c.to_digit(10).unwrap();
+                }
+                if (!c.is_ascii_digit() || j == line.len() - 1) && number > 0 {
+                    let r = Some((
+                        start_pos,
+                        (
+                            i as u32,
+                            if j == line.len() - 1 {
+                                j as u32
+                            } else {
+                                (j - 1) as u32
+                            },
+                        ),
+                        number,
+                    ));
+                    start_pos = (0, 0);
+                    number = 0;
+                    r
+                } else {
+                    None
+                }
+            })
         })
-        .is_some()
+        .collect()
 }
 
-fn part_one(
-    numbers: &Vec<((u32, u32), (u32, u32), u32)>,
-    symbols: &Vec<((u32, u32), char)>,
-) -> u64 {
+fn is_close_to_symbol(pos1: &Point, pos2: &Point, positions: &Vec<Symbol>) -> bool {
+    positions.iter().any(|((i, j), _)| {
+        (i.abs_diff(pos1.0) <= 1) && (pos1.1..(pos2.1 + 1)).any(|y| j.abs_diff(y) <= 1)
+    })
+}
+
+fn part_one(numbers: &Vec<Number>, symbols: &Vec<Symbol>) -> u64 {
     numbers
         .iter()
         .filter_map(|(pos1, pos2, value)| {
@@ -90,7 +95,7 @@ fn part_one(
         .sum()
 }
 
-fn is_gear(pos: (u32, u32), numbers: &Vec<((u32, u32), (u32, u32), u32)>) -> Option<u64> {
+fn is_gear(pos: Point, numbers: &Vec<Number>) -> Option<u64> {
     let mut count = 0;
     let it = numbers.iter().filter_map(|(pos1, pos2, value)| {
         if count > 2 {
@@ -112,10 +117,7 @@ fn is_gear(pos: (u32, u32), numbers: &Vec<((u32, u32), (u32, u32), u32)>) -> Opt
     }
 }
 
-fn part_two(
-    numbers: &Vec<((u32, u32), (u32, u32), u32)>,
-    symbols: &Vec<((u32, u32), char)>,
-) -> u64 {
+fn part_two(numbers: &Vec<Number>, symbols: &Vec<Symbol>) -> u64 {
     symbols
         .iter()
         .filter_map(|(pos, sym)| {
@@ -130,7 +132,7 @@ fn part_two(
 
 pub fn solve(filename: &'static str) -> SolutionPair {
     let symbols_positions = read_symbols(filename);
-    let number_positions = read_numbers(filename);
+    let number_positions: Vec<Number> = read_numbers(filename);
 
     let sol1: u64 = part_one(&number_positions, &symbols_positions);
     let sol2: u64 = part_two(&number_positions, &symbols_positions);
