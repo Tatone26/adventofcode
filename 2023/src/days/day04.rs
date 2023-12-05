@@ -11,7 +11,7 @@ type Game = usize;
 /// Again, all the difficulty is in the parsing, but very proud of this one.
 fn read_games(buf: &str) -> Vec<Game> {
     buf.lines()
-        .map(|s| {
+        .filter_map(|s| {
             s.split(':')
                 .last()
                 .expect("Input file not corresponding to day4.")
@@ -22,10 +22,9 @@ fn read_games(buf: &str) -> Vec<Game> {
                         .collect::<Vec<u8>>()
                 })
                 .collect_tuple()
-                .and_then(|(win, car)| Some(win.iter().filter(|i| car.contains(*i)).count()))
+                .map(|(win, car)| win.iter().filter(|i| car.contains(*i)).count())
         })
         // With all that, I ignore every line not well-formated (maybe)
-        .flatten()
         .collect()
 }
 
