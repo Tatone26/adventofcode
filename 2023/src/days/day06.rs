@@ -1,3 +1,4 @@
+use core::panic;
 use std::{fs::File, io::Read};
 
 use itertools::Itertools;
@@ -5,66 +6,69 @@ use itertools::Itertools;
 use crate::{Solution, SolutionPair};
 
 ///////////////////////////////////////////////////////////////////////////////
-/// Easy day again. Wtf. Not my proudest of algos, but hey it works.
+/// Easy day again. Wtf. Did it by bruteforcing first, then realised later in the day that it's quadratic.
+/// Just had to get a pen and paper to get the right equation.
+/// Instant execution, slowed by IO.
+//////////////////////////////////////////////////////////////////////////////
 
-fn read_input(buf: &str) -> Vec<(u64, u64)> {
+/// A race is a couple (time, distance) -> we are looking for the number of ways we can beat that distance in this amount of time.
+type Race = (u64, u64);
+
+fn input_part_one(buf: &str) -> Vec<Race> {
     let mut it = buf.lines();
     it.next()
-        .unwrap()
+        .expect("File probably empty !")
         .split_ascii_whitespace()
-        .zip(it.next().unwrap().split_ascii_whitespace())
+        .zip(
+            it.next()
+                .expect("File probably only one line long !")
+                .split_ascii_whitespace(),
+        )
         .skip(1)
-        .map(|(x, y)| (x.parse().unwrap(), y.parse().unwrap()))
+        .filter_map(|(x, y)| match (x.parse(), y.parse()) {
+            // Just some safety, which is funny when I use unwrap two lines higher.
+            (Ok(x2), Ok(y2)) => Some((x2, y2)),
+            (_, _) => None,
+        })
         .collect_vec()
 }
 
-fn do_win(i: &u64, time: &u64, distance: &u64) -> bool {
-    i * (time - i) > *distance
-}
-
-// Considering that everything before start (1..start) is not a victory.
-fn ways_to_win(start: u64, (time, distance): &(u64, u64)) -> Option<u64> {
-    // There must be a result in this range (1..time/2) or the game is impossible to beat.
-    (start..(*time / 2))
-        .find(|i| do_win(i, time, distance))
-        .map(|x| time - 1 - ((x - 1) * 2))
-}
-
-/// Not 100% sure of this algo but fast and working for my input, so I guess it's good.
-fn smart_ways_to_win((time, distance): &(u64, u64)) -> Option<u64> {
-    let mut i = time / 4;
-    // some kind of "binary search"
-    while do_win(&i, time, distance) {
-        i -= i / 2;
-    }
-    // fast advance
-    let up = 1000;
-    while !do_win(&(i + up), time, distance) {
-        i += up;
-    }
-    // finishing slowly
-    ways_to_win(i, &(*time, *distance))
-    // = fast way to find answer !
-}
-
-fn input_part_two(input: &[(u64, u64)]) -> (u64, u64) {
-    input
-        .iter()
-        .map(|(x, y)| (x.to_string(), y.to_string()))
-        .reduce(|(acc_time, acc_dist), (elem_time, elem_dist)| {
-            // concat via string (bad)
-            (acc_time + &elem_time, acc_dist + &elem_dist)
+fn input_part_two(buf: &str) -> Race {
+    if let Some((Ok(x), Ok(y))) = buf
+        .lines()
+        .map(|line| {
+            line.chars()
+                .filter(|c| c.is_ascii_digit())
+                .collect::<String>()
+                .parse()
         })
-        .map(|(x, y)| (x.parse().unwrap(), y.parse().unwrap()))
-        .unwrap()
+        .collect_tuple()
+    {
+        (x, y)
+    } else {
+        panic!("Error reading file for part two !!");
+    }
 }
 
-fn part_two(input: &(u64, u64)) -> u64 {
-    smart_ways_to_win(input).unwrap()
+fn dist_between_roots((time, distance): &Race) -> Option<u64> {
+    // Not bothering to show the entire equation here, but really it's just a matter of f(x) = x * (t - x).
+    let sqrt_delta: f64 = ((time * time) as f64 - 4.0 * (*distance + 1) as f64).sqrt();
+    if sqrt_delta.is_nan() {
+        println!("It seems like one the input ({time}, {distance}) can't be won...");
+        None
+    } else {
+        let x1 = ((*time as f64 - sqrt_delta) / 2.0).ceil();
+        let x2 = ((*time as f64 + sqrt_delta) / 2.0).floor();
+        Some((x2 - x1) as u64 + 1)
+    }
 }
 
-fn part_one(input: &[(u64, u64)]) -> u64 {
-    input.iter().filter_map(|x| ways_to_win(1, x)).product()
+fn part_one(input: &[Race]) -> u64 {
+    input.iter().filter_map(dist_between_roots).product()
+}
+
+fn part_two(input: &Race) -> u64 {
+    dist_between_roots(input).unwrap()
 }
 
 pub fn solve(filename: &'static str) -> SolutionPair {
@@ -74,12 +78,10 @@ pub fn solve(filename: &'static str) -> SolutionPair {
         .read_to_string(&mut buffer)
         .unwrap_or_else(|_| panic!("Error reading {filename} as file."));
 
-    let input = read_input(&buffer);
+    let input = input_part_one(&buffer);
     let sol1: u64 = part_one(&input);
-    //let sol1 = 0;
-    let input_2 = input_part_two(&input);
+    let input_2 = input_part_two(&buffer);
     let sol2: u64 = part_two(&input_2);
-    //let sol2 = 0;
     (Solution::from(sol1), Solution::from(sol2))
 }
 
