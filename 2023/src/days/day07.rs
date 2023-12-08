@@ -2,6 +2,8 @@ use std::fs::{self};
 
 use crate::{Solution, SolutionPair};
 
+use itertools::Itertools;
+
 ///////////////////////////////////////////////////////////////////////////////
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
@@ -73,20 +75,19 @@ fn get_hand(hand: &str, joker: bool) -> NewHandType {
 fn get_input(filename: &str, joker: bool) -> Vec<NewHand> {
     let buffer: String = fs::read_to_string(filename).unwrap_or_default();
 
-    let mut r = Vec::new();
     buffer
         .lines()
         .filter(|line| !line.is_empty())
-        .for_each(|line| {
+        .map(|line| {
             let mut it = line.split(' ');
             let cards_array = it.next().unwrap();
             let bid_number = it.next().unwrap().parse().unwrap();
-            r.push(NewHand {
+            NewHand {
                 hand_type: get_hand(cards_array, joker),
                 bid: bid_number,
-            })
-        });
-    r
+            }
+        })
+        .collect_vec()
 }
 
 pub fn solve(filename: &'static str) -> SolutionPair {

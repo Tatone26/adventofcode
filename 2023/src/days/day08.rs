@@ -1,11 +1,13 @@
 use std::fs::{self};
 
 use num::Integer;
+use rayon::prelude::*;
 use rustc_hash::FxHashMap;
 
 use crate::{Solution, SolutionPair};
 
 ///////////////////////////////////////////////////////////////////////////////
+/// Already had to use rayon to get a really good time. Yay.
 
 type Label = [u8; 3];
 type MyMap = FxHashMap<Label, (Label, Label)>;
@@ -19,11 +21,14 @@ fn get_input(buf: &str) -> (String, MyMap) {
             let mut it = line
                 .split(|c: char| !c.is_digit(36))
                 .filter(|s| !s.is_empty());
+            let key = it.next().unwrap();
+            let v1 = it.next().unwrap();
+            let v2 = it.next().unwrap();
             (
-                it.next().unwrap().as_bytes().try_into().unwrap(),
+                key.as_bytes().try_into().unwrap(),
                 (
-                    it.next().unwrap().as_bytes().try_into().unwrap(),
-                    it.next().unwrap().as_bytes().try_into().unwrap(),
+                    v1.as_bytes().try_into().unwrap(),
+                    v2.as_bytes().try_into().unwrap(),
                 ),
             )
         })
@@ -58,11 +63,10 @@ fn find_end(input: &str, nodes: &MyMap, start: &Label, end: fn(&[u8]) -> bool) -
 /// yeah. only works because of the good cycles in the inputs. Would explode otherwise.
 fn part_two(input: &str, nodes: &MyMap) -> u64 {
     nodes
-        .iter()
+        .par_iter()
         .filter(|(k, _)| matches!(**k, [_, _, b'A']))
         .map(|(s, _)| find_end(input, nodes, s, |node: &[u8]| node[2..3] == [b'Z']))
-        .reduce(|acc, elem| acc.lcm(&elem))
-        .unwrap_or(0)
+        .reduce(|| 1, |acc, elem| acc.lcm(&elem))
 }
 
 pub fn solve(filename: &'static str) -> SolutionPair {

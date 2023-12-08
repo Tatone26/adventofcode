@@ -1,4 +1,5 @@
 use crate::{Solution, SolutionPair};
+use rayon::prelude::*;
 use std::fs::{self};
 ///////////////////////////////////////////////////////////////////////////////
 /// there is a lot of things I could do to speed this up, like checking on bytes instead of strings,
@@ -41,7 +42,7 @@ fn find_first_number(line: &str, reverse: bool) -> u32 {
 }
 
 fn part_one(s: &str) -> u32 {
-    s.lines()
+    s.par_lines()
         .map(|line| {
             let mut values = line.chars().filter_map(|c| c.to_digit(10));
             match values.next() {
@@ -61,7 +62,7 @@ fn part_one(s: &str) -> u32 {
 }
 
 fn part_two(s: &str) -> u32 {
-    s.lines()
+    s.par_lines()
         .map(|line| {
             find_first_number(line, false) * 10
                 + find_first_number(line.chars().rev().collect::<String>().as_str(), true)

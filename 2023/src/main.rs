@@ -14,46 +14,53 @@ use std::time::Instant;
 
 pub type SolutionPair = (Solution, Solution);
 
+/// TODO AT THE END : This simple timing works, but it would be better to get true results with Criterion or other benchmarking tools for real analysis.
+/// Right now : a lot of time on the first days comes from IO, which is measured as part of the function.
+/// I could change that by creating the String in the main, considering that all days read the file only once, and it will probably yield better results.
+
+/// To run : cargo run \[--release] \[1 .. 25 separated by spaces] or \[all]  + optional : \[mean (measure 100 executions of the given days)]
 fn main() {
     let args: Vec<String> = env::args().collect();
     if args.len() < 2 {
         panic!("\x1b[1;36mPlease provide the day(s) to run as a command-line argument.\x1b[0m");
     }
 
+    let mut mean: bool = false;
+
     let days: Vec<u8> = {
-        if args.len() == 2 && args[1] == "all" {
+        if args.contains(&"-mean".to_string()) {
+            mean = true;
+        }
+        if args.contains(&"all".to_string()) {
             (1..26).map(|x| x.to_string()).collect() // All 25 days !
         } else {
             args[1..].to_vec() // Given arguments
         }
     }
     .iter()
+    .filter(|s| !s.contains("-mean"))
     .map(|x| {
         x.parse()
-            .unwrap_or_else(|v| panic!("Not a valid day: {}", v))
+            .unwrap_or_else(|_| panic!("Not a valid day : {x}"))
     })
     .collect();
 
     let mut runtime = 0.0;
     let mut last_word: String = String::from_str("no result").unwrap();
 
-    println!("\x1b[5S"); // Like \n\n\n\n\n
-    for _ in 0..1 {
-        for day in &days {
-            let (func, filename) = get_day_solver(*day);
+    println!("\x1b[5S"); // == \n\n\n\n\n
+    for day in &days {
+        let (func, filename) = get_day_solver(*day);
 
-            let time = Instant::now();
-            let (p1, p2) = func(filename);
-            let elapsed_ms = time.elapsed().as_nanos() as f64 / 1_000_000.0;
+        let (elapsed_ms, (p1, p2)) = execute_and_time(func, filename, if !mean { 1 } else { 100 });
 
-            println!("\n\x1b[1m=== Day {:02} ===\x1b[0m", day);
-            println!("  · Part 1: \x1b[3;32m{}\x1b[0m", p1);
-            println!("  · Part 2: \x1b[3;32m{}\x1b[0m", p2);
-            println!("\x1b[2;3m  · Elapsed: {:.4} ms\x1b[0m", elapsed_ms);
+        println!("\n\x1b[1m=== Day {:02} ===\x1b[0m", day);
+        println!("  · Part 1: \x1b[3;32m{}\x1b[0m", p1);
+        println!("  · Part 2: \x1b[3;32m{}\x1b[0m", p2);
+        println!("\x1b[2;3m  · Elapsed: {:.4} ms\x1b[0m", elapsed_ms);
 
-            runtime += elapsed_ms;
-            last_word = p2.to_string();
-        }
+        runtime += elapsed_ms;
+        last_word = p2.to_string();
     }
     println!("Total runtime: \x1b[36m{:.4} ms\x1b[m", runtime);
 
@@ -119,4 +126,23 @@ fn copy_to_clipboard(word: String) {
         .wait_with_output()
         .expect("\x1b[31mFailed to copy to clipboard.\x1b[0m");
     println!("\x1b[2;3mResult copied to clipboard !\x1b[m");
+}
+
+fn execute_and_time(
+    func: fn(&'static str) -> SolutionPair,
+    filename: &'static str,
+    i: u32,
+) -> (f64, SolutionPair) {
+    let mut mean: f64 = 0_f64;
+    let mut solutions: Option<SolutionPair> = None;
+    for _ in 0..i {
+        let time = Instant::now();
+        let (p1, p2) = func(filename);
+        let elapsed_ms = time.elapsed().as_nanos() as f64 / 1_000_000.0;
+        if solutions.is_none() {
+            solutions = Some((p1, p2));
+        }
+        mean = (mean * (i as f64) + elapsed_ms) / (i as f64 + 1_f64);
+    }
+    (mean, solutions.unwrap())
 }
