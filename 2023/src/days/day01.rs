@@ -1,11 +1,11 @@
 use crate::{Solution, SolutionPair};
-use std::fs::File;
-use std::io::Read;
+use std::fs::{self};
 ///////////////////////////////////////////////////////////////////////////////
 /// there is a lot of things I could do to speed this up, like checking on bytes instead of strings,
 /// maybe a little recursion... But my timing are already +- 50% when I run, so it may just be some micro-optimisation.
 /// Pretty bad day1, but I have never really done any hard programming in Rust..
 /// I haven't had any problem with the overlapping numbers like some people, but blocked on the repeted text number (like sevenghj1fd5oneseven)
+/// It's the slowest day of the first week !! Whyyyy
 
 /// returns first number found in string
 fn find_first_number(line: &str, reverse: bool) -> u32 {
@@ -71,11 +71,8 @@ fn part_two(s: &str) -> u32 {
 
 pub fn solve(filename: &'static str) -> SolutionPair {
     // Your solution here...
-    let mut buffer: String = String::new();
-    File::open(filename)
-        .unwrap()
-        .read_to_string(&mut buffer)
-        .unwrap();
+    let buffer: String = fs::read_to_string(filename).unwrap_or_default();
+
     let sol1 = part_one(&buffer);
     let sol2 = part_two(&buffer);
     (Solution::from(sol1), Solution::from(sol2))

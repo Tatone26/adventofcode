@@ -1,4 +1,4 @@
-use std::{fs::File, io::Read};
+use std::fs::{self};
 
 use itertools::Itertools;
 
@@ -153,11 +153,7 @@ fn part_two(seeds: &[(u64, u64)], maps: &[Map]) -> u64 {
 }
 
 pub fn solve(filename: &'static str) -> SolutionPair {
-    let mut buffer: String = String::new();
-    File::open(filename)
-        .unwrap_or_else(|_| panic!("No {filename} file."))
-        .read_to_string(&mut buffer)
-        .unwrap_or_else(|_| panic!("Error reading {filename} as file."));
+    let buffer: String = fs::read_to_string(filename).unwrap_or_default();
 
     let (seeds, maps) = read_input(&buffer);
     let seeds_ranges = read_ranges(&seeds);

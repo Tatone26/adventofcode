@@ -1,4 +1,7 @@
-use std::{cmp::max, fs::File, io::Read};
+use std::{
+    cmp::max,
+    fs::{self},
+};
 
 use text_io::read;
 
@@ -31,11 +34,7 @@ impl Balls {
 
 /// Most of the difficulties come from here, but it's not too bad for now.
 fn read_input(filename: &'static str) -> Vec<Vec<Balls>> {
-    let mut buffer: String = String::new();
-    File::open(filename)
-        .unwrap()
-        .read_to_string(&mut buffer)
-        .unwrap();
+    let buffer: String = fs::read_to_string(filename).unwrap_or_default();
     let mut res = vec![Vec::<Balls>::new(); buffer.lines().count()];
     for (i, s) in buffer.lines().enumerate() {
         s.split(": ")

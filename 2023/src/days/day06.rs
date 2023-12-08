@@ -1,5 +1,5 @@
 use core::panic;
-use std::{fs::File, io::Read};
+use std::fs::{self};
 
 use itertools::Itertools;
 
@@ -72,11 +72,7 @@ fn part_two(input: &Race) -> u64 {
 }
 
 pub fn solve(filename: &'static str) -> SolutionPair {
-    let mut buffer: String = String::new();
-    File::open(filename)
-        .unwrap_or_else(|_| panic!("No {filename} file."))
-        .read_to_string(&mut buffer)
-        .unwrap_or_else(|_| panic!("Error reading {filename} as file."));
+    let buffer: String = fs::read_to_string(filename).unwrap_or_default();
 
     let input = input_part_one(&buffer);
     let sol1: u64 = part_one(&input);

@@ -1,7 +1,7 @@
 use itertools::Itertools;
 
 use crate::{Solution, SolutionPair};
-use std::{fs::File, io::Read};
+use std::fs::{self};
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -46,11 +46,7 @@ fn part_two(games: &[Game]) -> u64 {
 }
 
 pub fn solve(filename: &'static str) -> SolutionPair {
-    let mut buffer: String = String::new();
-    File::open(filename)
-        .unwrap()
-        .read_to_string(&mut buffer)
-        .expect("Error reading file {filename}");
+    let buffer: String = fs::read_to_string(filename).unwrap_or_default();
 
     let games = read_games(&buffer);
 

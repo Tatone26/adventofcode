@@ -1,4 +1,4 @@
-use std::{fs::File, io::Read};
+use std::fs::{self};
 
 use crate::{Solution, SolutionPair};
 
@@ -71,11 +71,7 @@ fn get_hand(hand: &str, joker: bool) -> NewHandType {
 }
 
 fn get_input(filename: &str, joker: bool) -> Vec<NewHand> {
-    let mut buffer: String = String::new();
-    File::open(filename)
-        .unwrap_or_else(|_| panic!("No {filename} file."))
-        .read_to_string(&mut buffer)
-        .unwrap_or_else(|_| panic!("Error reading {filename} as file."));
+    let buffer: String = fs::read_to_string(filename).unwrap_or_default();
 
     let mut r = Vec::new();
     buffer
@@ -99,7 +95,7 @@ pub fn solve(filename: &'static str) -> SolutionPair {
     let sol1: u64 = input
         .iter()
         .enumerate()
-        .map(|(i, hand)| (i + 1) as u64 * hand.bid as u64)
+        .map(|(i, hand)| (i + 1) as u64 * hand.bid)
         .sum();
 
     let mut input_2 = get_input(filename, true);
@@ -107,7 +103,7 @@ pub fn solve(filename: &'static str) -> SolutionPair {
     let sol2: u64 = input_2
         .iter()
         .enumerate()
-        .map(|(i, hand)| (i + 1) as u64 * hand.bid as u64)
+        .map(|(i, hand)| (i + 1) as u64 * hand.bid)
         .sum();
 
     (Solution::from(sol1), Solution::from(sol2))

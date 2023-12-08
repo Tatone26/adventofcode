@@ -1,7 +1,7 @@
 use crate::{Solution, SolutionPair};
-use ahash::AHashMap;
 use itertools::Itertools;
-use std::{fs::File, io::Read};
+use rustc_hash::FxHashMap;
+use std::fs::{self};
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Let's squeeze more speed out of my probably-very-bad algorithm, with the help of the legendary hashmaps.
@@ -11,7 +11,7 @@ type Point = (usize, usize);
 type Number = (Point, Point, u32);
 
 /// Day3, and already using HashMaps to get under 10 ms (in Debug mode of course). What is going on ?
-fn read_symbols(buffer: &str) -> AHashMap<Point, char> {
+fn read_symbols(buffer: &str) -> FxHashMap<Point, char> {
     buffer
         .lines()
         .enumerate()
@@ -56,7 +56,7 @@ fn around_the_number(number: &Number) -> impl Iterator<Item = (usize, usize)> {
 }
 
 /// Worst case : calls symbols.contains_key() (number_size * 3) + 6 -> 15 times for a 3-digits number, which is not that bad
-fn is_close_to_symbol(number: &Number, symbols: &AHashMap<Point, char>) -> Option<u64> {
+fn is_close_to_symbol(number: &Number, symbols: &FxHashMap<Point, char>) -> Option<u64> {
     around_the_number(number)
         .any(|(x, y)| symbols.contains_key(&(x, y)))
         .then_some(number.2 as u64)
@@ -64,8 +64,8 @@ fn is_close_to_symbol(number: &Number, symbols: &AHashMap<Point, char>) -> Optio
 
 /// Returns all potentials gears (no matter how many numbers are around), with a single iteration over the numbers.
 /// May not be really nice-looking, but efficient and working
-fn get_gears(numbers: &[Number], symbols: &AHashMap<Point, char>) -> AHashMap<Point, (u32, u8)> {
-    let mut res: AHashMap<Point, (u32, u8)> = AHashMap::new();
+fn get_gears(numbers: &[Number], symbols: &FxHashMap<Point, char>) -> FxHashMap<Point, (u32, u8)> {
+    let mut res: FxHashMap<Point, (u32, u8)> = FxHashMap::<Point, (u32, u8)>::default();
     for nb in numbers.iter() {
         if let Some((x, y)) = {
             around_the_number(nb).find_map(|(x1, y1)| match symbols.get(&(x1, y1)) {
@@ -86,14 +86,14 @@ fn get_gears(numbers: &[Number], symbols: &AHashMap<Point, char>) -> AHashMap<Po
     res
 }
 
-fn part_one(numbers: &[Number], symbols: &AHashMap<Point, char>) -> u64 {
+fn part_one(numbers: &[Number], symbols: &FxHashMap<Point, char>) -> u64 {
     numbers
         .iter()
         .filter_map(|x: &Number| is_close_to_symbol(x, symbols))
         .sum()
 }
 
-fn part_two(numbers: &[Number], symbols: &AHashMap<Point, char>) -> u64 {
+fn part_two(numbers: &[Number], symbols: &FxHashMap<Point, char>) -> u64 {
     get_gears(numbers, symbols)
         .iter()
         .filter_map(|(_, (v, nb))| if *nb == 2 { Some(*v as u64) } else { None })
@@ -101,11 +101,7 @@ fn part_two(numbers: &[Number], symbols: &AHashMap<Point, char>) -> u64 {
 }
 
 pub fn solve(filename: &'static str) -> SolutionPair {
-    let mut buffer: String = String::new();
-    File::open(filename)
-        .unwrap()
-        .read_to_string(&mut buffer)
-        .expect("Error reading file {filename}");
+    let buffer: String = fs::read_to_string(filename).unwrap_or_default();
 
     let symbols_positions = read_symbols(&buffer);
     let number_positions: Vec<Number> = read_numbers(&buffer);
