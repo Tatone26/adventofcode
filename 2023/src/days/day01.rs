@@ -77,7 +77,9 @@ pub fn solve(buffer: &str) -> SolutionPair {
 
 #[test]
 fn test() {
-    let (Solution::U32(s1), Solution::U32(s2)) = solve("input/test_day1.txt") else {
+    let (Solution::U32(s1), Solution::U32(s2)) =
+        solve(&std::fs::read_to_string("input/test_day1.txt").unwrap())
+    else {
         panic!("\x1b[1;31mMauvais type de solutions pour le test, mettez le à jour !\x1b[m")
     };
     println!("{}", s1);

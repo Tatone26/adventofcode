@@ -100,8 +100,8 @@ fn part_two(numbers: &[Number], symbols: &FxHashMap<Point, char>) -> u64 {
 }
 
 pub fn solve(buffer: &str) -> SolutionPair {
-    let symbols_positions = read_symbols(&buffer);
-    let number_positions: Vec<Number> = read_numbers(&buffer);
+    let symbols_positions = read_symbols(buffer);
+    let number_positions: Vec<Number> = read_numbers(buffer);
 
     let sol1: u64 = part_one(&number_positions, &symbols_positions);
     let sol2: u64 = part_two(&number_positions, &symbols_positions);
@@ -111,7 +111,9 @@ pub fn solve(buffer: &str) -> SolutionPair {
 
 #[test]
 fn test() {
-    let (Solution::U64(s1), Solution::U64(s2)) = solve("input/test_day3.txt") else {
+    let (Solution::U64(s1), Solution::U64(s2)) =
+        solve(&std::fs::read_to_string("input/test_day3.txt").unwrap())
+    else {
         panic!("Mauvais type de solutions pour le test.")
     };
     assert_eq!(s1, 4361);

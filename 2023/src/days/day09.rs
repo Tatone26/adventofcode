@@ -14,7 +14,8 @@ fn get_input(buf: &str) -> Vec<Vec<i64>> {
         .collect_vec()
 }
 
-fn aux(input: &[i64]) -> Vec<i64> {
+// I don't like allocating a new one everytime, it's probably very slow.
+fn next_step(input: &[i64]) -> Vec<i64> {
     input
         .iter()
         .tuple_windows()
@@ -23,13 +24,12 @@ fn aux(input: &[i64]) -> Vec<i64> {
 }
 
 fn answer(input: &[i64]) -> i64 {
+    let last = *input.last().unwrap_or(&0);
     if !input.iter().all_equal() {
-        let last = *input.last().unwrap_or(&0);
-        let new = aux(input);
-        let new_value = answer(&new);
-        last + new_value
+        // We should stop when everything = 0 but one step before that, all numbers or equals (deriv of constant).
+        last + answer(&next_step(input))
     } else {
-        *input.last().unwrap_or(&0)
+        last
     }
 }
 
@@ -48,7 +48,9 @@ pub fn solve(buffer: &str) -> SolutionPair {
 
 #[test]
 fn test() {
-    let (Solution::U64(s1), Solution::U64(s2)) = solve("input/test_day9.txt") else {
+    let (Solution::U64(s1), Solution::U64(s2)) =
+        solve(&std::fs::read_to_string("input/test_day9.txt").unwrap())
+    else {
         panic!("Mauvais type de solutions pour le test.")
     };
     assert_eq!(s1, 114);

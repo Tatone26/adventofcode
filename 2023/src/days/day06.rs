@@ -80,7 +80,9 @@ pub fn solve(buffer: &str) -> SolutionPair {
 
 #[test]
 fn test() {
-    let (Solution::U64(s1), Solution::U64(s2)) = solve("input/test_day6.txt") else {
+    let (Solution::U64(s1), Solution::U64(s2)) =
+        solve(&std::fs::read_to_string("input/test_day6.txt").unwrap())
+    else {
         panic!("Mauvais type de solutions pour le test.")
     };
     assert_eq!(s1, 288);
