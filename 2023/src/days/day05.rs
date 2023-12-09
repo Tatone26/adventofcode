@@ -1,5 +1,3 @@
-use std::fs::{self};
-
 use itertools::Itertools;
 
 use crate::{Solution, SolutionPair};
@@ -152,10 +150,8 @@ fn part_two(seeds: &[(u64, u64)], maps: &[Map]) -> u64 {
         .unwrap()
 }
 
-pub fn solve(filename: &'static str) -> SolutionPair {
-    let buffer: String = fs::read_to_string(filename).unwrap_or_default();
-
-    let (seeds, maps) = read_input(&buffer);
+pub fn solve(buffer: &str) -> SolutionPair {
+    let (seeds, maps) = read_input(buffer);
     let seeds_ranges = read_ranges(&seeds);
     let sol1: u64 = part_one(&seeds, &maps);
     let sol2: u64 = part_two(&seeds_ranges, &maps);

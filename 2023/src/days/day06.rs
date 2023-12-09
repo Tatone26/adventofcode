@@ -1,5 +1,4 @@
 use core::panic;
-use std::fs::{self};
 
 use itertools::Itertools;
 
@@ -71,12 +70,10 @@ fn part_two(input: &Race) -> u64 {
     dist_between_roots(input).unwrap()
 }
 
-pub fn solve(filename: &'static str) -> SolutionPair {
-    let buffer: String = fs::read_to_string(filename).unwrap_or_default();
-
-    let input = input_part_one(&buffer);
+pub fn solve(buffer: &str) -> SolutionPair {
+    let input = input_part_one(buffer);
     let sol1: u64 = part_one(&input);
-    let input_2 = input_part_two(&buffer);
+    let input_2 = input_part_two(buffer);
     let sol2: u64 = part_two(&input_2);
     (Solution::from(sol1), Solution::from(sol2))
 }

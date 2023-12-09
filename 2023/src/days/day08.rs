@@ -1,7 +1,5 @@
-use std::fs::{self};
-
 use num::Integer;
-use rayon::prelude::*;
+use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use rustc_hash::FxHashMap;
 
 use crate::{Solution, SolutionPair};
@@ -69,9 +67,7 @@ fn part_two(input: &str, nodes: &MyMap) -> u64 {
         .reduce(|| 1, |acc, elem| acc.lcm(&elem))
 }
 
-pub fn solve(filename: &'static str) -> SolutionPair {
-    let buffer: String = fs::read_to_string(filename).unwrap_or_default();
-
+pub fn solve(buffer: &str) -> SolutionPair {
     let (input, nodes) = get_input(&buffer);
     let sol1: u64 = find_end(&input, &nodes, &[b'A', b'A', b'A'], |node: &[u8]| {
         node[0..3] == [b'Z', b'Z', b'Z']

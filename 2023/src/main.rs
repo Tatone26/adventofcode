@@ -6,19 +6,19 @@ use days::{
     day14, day15, day16, day17, day18, day19, day20, day21, day22, day23, day24, day25,
 };
 use etc::solution::Solution;
-use std::env;
 use std::io::Write;
 use std::process::{Command, Stdio};
 use std::str::FromStr;
 use std::time::Instant;
+use std::{env, fs};
 
 pub type SolutionPair = (Solution, Solution);
 
 /// TODO AT THE END : This simple timing works, but it would be better to get true results with Criterion or other benchmarking tools for real analysis.
-/// Right now : a lot of time on the first days comes from IO, which is measured as part of the function.
-/// I could change that by creating the String in the main, considering that all days read the file only once, and it will probably yield better results.
 
 /// To run : cargo run \[--release] \[1 .. 25 separated by spaces] or \[all]  + optional : \[mean (measure 100 executions of the given days)]
+/// The time is the rough measurement of the day execution, without IO, but with parsing since it's part of the difficulty.
+/// -> I call the day function with a String that contains the file contents, instead of a Filename.
 fn main() {
     let args: Vec<String> = env::args().collect();
     if args.len() < 2 {
@@ -70,7 +70,7 @@ fn main() {
 /// Maps the number to the corresponding solve function and input file name.
 ///
 /// Panics if given a number not between 1 and 25.
-fn get_day_solver(day: u8) -> (fn(&'static str) -> SolutionPair, &'static str) {
+fn get_day_solver(day: u8) -> (fn(&str) -> SolutionPair, &'static str) {
     match day {
         1 => (day01::solve, "input/day1.txt"),
         2 => (day02::solve, "input/day2.txt"),
@@ -129,20 +129,21 @@ fn copy_to_clipboard(word: String) {
 }
 
 fn execute_and_time(
-    func: fn(&'static str) -> SolutionPair,
+    func: fn(&str) -> SolutionPair,
     filename: &'static str,
     i: u32,
 ) -> (f64, SolutionPair) {
-    let mut mean: f64 = 0_f64;
+    let mut mean_time: f64 = 0_f64;
     let mut solutions: Option<SolutionPair> = None;
+    let buffer: String = fs::read_to_string(filename).unwrap_or_default();
     for _ in 0..i {
         let time = Instant::now();
-        let (p1, p2) = func(filename);
+        let (p1, p2) = func(&buffer);
         let elapsed_ms = time.elapsed().as_nanos() as f64 / 1_000_000.0;
         if solutions.is_none() {
             solutions = Some((p1, p2));
         }
-        mean = (mean * (i as f64) + elapsed_ms) / (i as f64 + 1_f64);
+        mean_time = (mean_time * (i as f64) + elapsed_ms) / (i as f64 + 1_f64);
     }
-    (mean, solutions.unwrap())
+    (mean_time, solutions.unwrap())
 }

@@ -1,7 +1,6 @@
 use itertools::Itertools;
 
 use crate::{Solution, SolutionPair};
-use std::fs::{self};
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -45,10 +44,8 @@ fn part_two(games: &[Game]) -> u64 {
     instances.iter().sum()
 }
 
-pub fn solve(filename: &'static str) -> SolutionPair {
-    let buffer: String = fs::read_to_string(filename).unwrap_or_default();
-
-    let games = read_games(&buffer);
+pub fn solve(buffer: &str) -> SolutionPair {
+    let games = read_games(buffer);
 
     let sol1: u64 = games.iter().map(score_game).sum();
     let sol2: u64 = part_two(&games);

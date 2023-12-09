@@ -1,6 +1,5 @@
 use crate::{Solution, SolutionPair};
 use rayon::prelude::*;
-use std::fs::{self};
 ///////////////////////////////////////////////////////////////////////////////
 /// there is a lot of things I could do to speed this up, like checking on bytes instead of strings,
 /// maybe a little recursion... But my timing are already +- 50% when I run, so it may just be some micro-optimisation.
@@ -70,12 +69,9 @@ fn part_two(s: &str) -> u32 {
         .sum()
 }
 
-pub fn solve(filename: &'static str) -> SolutionPair {
-    // Your solution here...
-    let buffer: String = fs::read_to_string(filename).unwrap_or_default();
-
-    let sol1 = part_one(&buffer);
-    let sol2 = part_two(&buffer);
+pub fn solve(buffer: &str) -> SolutionPair {
+    let sol1 = part_one(buffer);
+    let sol2 = part_two(buffer);
     (Solution::from(sol1), Solution::from(sol2))
 }
 

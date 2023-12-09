@@ -1,5 +1,3 @@
-use std::fs::{self};
-
 use crate::{Solution, SolutionPair};
 
 use itertools::Itertools;
@@ -72,9 +70,7 @@ fn get_hand(hand: &str, joker: bool) -> NewHandType {
     }
 }
 
-fn get_input(filename: &str, joker: bool) -> Vec<NewHand> {
-    let buffer: String = fs::read_to_string(filename).unwrap_or_default();
-
+fn get_input(buffer: &str, joker: bool) -> Vec<NewHand> {
     buffer
         .lines()
         .filter(|line| !line.is_empty())
@@ -90,8 +86,8 @@ fn get_input(filename: &str, joker: bool) -> Vec<NewHand> {
         .collect_vec()
 }
 
-pub fn solve(filename: &'static str) -> SolutionPair {
-    let mut input = get_input(filename, false);
+pub fn solve(buffer: &str) -> SolutionPair {
+    let mut input = get_input(buffer, false);
     input.sort();
     let sol1: u64 = input
         .iter()
@@ -99,7 +95,7 @@ pub fn solve(filename: &'static str) -> SolutionPair {
         .map(|(i, hand)| (i + 1) as u64 * hand.bid)
         .sum();
 
-    let mut input_2 = get_input(filename, true);
+    let mut input_2 = get_input(buffer, true);
     input_2.sort();
     let sol2: u64 = input_2
         .iter()

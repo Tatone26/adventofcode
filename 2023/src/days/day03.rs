@@ -1,7 +1,6 @@
 use crate::{Solution, SolutionPair};
 use itertools::Itertools;
 use rustc_hash::FxHashMap;
-use std::fs::{self};
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Let's squeeze more speed out of my probably-very-bad algorithm, with the help of the legendary hashmaps.
@@ -100,9 +99,7 @@ fn part_two(numbers: &[Number], symbols: &FxHashMap<Point, char>) -> u64 {
         .sum()
 }
 
-pub fn solve(filename: &'static str) -> SolutionPair {
-    let buffer: String = fs::read_to_string(filename).unwrap_or_default();
-
+pub fn solve(buffer: &str) -> SolutionPair {
     let symbols_positions = read_symbols(&buffer);
     let number_positions: Vec<Number> = read_numbers(&buffer);
 

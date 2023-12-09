@@ -1,7 +1,4 @@
-use std::{
-    cmp::max,
-    fs::{self},
-};
+use std::cmp::max;
 
 use text_io::read;
 
@@ -33,8 +30,7 @@ impl Balls {
 }
 
 /// Most of the difficulties come from here, but it's not too bad for now.
-fn read_input(filename: &'static str) -> Vec<Vec<Balls>> {
-    let buffer: String = fs::read_to_string(filename).unwrap_or_default();
+fn read_input(buffer: &str) -> Vec<Vec<Balls>> {
     let mut res = vec![Vec::<Balls>::new(); buffer.lines().count()];
     for (i, s) in buffer.lines().enumerate() {
         s.split(": ")
@@ -69,8 +65,8 @@ fn read_input(filename: &'static str) -> Vec<Vec<Balls>> {
     res
 }
 
-pub fn solve(filename: &'static str) -> SolutionPair {
-    let input = read_input(filename);
+pub fn solve(buffer: &str) -> SolutionPair {
+    let input = read_input(buffer);
 
     let max_cubes = Balls {
         // Part 1 limit
