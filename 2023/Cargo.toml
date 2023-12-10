@@ -12,3 +12,12 @@ num = "0.4.1"
 rustc-hash = "1.1.0"
 slotmap = "1.0.7"
 rayon = "1.8.0"
+
+[profile.dev]
+strip = false
+debug = true
+
+[profile.release]
+opt-level = 3
+lto = true
+strip = true

@@ -5,13 +5,13 @@ use itertools::Itertools;
 ///////////////////////////////////////////////////////////////////////////////
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
-struct NewHand {
-    hand_type: NewHandType,
+struct Hand {
+    hand_type: HandType,
     bid: u64,
 }
 
 #[derive(Debug, PartialEq, PartialOrd, Eq, Ord)]
-enum NewHandType {
+enum HandType {
     High(u32),
     OnePair(u32),
     TwoPairs(u32),
@@ -48,7 +48,7 @@ fn power_of_card(card: char, joker: char) -> u8 {
 /// My real solution would be to match all cases, not just (4 + max_count - unique_numbers) :
 /// match (max_count, unique_numbers) { (1, 5) => One, (5, 1) => Five, etc. }
 /// Seeing this solution really is impressive !
-fn get_hand(hand: &str, joker: bool) -> NewHandType {
+fn get_hand(hand: &str, joker: bool) -> HandType {
     let mut counter = [0; 14];
     let mut score = 0;
     for c in hand.chars() {
@@ -60,17 +60,18 @@ fn get_hand(hand: &str, joker: bool) -> NewHandType {
     let unique_numbers = count.iter().filter(|x| **x != 0).count();
     let max_count = count.iter().max().unwrap() + if joker { joker_count } else { 0 };
     match 4 + max_count - unique_numbers {
-        0 => NewHandType::High(score),
-        2 => NewHandType::OnePair(score),
-        3 => NewHandType::TwoPairs(score),
-        4 => NewHandType::Brelan(score),
-        5 => NewHandType::Full(score),
-        6 => NewHandType::Four(score),
-        _ => NewHandType::Five(score),
+        // Wow !
+        0 => HandType::High(score),
+        2 => HandType::OnePair(score),
+        3 => HandType::TwoPairs(score),
+        4 => HandType::Brelan(score),
+        5 => HandType::Full(score),
+        6 => HandType::Four(score),
+        _ => HandType::Five(score),
     }
 }
 
-fn get_input(buffer: &str, joker: bool) -> Vec<NewHand> {
+fn get_input(buffer: &str, joker: bool) -> Vec<Hand> {
     buffer
         .lines()
         .filter(|line| !line.is_empty())
@@ -78,7 +79,7 @@ fn get_input(buffer: &str, joker: bool) -> Vec<NewHand> {
             let mut it = line.split(' ');
             let cards_array = it.next().unwrap();
             let bid_number = it.next().unwrap().parse().unwrap();
-            NewHand {
+            Hand {
                 hand_type: get_hand(cards_array, joker),
                 bid: bid_number,
             }

@@ -46,6 +46,7 @@ fn read_input(buffer: &str) -> Vec<Vec<Balls>> {
                 };
                 c.split(", ").for_each(|word| match word.as_bytes() {
                     // For each balls (separated by , )
+                    // I think the read! macro may be slow...
                     [.., b'g', b'r', b'e', b'e', b'n'] => {
                         b.green = read!("{} green", word.bytes());
                     }
@@ -90,6 +91,7 @@ pub fn solve(buffer: &str) -> SolutionPair {
         .iter()
         .map(|game| {
             let res = game.iter().fold(
+                // Yes, it's like reduce, but reduce would make me need to copy every element.
                 Balls {
                     green: 0,
                     red: 0,

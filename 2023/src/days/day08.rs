@@ -1,3 +1,5 @@
+use std::fmt::Debug;
+
 use itertools::Itertools;
 use num::Integer;
 use rustc_hash::FxHashMap;
@@ -7,10 +9,11 @@ use crate::{Solution, SolutionPair};
 ///////////////////////////////////////////////////////////////////////////////
 /// Got around the need to call hashmap.get() by creating an array with all the nodes
 /// pointing to another position. So, instant .get() after spending some time creating this array.
-/// Still the slowest day so far, but I feel like I'm getting better in rust.
+/// The last big optimisation was switching from str.chars() with if c == 'L' to [Direction].iter() with match. Impressive change in speed !
 
 type Label = [u8; 3];
 type MyMap = Vec<Node>;
+type Input = Vec<Direction>;
 
 #[derive(Debug, Clone, Copy)]
 struct Node {
@@ -19,17 +22,36 @@ struct Node {
     right: usize,
 }
 
-fn get_input(buf: &str) -> (String, MyMap) {
+// Wow, using enum and matches is so much faster than if . == . {} else {}... I'm kinda shocked.
+// You learn everyday with AoC !!
+#[derive(Debug)]
+enum Direction {
+    Left,
+    Right,
+}
+
+fn get_input(buf: &str) -> (Input, MyMap) {
     let mut it = buf.lines();
 
-    let input = it.next().unwrap().to_string();
+    let input = it
+        .next()
+        .map(|s| {
+            s.chars().map(|c| {
+                if c == 'L' {
+                    Direction::Left
+                } else {
+                    Direction::Right
+                }
+            })
+        })
+        .expect("bad input")
+        .collect_vec();
 
     // Stores the map, with Nodes (each slot has a Node, with its label and the position in this same array of the next ones)
     let mut map: Vec<Option<Node>> = vec![None; it.clone().skip(1).count()];
-    // Stores the (future) indexes corresponding to the keys.
+    // Stores the (future) indexes corresponding to the keys, not the best but it's okay.
     let mut indexes_hash = FxHashMap::<Label, usize>::default();
 
-    // aaaaaaaaa it was not easy ! But after two days finally found the struct I wanted. But I'm certain there is a lot of room for improvement.
     it.skip(1).for_each(|line| {
         let ((key, k), (_, left), (_, right)): ((Label, usize), (Label, usize), (Label, usize)) =
             line.split([' ', ',', '(', ')', '='])
@@ -55,30 +77,23 @@ fn get_input(buf: &str) -> (String, MyMap) {
 }
 
 /// All the time lost is here (more or less), with the get(). I guess doing 200 000 gets ends up kinda slow, even with HashMaps.
-fn find_end(input: &str, nodes: &MyMap, start: &Node, end: fn(&Label) -> bool) -> u64 {
+fn find_end(input: &[Direction], nodes: &MyMap, start: &Node, end: fn(&Label) -> bool) -> u64 {
     let mut last_node: &Node = start;
-    input
-        .chars()
-        .cycle()
-        .enumerate()
-        .find(|(_, c)| {
-            if end(&last_node.label) {
-                true
-            } else {
-                if *c == 'L' {
-                    last_node = nodes.get(last_node.left).unwrap();
-                } else {
-                    last_node = nodes.get(last_node.right).unwrap();
-                };
-                false
-            }
-        })
-        .map(|(i, _)| i as u64)
-        .unwrap_or(0)
+    for (i, c) in input.iter().cycle().enumerate() {
+        if end(&last_node.label) {
+            return i as u64;
+        } else {
+            last_node = match c {
+                Direction::Left => &nodes[last_node.left],
+                Direction::Right => &nodes[last_node.right],
+            };
+        }
+    }
+    0
 }
 
 /// yeah. only works because of the good cycles in the inputs. Would explode otherwise.
-fn part_two(input: &str, nodes: &MyMap) -> u64 {
+fn part_two(input: &[Direction], nodes: &MyMap) -> u64 {
     nodes
         .iter()
         .filter(|k| matches!(k.label, [_, _, b'A']))
