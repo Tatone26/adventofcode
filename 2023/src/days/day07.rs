@@ -43,7 +43,7 @@ fn power_of_card(card: char, joker: char) -> u8 {
     }) - 1
 }
 
-/// Algorithm courtesy of u/Afkadrian, would not have think of it otherwise. https://github.com/adriandelgado/advent-of-code/blob/main/src/y2023/d07.rs
+/// Algorithm courtesy of u/Afkadrian, would not have think of it otherwise. [link](https://github.com/adriandelgado/advent-of-code/blob/main/src/y2023/d07.rs)
 /// Could not bear to do it any other way, this really is the best way for me, with my architecture.
 /// My real solution would be to match all cases, not just (4 + max_count - unique_numbers) :
 /// match (max_count, unique_numbers) { (1, 5) => One, (5, 1) => Five, etc. }

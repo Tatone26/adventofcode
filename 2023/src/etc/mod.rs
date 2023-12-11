@@ -5,4 +5,3 @@ pub mod solution;
 ///
 /// - [ ] Exemple function to do.
 pub mod my_utils;
-pub use solution::Solution;

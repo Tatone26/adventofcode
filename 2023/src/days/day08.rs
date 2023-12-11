@@ -22,7 +22,7 @@ struct Node {
     right: usize,
 }
 
-// Wow, using enum and matches is so much faster than if . == . {} else {}... I'm kinda shocked.
+// Wow, using a small enum and matches is so much faster than if . == . {} else {}... I'm kinda shocked, but shoudn't be since it's probably optimised to boolean.
 // You learn everyday with AoC !!
 #[derive(Debug)]
 enum Direction {
