@@ -36,9 +36,9 @@ impl fmt::Debug for Spring {
     }
 }
 
-type SpringGroup<'a> = (&'a [Spring], &'a [u16]);
+type SpringGroup<'a> = (&'a [Spring], &'a [usize]);
 
-fn read_input(buffer: &str) -> Vec<(Vec<Spring>, Vec<u16>)> {
+fn read_input(buffer: &str) -> Vec<(Vec<Spring>, Vec<usize>)> {
     buffer
         .lines()
         .map(|line| {
@@ -59,56 +59,88 @@ fn read_input(buffer: &str) -> Vec<(Vec<Spring>, Vec<u16>)> {
         .collect_vec()
 }
 
-// Thank god caching was NOT a problem. And thank you reddit. And I was *this* close to using OCaml and the very goods list pattern matching it provides.
-fn find_number_of_goods(group: SpringGroup, set: &mut [Option<u64>], index: usize) -> u64 {
-    let h = hash(index, group.1.len());
+fn aux(
+    springs: &[Spring],
+    nums: &[usize],
+    springs_index: usize,
+    nums_index: usize,
+    set: &mut Vec<Option<u64>>,
+    first_element: Option<&Spring>,
+) -> u64 {
+    let h = hash(springs_index, nums_index);
     if set[h].is_some() {
         return set[h].unwrap();
     }
-    match group {
-        ([], [_, ..]) => 0,
-        (t, []) => {
-            if t.iter().any(|s| matches!(s, Spring::Damaged)) {
+    match (springs.get(springs_index), nums.get(nums_index)) {
+        (None, Some(_)) => 0,
+        (Some(_), None) => {
+            if springs[(springs_index)..]
+                .iter()
+                .any(|s| matches!(s, Spring::Damaged))
+            {
                 0
             } else {
                 1
             }
         }
-        ([Spring::Damaged, t @ ..], [a, tail @ ..]) => {
-            if t.len() < *a as usize - 1
-                || t[0..(*a as usize - 1)]
-                    .iter()
-                    .any(|s| matches!(s, Spring::Operational))
-            {
-                0
-            } else if t.len() == *a as usize - 1 {
-                if tail.is_empty() {
-                    1
-                } else {
+        (None, None) => 1,
+        (_, _) => match first_element {
+            Some(Spring::Operational) => aux(
+                springs,
+                nums,
+                springs_index + 1,
+                nums_index,
+                set,
+                springs.get(springs_index + 1),
+            ),
+            Some(Spring::Damaged) => {
+                if springs.len() - springs_index < nums[nums_index]
+                    || springs[(springs_index + 1)..(springs_index + nums[nums_index])]
+                        .iter()
+                        .any(|s| matches!(s, Spring::Operational))
+                {
                     0
+                } else if springs.len() - springs_index == nums[nums_index] {
+                    if nums.len() - nums_index == 1 {
+                        1
+                    } else {
+                        0
+                    }
+                } else if matches!(springs[springs_index + nums[nums_index]], Spring::Damaged) {
+                    0
+                } else {
+                    aux(
+                        springs,
+                        nums,
+                        springs_index + nums[nums_index] + 1,
+                        nums_index + 1,
+                        set,
+                        springs.get(springs_index + nums[nums_index] + 1),
+                    )
                 }
-            } else if matches!(t[*a as usize - 1], Spring::Damaged) {
-                0
-            } else {
-                find_number_of_goods((&t[(*a as usize)..], tail), set, index + *a as usize)
             }
-        }
-        ([Spring::Operational, t @ ..], tail) => {
-            let i = t
-                .iter()
-                .take_while(|a| matches!(a, Spring::Operational))
-                .count();
-            find_number_of_goods((&t[i..], tail), set, index + 1 + i)
-        }
-        ([Spring::Unknown, t @ ..], tail) => {
-            let mut new_slice = t.to_vec();
-            new_slice.insert(0, Spring::Damaged);
-            let nb = find_number_of_goods((&new_slice, tail), set, index);
-            new_slice[0] = Spring::Operational;
-            let nb2 = find_number_of_goods((&new_slice, tail), set, index);
-            set[h] = Some(nb + nb2);
-            nb + nb2
-        }
+            Some(Spring::Unknown) => {
+                let nb1 = aux(
+                    springs,
+                    nums,
+                    springs_index,
+                    nums_index,
+                    set,
+                    Some(&Spring::Damaged),
+                );
+                let nb2 = aux(
+                    springs,
+                    nums,
+                    springs_index,
+                    nums_index,
+                    set,
+                    Some(&Spring::Operational),
+                );
+                set[h] = Some(nb1 + nb2);
+                nb1 + nb2
+            }
+            None => unreachable!(),
+        },
     }
 }
 
@@ -117,7 +149,7 @@ fn count_permutations(input: &[SpringGroup]) -> u64 {
         .par_iter()
         .map(|&(springs, nums)| {
             let mut set: Vec<Option<u64>> = vec![None; hash(springs.len(), nums.len()) + 1];
-            find_number_of_goods((springs, nums), &mut set, 0)
+            aux(springs, nums, 0, 0, &mut set, Some(&springs[0]))
         })
         .sum()
 }
@@ -129,7 +161,7 @@ fn hash(springs: usize, nums: usize) -> usize {
     (springs << 6) | nums
 }
 
-fn input_part_two(input: &[SpringGroup]) -> Vec<(Vec<Spring>, Vec<u16>)> {
+fn input_part_two(input: &[SpringGroup]) -> Vec<(Vec<Spring>, Vec<usize>)> {
     input
         .iter()
         .map(|(springs, nums)| {
@@ -159,6 +191,7 @@ pub fn solve(buffer: &str) -> SolutionPair {
         .collect_vec();
 
     let sol2: u64 = count_permutations(&input_2_modif);
+    //let sol2: u64 = 0;
     (Solution::from(sol1), Solution::from(sol2))
 }
 
