@@ -1,12 +1,12 @@
-use std::cmp::max;
-
-use itertools::Itertools;
-
 use crate::{Solution, SolutionPair};
+use itertools::Itertools;
+use rayon::prelude::*;
 
 ///////////////////////////////////////////////////////////////////////////////
-/// Optimisation : dynamic programming with **recursion**
+// Optimisation : dynamic programming -> need to return an entire map of the point visited from a given point and direction... I really may not be useful.
+// (All of that because multiple lasers go onto the same one.)
 
+/// reads input
 fn get_input(buffer: &str) -> Vec<Vec<Mirror>> {
     buffer
         .lines()
@@ -35,45 +35,37 @@ enum Mirror {
 
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
 enum Dir {
-    N,
-    S,
-    E,
-    W,
+    N = 0,
+    S = 1,
+    E = 2,
+    W = 3,
 }
 
-struct VisitedMap {
-    contenu: Vec<Vec<[bool; 4]>>,
+struct VisitedMap<T> {
+    contenu: Vec<Vec<[T; 4]>>,
 }
 
-impl VisitedMap {
-    fn from_input(input: &[Vec<Mirror>]) -> Self {
+impl<T: Clone + Copy> VisitedMap<T> {
+    fn from_input(input: &[Vec<Mirror>], default: T) -> Self {
         let height = input.len();
         let width = input[0].len();
-        let contenu = vec![vec![[false; 4]; width]; height];
+        let contenu = vec![vec![[default; 4]; width]; height];
         VisitedMap { contenu }
     }
 
-    fn contains(&self, p: &(usize, usize, Dir)) -> bool {
-        match p.2 {
-            Dir::N => self.contenu[p.1][p.0][0],
-            Dir::S => self.contenu[p.1][p.0][1],
-            Dir::E => self.contenu[p.1][p.0][2],
-            Dir::W => self.contenu[p.1][p.0][3],
-        }
+    #[inline]
+    fn contains(&self, p: &(usize, usize, Dir)) -> T {
+        self.contenu[p.1][p.0][p.2 as usize]
     }
 
-    fn insert(&mut self, p: &(usize, usize, Dir)) {
-        match p.2 {
-            Dir::N => self.contenu[p.1][p.0][0] = true,
-            Dir::S => self.contenu[p.1][p.0][1] = true,
-            Dir::E => self.contenu[p.1][p.0][2] = true,
-            Dir::W => self.contenu[p.1][p.0][3] = true,
-        }
+    #[inline]
+    fn insert(&mut self, p: &(usize, usize, Dir), value: T) {
+        self.contenu[p.1][p.0][p.2 as usize] = value;
     }
 }
 
 fn propagate_laser(input: &[Vec<Mirror>], start: (i32, i32, Dir)) -> u64 {
-    let mut already_visited = VisitedMap::from_input(input);
+    let mut already_visited = VisitedMap::<bool>::from_input(input, false);
     let mut next_to_do: Vec<(i32, i32, Dir)> = vec![start];
     loop {
         let mut next = vec![];
@@ -110,12 +102,12 @@ fn propagate_laser(input: &[Vec<Mirror>], start: (i32, i32, Dir)) -> u64 {
                     (Mirror::Slash, Dir::S) | (Mirror::AntiShlash, Dir::N) => {
                         [Some((next_x, next_y, Dir::W)), None]
                     }
-                    _ => [Some((next_x, next_y, dir)), None], // vide
+                    _ => [Some((next_x, next_y, dir)), None], // ground or parrallel with rayon
                 };
                 for n in next_points.into_iter().flatten() {
                     let p = (n.0 as usize, n.1 as usize, n.2);
                     if !already_visited.contains(&p) {
-                        already_visited.insert(&p);
+                        already_visited.insert(&p, true);
                         next.push(n);
                     }
                 }
@@ -134,21 +126,25 @@ fn propagate_laser(input: &[Vec<Mirror>], start: (i32, i32, Dir)) -> u64 {
         .count() as u64
 }
 
+/// one optimisation to do : get the position of where the lasers go out, can't do better from there.
 fn part_two(input: &[Vec<Mirror>]) -> u64 {
-    let mut max_result = 0;
-    for y in 0..input.len() {
-        let nb1 = propagate_laser(input, (-1, y as i32, Dir::E));
-        let nb2 = propagate_laser(input, (input[y].len() as i32 + 1, y as i32, Dir::W));
-        max_result = max(max_result, nb1);
-        max_result = max(max_result, nb2);
-    }
-    for x in 0..input[0].len() {
-        let nb1 = propagate_laser(input, (x as i32, -1, Dir::S));
-        let nb2 = propagate_laser(input, (x as i32, input.len() as i32 + 1, Dir::N));
-        max_result = max(max_result, nb1);
-        max_result = max(max_result, nb2);
-    }
-    max_result
+    (0..input.len())
+        .flat_map(|y| {
+            [
+                (-1, y as i32, Dir::E),
+                (input[y].len() as i32 + 1, y as i32, Dir::W),
+            ]
+        })
+        .chain((0..input[0].len()).flat_map(|x| {
+            [
+                (x as i32, -1, Dir::S),
+                (x as i32, input.len() as i32 + 1, Dir::N),
+            ]
+        }))
+        .par_bridge() // holy cow that's some speed improvement here
+        .map(|start| propagate_laser(input, start))
+        .max()
+        .unwrap()
 }
 
 pub fn solve(buffer: &str) -> SolutionPair {
