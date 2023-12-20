@@ -6,9 +6,7 @@ use rustc_hash::FxHashMap;
 use crate::{Solution, SolutionPair};
 
 ///////////////////////////////////////////////////////////////////////////////
-/// Easy but really ugly, need to use a better 2d struct for grids.
-/// Need to make my own simple struct, since I do not need anything fancy (just creating it and accessing precise points.)
-/// Would be a lot faster (it would be 1D mapped to 2D of course.)
+/// Tried a better 2D struct, but was nos faster.
 
 enum Rock {
     Round,
@@ -43,9 +41,8 @@ fn read_input(buffer: &str) -> Vec<Vec<Rock>> {
 
 fn move_north(input: &mut [Vec<Rock>]) {
     for i in 0..input[0].len() {
-        for j in 1..input.len()
-        // 0 will never move
-        {
+        let mut j = 1;
+        while j < input.len() {
             if let Rock::Round = input[j][i] {
                 let mut go_up = 0;
                 while go_up < j && matches!(input[j - go_up - 1][i], Rock::Empty) {
@@ -54,67 +51,78 @@ fn move_north(input: &mut [Vec<Rock>]) {
                 if go_up != 0 {
                     input[j][i] = Rock::Empty;
                     input[j - go_up][i] = Rock::Round;
+                } else {
+                    j += 1;
                 }
             }
+            j += 1;
         }
     }
 }
 
 fn move_south(input: &mut [Vec<Rock>]) {
     for i in 0..input[0].len() {
-        for j in (0..(input.len() - 1)).rev() {
-            if let Rock::Round = input[j][i] {
+        let mut j = (input.len() - 2) as i32;
+        while j >= 0 {
+            if let Rock::Round = input[j as usize][i] {
                 let mut go_down = 0;
-                while go_down + j < input.len() - 1
-                    && matches!(input[j + go_down + 1][i], Rock::Empty)
+                while (go_down + j as usize) < input.len() - 1
+                    && matches!(input[j as usize + go_down + 1][i], Rock::Empty)
                 {
                     go_down += 1;
                 }
                 if go_down != 0 {
-                    input[j][i] = Rock::Empty;
-                    input[j + go_down][i] = Rock::Round;
+                    input[j as usize][i] = Rock::Empty;
+                    input[j as usize + go_down][i] = Rock::Round;
+                } else {
+                    j -= 1;
                 }
             }
+            j -= 1;
         }
     }
 }
 
 fn move_east(input: &mut [Vec<Rock>]) {
     for line in input.iter_mut() {
-        for i in (0..(line.len() - 1)).rev() {
-            {
-                if let Rock::Round = line[i] {
-                    let mut go_right = 0;
-                    while go_right + i < line.len() - 1
-                        && matches!(line[i + go_right + 1], Rock::Empty)
-                    {
-                        go_right += 1;
-                    }
-                    if go_right != 0 {
-                        line[i] = Rock::Empty;
-                        line[i + go_right] = Rock::Round;
-                    }
+        let mut i = (line.len() - 2) as i32;
+        while i >= 0 {
+            if let Rock::Round = line[i as usize] {
+                let mut go_right = 0;
+                while go_right + (i as usize) < line.len() - 1
+                    && matches!(line[i as usize + go_right + 1], Rock::Empty)
+                {
+                    go_right += 1;
+                }
+                if go_right != 0 {
+                    line[i as usize] = Rock::Empty;
+                    line[i as usize + go_right] = Rock::Round;
+                } else {
+                    i -= 1;
                 }
             }
+            i -= 1;
         }
     }
 }
 
 fn move_west(input: &mut [Vec<Rock>]) {
     for line in input.iter_mut() {
-        for i in 1..line.len() {
-            {
-                if let Rock::Round = line[i] {
-                    let mut go_left = 0;
-                    while go_left < i && matches!(line[i - go_left - 1], Rock::Empty) {
-                        go_left += 1;
-                    }
-                    if go_left != 0 {
-                        line[i] = Rock::Empty;
-                        line[i - go_left] = Rock::Round;
-                    }
+        let mut i = 1;
+        while i < line.len() {
+            if let Rock::Round = line[i] {
+                let mut go_left = 0;
+                while go_left < i && matches!(line[i - go_left - 1], Rock::Empty) {
+                    go_left += 1;
+                }
+                if go_left != 0 {
+                    line[i] = Rock::Empty;
+                    line[i - go_left] = Rock::Round;
+                } else {
+                    i += 1;
                 }
             }
+            i += 1;
         }
     }
 }
@@ -131,30 +139,33 @@ fn cycle(input: &mut [Vec<Rock>], skip_first: bool) {
 fn count_load(input: &[Vec<Rock>]) -> u64 {
     input
         .iter()
-        .zip((1..(input.len() + 1)).rev())
-        .map(|(line, i)| line.iter().filter(|c| matches!(c, Rock::Round)).count() as u64 * i as u64)
+        .rev()
+        .enumerate()
+        .map(|(i, line)| {
+            line.iter().filter(|c| matches!(c, Rock::Round)).count() as u64 * (i + 1) as u64
+        })
         .sum()
 }
 
-fn to_string(input: &[Vec<Rock>]) -> Vec<u64> {
+fn to_string(input: &[Vec<Rock>]) -> u128 {
     input
         .iter()
         .map(|line| {
-            let mut r = 0;
-            line.iter().for_each(|rock| {
+            let mut r: u128 = 0;
+            for rock in line {
                 r <<= 1;
                 if let Rock::Round = rock {
-                    r |= 1
+                    r |= 1;
                 }
-            });
+            }
             r
         })
-        .collect::<Vec<u64>>()
+        .sum::<u128>()
 }
 
 fn part_two(input: &mut [Vec<Rock>]) -> u64 {
     const MAX_CYCLE: u64 = 1000000000;
-    let mut set: FxHashMap<Vec<u64>, u64> = FxHashMap::default();
+    let mut set: FxHashMap<u128, u64> = FxHashMap::default();
     cycle(input, true);
     set.insert(to_string(input), 0);
     for i in 1..MAX_CYCLE {
@@ -167,7 +178,7 @@ fn part_two(input: &mut [Vec<Rock>]) -> u64 {
             }
             return count_load(input);
         }
-        set.insert(to_string(input), i);
+        set.insert(hash, i);
     }
     unreachable!()
 }
