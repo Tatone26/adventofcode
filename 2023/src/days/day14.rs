@@ -6,7 +6,7 @@ use rustc_hash::FxHashMap;
 use crate::{Solution, SolutionPair};
 
 ///////////////////////////////////////////////////////////////////////////////
-/// Tried a better 2D struct, but was nos faster.
+/// Tried a better 2D struct, but was nos faster. Rust is apparently well optimised.
 
 enum Rock {
     Round,
@@ -49,8 +49,11 @@ fn move_north(input: &mut [Vec<Rock>]) {
                     go_up += 1;
                 }
                 if go_up != 0 {
-                    input[j][i] = Rock::Empty;
-                    input[j - go_up][i] = Rock::Round;
+                    while j < input.len() && matches!(input[j][i], Rock::Round) {
+                        input[j][i] = Rock::Empty;
+                        input[j - go_up][i] = Rock::Round;
+                        j += 1;
+                    }
                 } else {
                     j += 1;
                 }
@@ -72,8 +75,11 @@ fn move_south(input: &mut [Vec<Rock>]) {
                     go_down += 1;
                 }
                 if go_down != 0 {
-                    input[j as usize][i] = Rock::Empty;
-                    input[j as usize + go_down][i] = Rock::Round;
+                    while j >= 0 && matches!(input[j as usize][i], Rock::Round) {
+                        input[j as usize][i] = Rock::Empty;
+                        input[j as usize + go_down][i] = Rock::Round;
+                        j -= 1;
+                    }
                 } else {
                     j -= 1;
                 }
@@ -95,8 +101,11 @@ fn move_east(input: &mut [Vec<Rock>]) {
                     go_right += 1;
                 }
                 if go_right != 0 {
-                    line[i as usize] = Rock::Empty;
-                    line[i as usize + go_right] = Rock::Round;
+                    while i >= 0 && matches!(line[i as usize], Rock::Round) {
+                        line[i as usize] = Rock::Empty;
+                        line[i as usize + go_right] = Rock::Round;
+                        i -= 1;
+                    }
                 } else {
                     i -= 1;
                 }
@@ -116,8 +125,11 @@ fn move_west(input: &mut [Vec<Rock>]) {
                     go_left += 1;
                 }
                 if go_left != 0 {
-                    line[i] = Rock::Empty;
-                    line[i - go_left] = Rock::Round;
+                    while i < line.len() && matches!(line[i], Rock::Round) {
+                        line[i] = Rock::Empty;
+                        line[i - go_left] = Rock::Round;
+                        i += 1;
+                    }
                 } else {
                     i += 1;
                 }
