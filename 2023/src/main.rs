@@ -1,3 +1,4 @@
+#![feature(is_sorted)]
 mod days;
 mod etc;
 

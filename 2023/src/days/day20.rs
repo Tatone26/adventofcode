@@ -90,23 +90,23 @@ fn read_input(buffer: &str, to_check: &str) -> (Machine, usize) {
             (ModuleType::Conjunction, name.strip_prefix('&').unwrap())
         };
         let position = machine_positions.get(real_name);
-        let real_position = if position.is_none() {
+        let real_position = if let Some(&pos) = position {
+            pos
+        } else {
             machine_positions.insert(real_name.to_string(), next_position);
             next_position += 1;
             next_position - 1
-        } else {
-            *position.unwrap()
         };
 
         let mut childs_positions = vec![];
         for c in childs.split(", ") {
             let position_child = machine_positions.get(c);
-            let real_position_child = if position_child.is_none() {
+            let real_position_child = if let Some(&pos) = position_child {
+                pos
+            } else {
                 machine_positions.insert(c.to_string(), next_position);
                 next_position += 1;
                 next_position - 1
-            } else {
-                *position_child.unwrap()
             };
             childs_positions.push(real_position_child);
         }
@@ -190,8 +190,8 @@ fn press_button(input: &mut Machine, pulse: Pulse, check: Option<usize>) -> (u64
                 continue;
             }
             let next_pulse = input.content[*c].receive_pulse(x.0, x.1);
-            if next_pulse.is_some() {
-                todo.push_back((next_pulse.unwrap(), *c));
+            if let Some(p) = next_pulse {
+                todo.push_back((p, *c));
             }
         }
     }
