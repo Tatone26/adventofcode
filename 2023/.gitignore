@@ -45,3 +45,4 @@ input/day*.txt
 
 *.svg
 perf.*
+*.py

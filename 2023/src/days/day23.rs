@@ -1,7 +1,4 @@
-use std::{
-    cmp::max,
-    collections::{BinaryHeap, VecDeque},
-};
+use std::{cmp::max, collections::BinaryHeap};
 
 use itertools::Itertools;
 use rustc_hash::FxHashSet;
@@ -9,6 +6,11 @@ use rustc_hash::FxHashSet;
 use crate::{Solution, SolutionPair};
 
 ///////////////////////////////////////////////////////////////////////////////
+/// For part 2, Need to reduce the input to a graph ("easily" donc with next_intersection)
+/// And find the longest path in this graph.
+/// Right now it computes it every single time. Which is stupid as hell. Maybe some simple memoization can work here at first...
+/// but i don't think so.
+/// Now holidays !! will make it better another day.
 
 enum Tile {
     Wall,
@@ -124,7 +126,7 @@ fn find_next_intersection(
             .iter()
             .filter(|&p| *p != last_direction.reverse())
             .filter(|&p| {
-                if pos.1 <= 0 {
+                if pos.1 == 0 {
                     !matches!(p, Direction::Up)
                 } else {
                     true
@@ -160,10 +162,7 @@ fn find_next_intersection(
 
 fn can_go_there(map: &Map, pos: (usize, usize), last_pos: (usize, usize), strong: bool) -> bool {
     if strong {
-        match map[pos.1][pos.0] {
-            Tile::Wall => false,
-            _ => true,
-        }
+        !matches!(map[pos.1][pos.0], Tile::Wall)
     } else {
         match map[pos.1][pos.0] {
             Tile::Wall => false,
@@ -176,6 +175,7 @@ fn can_go_there(map: &Map, pos: (usize, usize), last_pos: (usize, usize), strong
     }
 }
 
+/// lol
 fn find_longest_path(map: &Map, strong: bool) -> u64 {
     let start: (usize, usize) = (
         map.first()
@@ -210,7 +210,7 @@ fn find_longest_path(map: &Map, strong: bool) -> u64 {
             .iter()
             .filter(|&p| *p != dir.reverse())
             .filter(|&p| {
-                if hike.current_pos.1 <= 0 {
+                if hike.current_pos.1 == 0 {
                     !matches!(p, Direction::Up)
                 } else {
                     true
