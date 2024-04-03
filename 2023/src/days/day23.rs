@@ -1,16 +1,10 @@
-use std::{cmp::max, collections::BinaryHeap};
-
 use itertools::Itertools;
-use rustc_hash::FxHashSet;
 
 use crate::{Solution, SolutionPair};
+use rayon::prelude::*;
+use rustc_hash::FxHashMap;
 
 ///////////////////////////////////////////////////////////////////////////////
-/// For part 2, Need to reduce the input to a graph ("easily" donc with next_intersection)
-/// And find the longest path in this graph.
-/// Right now it computes it every single time. Which is stupid as hell. Maybe some simple memoization can work here at first...
-/// but i don't think so.
-/// Now holidays !! will make it better another day.
 
 enum Tile {
     Wall,
@@ -19,25 +13,6 @@ enum Tile {
     LeftSlope,
     DownSlope,
     UpSlope,
-}
-
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
-enum Direction {
-    Up,
-    Down,
-    Left,
-    Right,
-}
-
-impl Direction {
-    fn reverse(&self) -> Self {
-        match self {
-            Direction::Up => Direction::Down,
-            Direction::Down => Direction::Up,
-            Direction::Left => Direction::Right,
-            Direction::Right => Direction::Left,
-        }
-    }
 }
 
 impl core::fmt::Debug for Tile {
@@ -54,6 +29,18 @@ impl core::fmt::Debug for Tile {
 }
 
 type Map = Vec<Vec<Tile>>;
+type Node = usize;
+
+#[derive(Clone, Debug)]
+struct Edge {
+    pos: (usize, usize),
+    pos_fast: Node,
+    size: u64,
+    from_here: bool,
+}
+// type Graph = FxHashMap<Node, Vec<Edge>>;
+type Graph = Vec<Vec<Edge>>;
+const DIRECTIONS: [(i32, i32); 4] = [(0, 1), (0, -1), (1, 0), (-1, 0)];
 
 fn read_input(buffer: &str) -> Map {
     buffer
@@ -73,173 +60,214 @@ fn read_input(buffer: &str) -> Map {
         .collect_vec()
 }
 
-#[derive(Debug, PartialEq, Eq)]
-struct Hike {
-    current_pos: (usize, usize),
-    already_visited_intersection: FxHashSet<(usize, usize)>,
-    number_of_steps: u64,
-    last_direction: Direction,
-}
-
-impl Hike {
-    fn new(pos: (usize, usize), direction: Direction) -> Self {
-        Self {
-            current_pos: pos,
-            already_visited_intersection: FxHashSet::default(),
-            number_of_steps: 0,
-            last_direction: direction,
-        }
-    }
-}
-
-impl Ord for Hike {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        self.number_of_steps.cmp(&other.number_of_steps)
-    }
-}
-
-impl PartialOrd for Hike {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        Some(self.cmp(other))
-    }
-}
-
-fn find_next_intersection(
-    map: &Map,
-    hike: &Hike,
-    stop_at_y: usize,
-) -> ((usize, usize), u64, Direction) {
-    let mut pos = hike.current_pos;
-    let mut number_of_steps = 0;
-    let mut last_direction = hike.last_direction;
-    const DIRECTIONS: [Direction; 4] = [
-        Direction::Down,
-        Direction::Up,
-        Direction::Left,
-        Direction::Right,
-    ];
-    loop {
-        let mut already_found_one = false;
-        let mut next_pos = pos;
-        let mut next_direction = None;
-        for d in DIRECTIONS
-            .iter()
-            .filter(|&p| *p != last_direction.reverse())
-            .filter(|&p| {
-                if pos.1 == 0 {
-                    !matches!(p, Direction::Up)
-                } else {
-                    true
-                }
-            })
+/// From a given position, return the next Edges of the graph (the Edges starting from there)
+fn intersections(map: &Map, current_pos: (usize, usize)) -> Vec<Edge> {
+    let mut result = vec![];
+    for (x, y) in DIRECTIONS {
+        let next_pos = (current_pos.0 as i32 + x, current_pos.1 as i32 + y);
+        if next_pos.0 < 0
+            || next_pos.1 < 0
+            || next_pos.0 >= map[0].len() as i32
+            || next_pos.1 >= map.len() as i32
         {
-            let temp = match d {
-                Direction::Up => (pos.0, pos.1 - 1),
-                Direction::Down => (pos.0, pos.1 + 1),
-                Direction::Left => (pos.0 - 1, pos.1),
-                Direction::Right => (pos.0 + 1, pos.1),
-            };
-            if matches!(map[temp.1][temp.0], Tile::Wall) {
-                continue;
-            }
-
-            if already_found_one {
-                return (pos, number_of_steps, last_direction);
-            }
-            already_found_one = true;
-            next_direction = Some(*d);
-            next_pos = temp;
-        }
-        assert!(already_found_one);
-        number_of_steps += 1;
-        pos = next_pos;
-        last_direction = next_direction.unwrap();
-        if pos.1 == stop_at_y {
-            return (pos, number_of_steps, last_direction);
-        }
-    }
-}
-
-fn can_go_there(map: &Map, pos: (usize, usize), last_pos: (usize, usize), strong: bool) -> bool {
-    if strong {
-        !matches!(map[pos.1][pos.0], Tile::Wall)
-    } else {
-        match map[pos.1][pos.0] {
-            Tile::Wall => false,
-            Tile::Ground => true,
-            Tile::DownSlope => pos.1 > last_pos.1,
-            Tile::LeftSlope => pos.0 < last_pos.0,
-            Tile::RightSlope => pos.0 > last_pos.0,
-            Tile::UpSlope => pos.1 < last_pos.1,
-        }
-    }
-}
-
-/// lol
-fn find_longest_path(map: &Map, strong: bool) -> u64 {
-    let start: (usize, usize) = (
-        map.first()
-            .unwrap()
-            .iter()
-            .position(|p| !matches!(p, Tile::Wall))
-            .unwrap(),
-        0,
-    );
-    let the_end = map.len() - 1;
-    let mut to_try: BinaryHeap<Hike> = BinaryHeap::default();
-    to_try.push(Hike::new(start, Direction::Down));
-    const DIRECTIONS: [Direction; 4] = [
-        Direction::Down,
-        Direction::Up,
-        Direction::Left,
-        Direction::Right,
-    ];
-    let mut result = 0;
-    while let Some(hike) = to_try.pop() {
-        // println!("hike : {hike:?}");
-        let (intersect_pos, steps, dir) = find_next_intersection(map, &hike, the_end);
-        if intersect_pos.1 == the_end {
-            result = max(result, hike.number_of_steps + steps);
-            println!("{result}");
             continue;
         }
-        if hike.already_visited_intersection.contains(&intersect_pos) {
-            continue;
-        }
-        for d in DIRECTIONS
-            .iter()
-            .filter(|&p| *p != dir.reverse())
-            .filter(|&p| {
-                if hike.current_pos.1 == 0 {
-                    !matches!(p, Direction::Up)
-                } else {
-                    true
-                }
-            })
-        {
-            let next_pos = match d {
-                Direction::Up => (intersect_pos.0, intersect_pos.1 - 1),
-                Direction::Down => (intersect_pos.0, intersect_pos.1 + 1),
-                Direction::Left => (intersect_pos.0 - 1, intersect_pos.1),
-                Direction::Right => (intersect_pos.0 + 1, intersect_pos.1),
+        let true_next_pos = (next_pos.0 as usize, next_pos.1 as usize);
+        if !matches!(map[true_next_pos.1][true_next_pos.0], Tile::Wall) {
+            let r = next_intersect(map, true_next_pos, current_pos);
+            let edge = Edge {
+                pos: r.pos,
+                pos_fast: 0,
+                size: r.size + 1,
+                from_here: r.from_here,
             };
-            if can_go_there(map, next_pos, intersect_pos, strong) {
-                let mut new_hike = Hike::new(next_pos, *d);
-                new_hike.number_of_steps = hike.number_of_steps + steps + 1;
-                new_hike.already_visited_intersection = hike.already_visited_intersection.clone();
-                new_hike.already_visited_intersection.insert(intersect_pos);
-                to_try.push(new_hike);
-            }
+            result.push(edge);
         }
     }
     result
 }
 
+fn is_intersection(map: &Map, pos: (usize, usize)) -> bool {
+    assert!(!matches!(map[pos.1][pos.0], Tile::Wall));
+    DIRECTIONS
+        .iter()
+        .filter(|p| p.0 + pos.0 as i32 >= 0 && p.1 + pos.1 as i32 >= 0)
+        .filter_map(|p| {
+            map.get((p.1 + pos.1 as i32) as usize).and_then(|l| {
+                l.get((p.0 + pos.0 as i32) as usize)
+                    .filter(|&x| !matches!(x, Tile::Wall))
+            })
+        })
+        .count()
+        != 2
+}
+
+fn next_intersect(map: &Map, current_pos: (usize, usize), last_pos: (usize, usize)) -> Edge {
+    if is_intersection(map, current_pos) {
+        Edge {
+            pos: current_pos,
+            pos_fast: 0,
+            size: 0,
+            from_here: true,
+        }
+    } else {
+        let next_dir = DIRECTIONS
+            .iter()
+            .filter(|p| p.0 + current_pos.0 as i32 >= 0 && p.1 + current_pos.1 as i32 >= 0)
+            .find(|p| {
+                let n = (
+                    (p.0 + current_pos.0 as i32) as usize,
+                    (p.1 + current_pos.1 as i32) as usize,
+                );
+                !matches!(map[n.1][n.0], Tile::Wall) && n != last_pos
+            })
+            .unwrap();
+        let next_pos = (
+            (next_dir.0 + current_pos.0 as i32) as usize,
+            (next_dir.1 + current_pos.1 as i32) as usize,
+        );
+        let can_in_this_dir = match (&map[next_pos.1][next_pos.0], next_dir) {
+            (Tile::Wall, _) => false,
+            (Tile::Ground, _) => true,
+            (Tile::RightSlope, (1, 0) | (0, 1) | (0, -1)) => true,
+            (Tile::LeftSlope, (-1, 0) | (0, 1) | (0, -1)) => true,
+            (Tile::UpSlope, (0, -1) | (1, 0) | (-1, 0)) => true,
+            (Tile::DownSlope, (0, 1) | (1, 0) | (-1, 0)) => true,
+            _ => false,
+        };
+        let t = next_intersect(
+            map,
+            (
+                (next_dir.0 + current_pos.0 as i32) as usize,
+                (next_dir.1 + current_pos.1 as i32) as usize,
+            ),
+            current_pos,
+        );
+        Edge {
+            pos: t.pos,
+            pos_fast: 0,
+            size: t.size + 1,
+            from_here: t.from_here && can_in_this_dir,
+        }
+    }
+}
+
+fn find_start(map: &Map) -> (usize, usize) {
+    (
+        map[0]
+            .iter()
+            .position(|x| !matches!(x, Tile::Wall))
+            .unwrap(),
+        0_usize,
+    )
+}
+
+fn find_end(map: &Map) -> (usize, usize) {
+    (
+        map.last()
+            .unwrap()
+            .iter()
+            .position(|x| !matches!(x, Tile::Wall))
+            .unwrap(),
+        map.len() - 1,
+    )
+}
+
+fn get_graph(map: &Map) -> (Graph, Node, Node) {
+    let start = find_start(map);
+
+    let mut graph_map: Graph = vec![];
+    let mut positions = FxHashMap::<(usize, usize), Node>::default();
+    positions.insert(start, 0);
+    let mut todo = vec![];
+    todo.push(start);
+    while let Some(pos) = todo.pop() {
+        let mut res = intersections(map, pos);
+        for r in res.iter_mut() {
+            let l = positions.len();
+            let p = positions.entry(r.pos).or_insert_with(|| {
+                graph_map.resize(l + 1, vec![]);
+                l
+            });
+            if graph_map.get(*p).unwrap().is_empty() {
+                todo.push(r.pos);
+            }
+            r.pos_fast = *p;
+        }
+        graph_map[*positions.get(&pos).unwrap()] = res;
+    } /*
+      println!("{positions:?}");
+      println!("{graph_map:?}"); */
+    (
+        graph_map,
+        *positions.get(&start).unwrap(),
+        *positions.get(&find_end(map)).unwrap(),
+    )
+}
+
+fn longest_path(
+    graph: &Graph,
+    from: Node,
+    already_seen: Vec<Node>,
+    end: Node,
+    strong: bool,
+    recursion_level: u8,
+) -> Option<u64> {
+    /* let h: (Node, BTreeSet<Node>) = (from, already_seen.);
+    if let Some(x) = memo.get(&h) {
+        // println!("cached !");
+        return *x;
+    } */
+    if from == end {
+        Some(0)
+    } else {
+        let filter = |i: &&Edge| (strong || i.from_here) && !already_seen.contains(&i.pos_fast);
+        let inside_work = |i: &Edge| {
+            let mut new_seen = already_seen.clone();
+            new_seen.push(i.pos_fast);
+            Some(
+                longest_path(
+                    graph,
+                    i.pos_fast,
+                    new_seen,
+                    end,
+                    strong,
+                    recursion_level + 1,
+                )? + i.size,
+            )
+        };
+        if recursion_level < 12 {
+            let r = graph
+                .get(from)?
+                .par_iter()
+                .filter(filter)
+                .map(inside_work)
+                .max()?;
+            // memo.insert(h, r);
+            r
+        } else {
+            let r = graph
+                .get(from)?
+                .iter()
+                .filter(filter)
+                .map(inside_work)
+                .max()?;
+            // memo.insert(h, r);
+            r
+        }
+    }
+}
+
 pub fn solve(buffer: &str) -> SolutionPair {
     let input = read_input(buffer);
-    println!("{input:?}");
-    let sol1: u64 = find_longest_path(&input, false);
-    let sol2: u64 = find_longest_path(&input, true);
+    // println!("{input:?}");
+    let (graph, start, end) = get_graph(&input);
+    // println!("{graph:?}");
+    // println!("{}", graph.len());
+    // let mut memo = FxHashMap::default();
+    let sol1 = longest_path(&graph, start, vec![], end, false, 0).unwrap(); // yes
+                                                                            // memo.clear();
+    let sol2 = longest_path(&graph, start, vec![], end, true, 0).unwrap(); // yes
 
     (Solution::from(sol1), Solution::from(sol2))
 }

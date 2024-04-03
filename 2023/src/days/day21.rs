@@ -7,6 +7,7 @@ use crate::{Solution, SolutionPair};
 /// First part was easy, just needed to realise he can do back-and-forth infinitely. (and that the same for part2)
 /// -> Just need to find the positions where he can get with an even/odd number of moves, and that's the answer.
 /// Part2 is the same, but it's infinite, so the calculation is clearly different. (maybe / instead of % or something like that.)
+/// Apparently we need to use a special property of the input :(((((
 
 #[derive(Debug)]
 enum Tile {
@@ -93,7 +94,7 @@ fn possible_outcomes(input: &Map, number_of_steps: u64) -> Vec<Vec<Option<u64>>>
 /// I think just need to find the logic, like with the first part.
 /// Maybe I can extrapolate the 3*3 result to what I want ? Like with divisions ? or something like that ?
 /// Or maybe I just do it with wrapping, get for each case if it's possible to get there on even or odd ?Don't know if its good enough.
-fn possible_outcomes_infinite(input: &Map, number_of_steps: u64) -> Vec<Vec<Option<u64>>> {
+/* fn possible_outcomes_infinite(input: &Map, number_of_steps: u64) -> Vec<Vec<Option<u64>>> {
     let start = find_start(input);
     let mut result = vec![vec![None; input[0].len()]; input.len()];
     result[start.1][start.0] = Some(0);
@@ -126,7 +127,7 @@ fn possible_outcomes_infinite(input: &Map, number_of_steps: u64) -> Vec<Vec<Opti
         current = next_current;
     }
     result
-}
+} */
 
 fn part_one(input: &Vec<Vec<Option<u64>>>, number_of_steps: u64) -> u64 {
     input
@@ -145,9 +146,9 @@ pub fn solve(buffer: &str) -> SolutionPair {
     /* for v in outcomes.iter() {
         println!("{v:?}");
     } */
-    let sol1: u64 = part_one(&outcomes, 10);
-    const PART_TWO: u64 = 26501365;
-    const PART_TWO_TEST: u64 = 5000;
+    let sol1: u64 = part_one(&outcomes, 10); /*
+                                             const PART_TWO: u64 = 26501365;
+                                             const PART_TWO_TEST: u64 = 5000; */
     let sol2: u64 = 0;
 
     (Solution::from(sol1), Solution::from(sol2))

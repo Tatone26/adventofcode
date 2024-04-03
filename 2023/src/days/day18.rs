@@ -1,8 +1,7 @@
-use itertools::Itertools;
-
 use crate::{Solution, SolutionPair};
 
 ///////////////////////////////////////////////////////////////////////////////
+/// SHOELACE
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum Dir {
@@ -15,7 +14,7 @@ enum Dir {
 type Rules = Vec<(Dir, u32)>;
 
 fn read_input(buffer: &str) -> (Rules, Rules) {
-    let v = buffer
+    buffer
         .lines()
         .map(|line| {
             let mut it = line.split(' ');
@@ -38,13 +37,10 @@ fn read_input(buffer: &str) -> (Rules, Rules) {
             };
             ((dir, u), (direction, distance))
         })
-        .collect_vec();
-    (
-        v.iter().map(|(a, _)| *a).collect_vec(),
-        v.iter().map(|(_, b)| *b).collect_vec(),
-    )
+        .unzip()
 }
 
+// SHOELACE
 fn area(input: &Rules) -> u64 {
     let mut coordos: (i64, i64) = (0, 0);
     let mut somme: i64 = 0;

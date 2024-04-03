@@ -110,6 +110,7 @@ int check_line(int **boards, int line, int *inputs, int to_check)
             if (inputs[input] == boards[line][i])
             {
                 found = 1;
+                break;
             }
         }
         if (!found)
@@ -128,6 +129,7 @@ int check_column(int **boards, int line_start, int column, int *inputs, int to_c
             if (inputs[input] == boards[i][column])
             {
                 found = 1;
+                break;
             }
         }
         if (!found)
@@ -150,6 +152,7 @@ int score(int **boards, int winner_board, int *inputs, int to_check)
                 if (inputs[input] == boards[i][j])
                 {
                     found = 1;
+                    break;
                     // printf("*");
                 }
             }

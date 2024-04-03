@@ -128,24 +128,23 @@ fn read_input(buffer: &str) -> (Workflows, Vec<Ratings>) {
     (workflows, ratings)
 }
 
-fn aux(workflows: &Workflows, input: &Ratings, w: &str) -> u64 {
-    let current_workflow = workflows.get(w);
-    if current_workflow.is_none() {
-        return 0;
-    }
-    for w in current_workflow.unwrap().iter() {
-        if match w.with {
-            Some(false) => input.get(w.on.unwrap()) < w.to.unwrap(),
-            Some(true) => input.get(w.on.unwrap()) > w.to.unwrap(),
-            None => true,
-        } {
-            match &w.conclusion {
-                Conclusion::Accepted => return input.result(),
-                Conclusion::Rejected => return 0,
-                Conclusion::Next(s) => return aux(workflows, input, s),
+fn aux(workflows: &Workflows, input: &Ratings, current: &str) -> u64 {
+    if let Some(v) = workflows.get(current) {
+        for w in v.iter() {
+            if match w.with {
+                Some(false) => input.get(w.on.unwrap()) < w.to.unwrap(),
+                Some(true) => input.get(w.on.unwrap()) > w.to.unwrap(),
+                None => true,
+            } {
+                return match &w.conclusion {
+                    Conclusion::Accepted => input.result(),
+                    Conclusion::Rejected => 0,
+                    Conclusion::Next(s) => aux(workflows, input, s),
+                };
             }
         }
     }
+    // else
     0
 }
 
@@ -223,8 +222,7 @@ fn aux2(workflows: &Workflows, input: &RatingRange, w: &str) -> u64 {
         return 0;
     }
     for op in current_workflow.unwrap().iter() {
-        let split = input.split(op);
-        if let Some(next) = split {
+        if let Some(next) = input.split(op) {
             return next.iter().map(|t| aux2(workflows, t, w)).sum();
         } else {
             let conc = match op.with {

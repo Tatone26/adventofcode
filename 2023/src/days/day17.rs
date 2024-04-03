@@ -106,6 +106,9 @@ fn dijkstra_strange(
     unreachable!()
 }
 
+// one optimisation, I think, is to compute only turns : an iteration is doing all possible "straight" moves, and call recursive on turns. I guess.
+// I have no idea, that's the truth.
+// And collecting in vec is bad, as always.
 fn min_path(
     input: &[Vec<u8>],
     remember: &mut RememberMap,
@@ -122,7 +125,6 @@ fn min_path(
             return None;
         }
     }
-
     remember[point.pos.y as usize][point.pos.x as usize].push((
         point.cost,
         point.streak,

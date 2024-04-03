@@ -2,7 +2,6 @@ use std::hash::Hash;
 
 use itertools::Itertools;
 use rayon::prelude::*;
-use rustc_hash::FxHashSet;
 
 use crate::{Solution, SolutionPair};
 
@@ -33,22 +32,13 @@ impl Brick {
         }
     }
 
-    fn is_under(&self, other: &Self) -> bool {
-        if self.z.1 >= other.z.0 {
-            false
-        } else {
-            // if z is underneath
-            intersect(self.x, other.x) && intersect(self.y, other.y)
-        }
-    }
-
-    fn is_supporting(&self, other: &Self) -> bool {
-        self.is_under(other) && self.z.1 + 1 == other.z.0
+    fn is_directly_under(&self, other: &Self) -> bool {
+        self.z.1 < other.z.0 && intersect(self.x, other.x) && intersect(self.y, other.y)
     }
 
     /// list is supposed sorted, smallest first, and all under self.
     fn find_blockade(&self, list: &BrickList) -> u64 {
-        if let Some(r) = list.iter().rev().find(|b| b.is_under(self)) {
+        if let Some(r) = list.iter().rev().find(|b| b.is_directly_under(self)) {
             r.z.1
         } else {
             0
@@ -116,43 +106,27 @@ fn make_input_fall(input: &BrickList, ignoring: Option<u64>) -> (BrickList, u64)
     (new, has_fallen)
 }
 
-fn part_one(input: &mut BrickList) -> u64 {
+fn test_everything(input: &mut BrickList) -> (u64, u64) {
     (*input, _) = make_input_fall(input, None);
-
-    let mut cannot_be_removed = FxHashSet::default();
-    for b in input.iter() {
-        'inner: {
-            let mut found_one = None;
-            for c in input.iter() {
-                if c.is_supporting(b) {
-                    if found_one.is_some() {
-                        break 'inner;
-                    } else {
-                        found_one = Some(c);
-                    }
-                }
-            }
-            if let Some(x) = found_one {
-                cannot_be_removed.insert(x);
-            }
-        }
-    }
-    (input.len() - cannot_be_removed.len()) as u64
-}
-
-fn part_two(input: &BrickList) -> u64 {
     input
-        //.iter()
         .par_iter()
-        .map(|b| make_input_fall(input, Some(b.name)).1)
-        .sum::<u64>()
+        .map(|b| {
+            let r = make_input_fall(input, Some(b.name)).1;
+            if r == 0 {
+                (1_u64, 0)
+            } else {
+                (0, r)
+            }
+        })
+        .reduce(|| (0, 0), |acc, elem| (acc.0 + elem.0, acc.1 + elem.1))
 }
 
 pub fn solve(buffer: &str) -> SolutionPair {
     // Your solution here...
     let mut input = read_input(buffer);
-    let sol1: u64 = part_one(&mut input);
-    let sol2: u64 = part_two(&input);
+    /*  let sol1: u64 = part_one(&mut input);
+    let sol2: u64 = part_two(&input); */
+    let (sol1, sol2) = test_everything(&mut input);
 
     (Solution::from(sol1), Solution::from(sol2))
 }

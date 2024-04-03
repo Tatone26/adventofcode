@@ -10,7 +10,8 @@ fn hash(text: &str) -> u64 {
 type Lens<'a> = (&'a str, u64);
 
 fn part_two<'a>(input: impl Iterator<Item = &'a str>) -> u64 {
-    let mut lens_boxes: Vec<Vec<Lens>> = vec![Vec::with_capacity(10); 256];
+    let mut lens_boxes: Vec<Vec<Lens>> =
+        (0..256).map(|_| Vec::with_capacity(10)).collect::<Vec<_>>();
     'out: for line in input {
         let mut it = line.split(['-', '=']);
         if it.clone().count() > 2 {

@@ -126,7 +126,7 @@ fn propagate_laser(input: &[Vec<Mirror>], start: (i32, i32, Dir)) -> u64 {
         .count() as u64
 }
 
-/// one optimisation to do : get the position of where the lasers go out, can't do better from there.
+/// one optimisation to do : get the position of where the lasers go out, can't do better in the opposite way. (since it's lasers)
 fn part_two(input: &[Vec<Mirror>]) -> u64 {
     (0..input.len())
         .flat_map(|y| {
