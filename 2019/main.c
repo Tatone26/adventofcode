@@ -2,13 +2,14 @@
 #include "utils.c"
 #include "day1.c"
 #include "day2.c"
+#include "day3.c"
 
-#define DAYS_DONE 2
+#define DAYS_DONE 3
 
 int main(int argc, char **argv)
 {
-    void (*functions[DAYS_DONE])(FILE *f) = {day1, day2};
-    char *nomFic[DAYS_DONE] = {"./inputs/day1.txt", "./inputs/day2.txt"};
+    void (*functions[DAYS_DONE])(FILE *f) = {day1, day2, day3};
+    char *nomFic[DAYS_DONE] = {"./inputs/day1.txt", "./inputs/day2.txt", "./inputs/day3.txt"};
 
     int todo[25] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     if (argc > 1)
@@ -38,4 +39,6 @@ int main(int argc, char **argv)
             fclose(f);
         }
     }
+
+    return 0;
 }
