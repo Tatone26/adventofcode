@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-CFLAGS = -Wall -Wpedantic -Wextra -g -lm -pedantic
+CFLAGS = -g -Wall -Wpedantic -Wextra -lm -pedantic
 #CFLAGS = -Wall -lm -o3 -pedantic
 
 OUTFOLDER = ./output# folder with binaries
@@ -33,7 +33,7 @@ runall : $(foreach d, $(DAYS), $(OUTFOLDER)/$(d))
 
 .PRECIOUS: $(OUTFOLDER)/%.o # forcing Make to keep all .o files
 # .o files
-$(OUTFOLDER)/%.o : $(CODEFOLDER)/%.c
+$(OUTFOLDER)/%.o : $(CODEFOLDER)/%.c Makefile
 	gcc $(CFLAGS) -o $@ -c $< 
 
 # binaries files
