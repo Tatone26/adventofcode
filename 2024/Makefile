@@ -8,20 +8,20 @@ INPUTFOLDER = ./input# folder with text inputs
 CODEFOLDER = ./code# folder with code
 
 # list of all days done
-DAYS = 1
+DAYS = 1 2
 # list of all missed days
 NOT_DONE_DAYS = 
 # day currently working on
-CURRENTDAY = 1
+CURRENTDAY = 3
 
 .PHONY : clean all runall valgrind
+
+# compiles all days
+all : $(foreach d, $(DAYS), $(OUTFOLDER)/$(d))
 
 # compiles and runs the current day
 run : $(OUTFOLDER)/$(CURRENTDAY)
 	$<
-
-# compiles all days
-all : $(foreach d, $(DAYS), $(OUTFOLDER)/$(d))
 
 # run valgrind on the current day
 valgrind : $(OUTFOLDER)/$(CURRENTDAY)
@@ -29,7 +29,7 @@ valgrind : $(OUTFOLDER)/$(CURRENTDAY)
 
 # run all days (not useful for now)
 runall : $(foreach d, $(DAYS), $(OUTFOLDER)/$(d))
-	$<
+	$(foreach d, $(DAYS), $(OUTFOLDER)/$(d) ;)
 
 .PRECIOUS: $(OUTFOLDER)/%.o # forcing Make to keep all .o files
 # .o files

@@ -1,4 +1,4 @@
-#include "utils.h"
+#include "runner.h"
 
 // --------------------------------------------------------------------------------------------
 
@@ -123,10 +123,11 @@ int main()
     int *list1, *list2;
     readInput("input/1.txt", &size, &list1, &list2);
     if (size == 0)
-
         return 1;
 
     run(1, part1, part2, 3, size, list1, list2);
+
     free(list1);
     free(list2);
+    return 0;
 }
