@@ -8,7 +8,7 @@ INPUTFOLDER = ./input# folder with text inputs
 CODEFOLDER = ./code# folder with code
 
 # list of all days done
-DAYS = 1 2
+DAYS = 1 2 3
 # list of all missed days
 NOT_DONE_DAYS = 
 # day currently working on
@@ -30,6 +30,8 @@ valgrind : $(OUTFOLDER)/$(CURRENTDAY)
 # run all days (not useful for now)
 runall : $(foreach d, $(DAYS), $(OUTFOLDER)/$(d))
 	$(foreach d, $(DAYS), $(OUTFOLDER)/$(d) ;)
+	@echo -e "\n\033[4m"Days missed"\033[m" :
+	@echo $(foreach d, $(NOT_DONE_DAYS), $(d) )
 
 .PRECIOUS: $(OUTFOLDER)/%.o # forcing Make to keep all .o files
 # .o files
@@ -37,7 +39,7 @@ $(OUTFOLDER)/%.o : $(CODEFOLDER)/%.c Makefile
 	gcc $(CFLAGS) -o $@ -c $< 
 
 # binaries files
-$(OUTFOLDER)/% : $(OUTFOLDER)/%.o $(OUTFOLDER)/utils.o
+$(OUTFOLDER)/% : $(OUTFOLDER)/%.o $(OUTFOLDER)/runner.o
 	gcc $(CFLAGS) -o $@ $^ 
 
 clean :

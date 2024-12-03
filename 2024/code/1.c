@@ -9,21 +9,26 @@ int comp(const void *elem1, const void *elem2)
     return f - s;
 }
 
-int part1(int count, va_list args)
+long part1(int count, va_list args)
 {
     if (count != 3)
+    {
         printf("ERROR WITH ARGUMENTS\n");
+        return -1;
+    }
+
     int size = va_arg(args, int);
 
     int *list1 = va_arg(args, int *);
     int *list2 = va_arg(args, int *);
 
-    // sorting the arrays NOT in place (because I don't want to modify the input)
+    // sorting COPIES of the arrays (not modifying input)
     int *new_list1 = (int *)malloc(sizeof(int) * size);
     int *new_list2 = (int *)malloc(sizeof(int) * size);
     memcpy(new_list1, list1, size * sizeof(int));
     memcpy(new_list2, list2, size * sizeof(int));
 
+    // That's the slow part
     qsort(new_list1, size, sizeof(int), comp);
     qsort(new_list2, size, sizeof(int), comp);
 
@@ -38,18 +43,23 @@ int part1(int count, va_list args)
 
 // --------------------------------------------------------------------------------------------------------
 
-int *count_numbers(int size, int *list, int *max)
+/// @brief Makes my own kind of hashmap : just an array of int, size being the max value contained in the original array (+1)
+/// @param size The size of the original list
+/// @param list The list
+/// @param new_size The size of the new list == the max of the original list, will be modified
+/// @return The "hashmap"
+int *count_numbers(int size, int *list, int *new_size)
 {
     if (size <= 0) // not useful, just security
         return 0;
 
-    *max = list[0];
+    *new_size = list[0];
     for (int i = 0; i < size; i++)
     {
-        if (list[i] > *max)
-            *max = list[i];
+        if (list[i] > *new_size)
+            *new_size = list[i];
     }
-    int *result = (int *)calloc(*max + 1, sizeof(int)); // +1 necessary because it is indices stored in the array.
+    int *result = (int *)calloc(*new_size + 1, sizeof(int)); // +1 necessary because it is indices stored in the array.
 
     for (int i = 0; i < size; i++)
     {
@@ -58,28 +68,28 @@ int *count_numbers(int size, int *list, int *max)
     return result;
 }
 
-// Something like dictionaries could allow making an even faster version
-int part2(int count, va_list args)
+long part2(int count, va_list args)
 {
     if (count != 3)
+    {
         printf("ERROR WITH ARGUMENTS\n");
+        return -1;
+    }
+
     int size = va_arg(args, int);
     int *list1 = va_arg(args, int *);
     int *list2 = va_arg(args, int *);
 
-    int new_size1 = 0;
-    int *res1 = count_numbers(size, list1, &new_size1);
     int new_size2 = 0;
     int *res2 = count_numbers(size, list2, &new_size2);
 
     int similarity_score = 0;
-    for (int i = 0; i < new_size1; i++)
+    for (int i = 0; i < size; i++)
     {
-        if (res1[i] == 0 || res1[i] > new_size2)
+        if (list1[i] > new_size2)
             continue;
-        similarity_score += i * res1[i] * res2[i];
+        similarity_score += list1[i] * res2[list1[i]];
     }
-    free(res1);
     free(res2);
     return similarity_score;
 }
@@ -96,11 +106,9 @@ void readInput(char *filename, int *size, int **list1, int **list2)
     fgetpos(f, &start);
 
     *size = 0;
-    while (!feof(f) && buffer[0] != '\n')
-    {
+    while (!feof(f) && fgets(buffer, MAX_LINE_LEN, f))
         (*size)++;
-        fgets(buffer, MAX_LINE_LEN, f);
-    }
+
     if (*size == 0)
         return;
 

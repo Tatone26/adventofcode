@@ -8,7 +8,7 @@
 #include <time.h>
 
 /// @brief Max characters to read in a file line. Can be increased.
-#define MAX_LINE_LEN 10000
+#define MAX_LINE_LEN 20000
 
 #define CLOCKS_PER_MS (CLOCKS_PER_SEC / 1000)
 
@@ -18,6 +18,6 @@
 /// @param part2 The function for the second part. Works like the first one, and takes the same arguments.
 /// @param count The number of arguments to give to both functions.
 /// @param all The arguments to give to both functions.
-void run(int dayNum, int (*part1)(int count, va_list args), int (*part2)(int count, va_list args), int count, ...);
+void run(int dayNum, long (*part1)(int count, va_list args), long (*part2)(int count, va_list args), int count, ...);
 
 #endif

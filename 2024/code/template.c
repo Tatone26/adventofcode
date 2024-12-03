@@ -1,9 +1,13 @@
 #include "runner.h"
 
-int part1(int count, va_list args)
+long part1(int count, va_list args)
 {
     if (count != 2)
+    {
         printf("ERROR WITH ARGUMENTS\n");
+        return -1;
+    }
+
     char *input = va_arg(args, char *);
     int size = va_arg(args, int);
 
@@ -13,10 +17,14 @@ int part1(int count, va_list args)
 
 // -----------------------------------------------------------------
 
-int part2(int count, va_list args)
+long part2(int count, va_list args)
 {
     if (count != 2)
+    {
         printf("ERROR WITH ARGUMENTS\n");
+        return -1;
+    }
+
     char *input = va_arg(args, char *);
     int size = va_arg(args, int);
 

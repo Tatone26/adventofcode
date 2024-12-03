@@ -1,4 +1,4 @@
-#include "utils.h"
+#include "runner.h"
 
 #define COLOR_OFF "\033[m"
 #define BOLD "\033[1m"
@@ -7,25 +7,25 @@
 #define UNDERLINE "\033[4m"
 #define DIM "\033[2m"
 
-void run(int dayNum, int (*part1)(int count, va_list args), int (*part2)(int count, va_list args), int count, ...)
+void run(int dayNum, long (*part1)(int count, va_list args), long (*part2)(int count, va_list args), int count, ...)
 {
     printf(BOLD GREEN "\n  -- Day %d --  " COLOR_OFF "\n\n", dayNum);
 
     va_list list;
 
-    clock_t startPart1 = clock();       // Timer
-    va_start(list, count);              // Copying variadic arguments into list
-    int res1 = (int)part1(count, list); // First part
+    clock_t startPart1 = clock();         // Timer
+    va_start(list, count);                // Copying variadic arguments into list
+    long res1 = (long)part1(count, list); // First part
     clock_t endPart1 = clock();
 
-    printf(UNDERLINE "Part 1" COLOR_OFF " : %d\n", res1);
+    printf(UNDERLINE "Part 1" COLOR_OFF " : %ld\n", res1);
 
-    clock_t startPart2 = clock();       // Timer
-    va_start(list, count);              // Copying variadic arguments into list
-    int res2 = (int)part2(count, list); // Second part
+    clock_t startPart2 = clock();        // Timer
+    va_start(list, count);               // Copying variadic arguments into list
+    long res2 = (int)part2(count, list); // Second part
     clock_t endPart2 = clock();
 
-    printf(UNDERLINE "Part 2" COLOR_OFF " : %d\n\n", res2);
+    printf(UNDERLINE "Part 2" COLOR_OFF " : %ld\n\n", res2);
 
     va_end(list);
 
