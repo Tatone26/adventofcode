@@ -68,7 +68,7 @@ int main()
 {
     int size = 0;
     char *input = readInput("input/foo.txt", &size);
-    run(1, part1, part2, 2, input, size);
+    run(5, part1, part2, 2, input, size);
     free(input);
     return 0;
 }
