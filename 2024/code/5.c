@@ -67,7 +67,7 @@ long part1(int count, va_list args)
 
 // Couldn't use the built-in qsort function because I need the extra parameter. I know about qsort_r, but it is an external library and I don't like it :)
 // (also I hate myself)
-// tested : comb (bubble) sort
+// tested : comb (bubble) sort, slower
 void quicksort(short *update, int first, int last, short **read_rules)
 {
     if (first >= last)

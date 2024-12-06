@@ -6,11 +6,14 @@
 #include <string.h>
 #include <stdarg.h>
 #include <time.h>
+#include <stdbool.h>
 
 /// @brief Max characters to read in a file line. Can be increased.
 #define MAX_LINE_LEN 20000
 
 #define CLOCKS_PER_MS (CLOCKS_PER_SEC / 1000)
+
+#define INDEX(y, x) (y * width + x)
 
 /// @brief Runs a given adventofcode.com problem.
 /// @param dayNum The number of the day to run.
