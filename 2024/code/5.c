@@ -6,13 +6,8 @@ typedef struct rule_
     short second;
 } rule;
 
-long part1(int count, va_list args)
+luint part1(va_list args)
 {
-    if (count != 4)
-    {
-        printf("ERROR WITH ARGUMENTS\n");
-        return -1;
-    }
     rule *rules = va_arg(args, rule *);
     int nb_rules = va_arg(args, int);
     short **updates = va_arg(args, short **);
@@ -32,7 +27,7 @@ long part1(int count, va_list args)
         read_rules[r.second][j] = r.first;
     }
 
-    int result = 0;
+    luint result = 0;
 
     for (int r = 0; r < nb_updates; r++)
     {
@@ -101,13 +96,9 @@ void quicksort(short *update, int first, int last, short **read_rules)
     quicksort(update, pivot + 1, last, read_rules);
 }
 
-long part2(int count, va_list args)
+// I allowed sorting the input in-line in part two, because I didn't want to copy every line when it won't be used again.
+luint part2(va_list args)
 {
-    if (count != 4)
-    {
-        printf("ERROR WITH ARGUMENTS\n");
-        return -1;
-    }
     rule *rules = va_arg(args, rule *);
     int nb_rules = va_arg(args, int);
     short **updates = va_arg(args, short **);
@@ -127,7 +118,7 @@ long part2(int count, va_list args)
         read_rules[r.second][j] = r.first;
     }
 
-    int result = 0;
+    luint result = 0;
 
     for (int r = 0; r < nb_updates; r++)
     {
@@ -197,23 +188,16 @@ rule *readInput(char *filename, int *nb_rules, int *nb_updates, short ***updates
     }
 
     fgets(buffer, MAX_LINE_LEN, f);
-    fpos_t second_start;
-    fgetpos(f, &second_start);
-
-    int number_of_updates = 0;
-    while (!feof(f) && fgets(buffer, MAX_LINE_LEN, f))
-        number_of_updates++;
-    fsetpos(f, &second_start);
-    if (number_of_updates == 0)
+    *nb_updates = fileSize(f);
+    if (*nb_updates == 0)
     {
         free(rules);
         printf("error 2\n");
         return 0;
     }
-    *nb_updates = number_of_updates;
 
-    *updates = (short **)(malloc(sizeof(short *) * number_of_updates));
-    for (int i = 0; i < number_of_updates; i++)
+    *updates = (short **)(malloc(sizeof(short *) * *nb_updates));
+    for (int i = 0; i < *nb_updates; i++)
     {
         fgets(buffer, MAX_LINE_LEN, f);
         int size = 0;
@@ -249,6 +233,15 @@ int main()
     rule *rules = readInput("input/5.txt", &nb_rules, &nb_updates, &updates);
     if (!updates || !rules)
     {
+        if (rules)
+            free(rules);
+        if (updates)
+        {
+            for (int i = 0; i < nb_updates; i++)
+                free(updates[i]);
+            free(updates);
+        }
+
         printf("ERROR INPUT READING\n");
         return 1;
     }

@@ -13,7 +13,9 @@
 
 #define CLOCKS_PER_MS (CLOCKS_PER_SEC / 1000)
 
-#define INDEX(y, x) (y * width + x)
+#define INDEX(y, x) ((y) * width + (x))
+
+typedef unsigned long long luint;
 
 /// @brief Runs a given adventofcode.com problem.
 /// @param dayNum The number of the day to run.
@@ -21,6 +23,10 @@
 /// @param part2 The function for the second part. Works like the first one, and takes the same arguments.
 /// @param count The number of arguments to give to both functions.
 /// @param all The arguments to give to both functions.
-void run(int dayNum, long (*part1)(int count, va_list args), long (*part2)(int count, va_list args), int count, ...);
+void run(int dayNum, luint (*part1)(va_list args), luint (*part2)(va_list args), int count, ...);
+
+int nbOfDigits(luint n);
+
+int fileSize(FILE *f);
 
 #endif

@@ -9,14 +9,8 @@ int comp(const void *elem1, const void *elem2)
     return f - s;
 }
 
-long part1(int count, va_list args)
+luint part1(va_list args)
 {
-    if (count != 3)
-    {
-        printf("ERROR WITH ARGUMENTS\n");
-        return -1;
-    }
-
     int size = va_arg(args, int);
 
     int *list1 = va_arg(args, int *);
@@ -32,7 +26,7 @@ long part1(int count, va_list args)
     qsort(new_list1, size, sizeof(int), comp);
     qsort(new_list2, size, sizeof(int), comp);
 
-    int diff_sum = 0;
+    luint diff_sum = 0;
     for (int i = 0; i < size; i++)
         diff_sum += abs(new_list1[i] - new_list2[i]);
 
@@ -68,14 +62,8 @@ int *count_numbers(int size, int *list, int *new_size)
     return result;
 }
 
-long part2(int count, va_list args)
+luint part2(va_list args)
 {
-    if (count != 3)
-    {
-        printf("ERROR WITH ARGUMENTS\n");
-        return -1;
-    }
-
     int size = va_arg(args, int);
     int *list1 = va_arg(args, int *);
     int *list2 = va_arg(args, int *);
@@ -83,7 +71,7 @@ long part2(int count, va_list args)
     int new_size2 = 0;
     int *res2 = count_numbers(size, list2, &new_size2);
 
-    int similarity_score = 0;
+    luint similarity_score = 0;
     for (int i = 0; i < size; i++)
     {
         if (list1[i] > new_size2)
@@ -102,12 +90,7 @@ void readInput(char *filename, int *size, int **list1, int **list2)
     buffer[0] = 'a';
 
     FILE *f = fopen(filename, "r");
-    fpos_t start;
-    fgetpos(f, &start);
-
-    *size = 0;
-    while (!feof(f) && fgets(buffer, MAX_LINE_LEN, f))
-        (*size)++;
+    *size = fileSize(f);
 
     if (*size == 0)
         return;
@@ -115,7 +98,6 @@ void readInput(char *filename, int *size, int **list1, int **list2)
     *list1 = (int *)malloc(sizeof(int) * *size);
     *list2 = (int *)malloc(sizeof(int) * *size);
 
-    fsetpos(f, &start);
     for (int i = 0; i < *size; i++)
     {
         fgets(buffer, MAX_LINE_LEN, f);

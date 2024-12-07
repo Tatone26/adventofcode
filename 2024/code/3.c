@@ -2,18 +2,12 @@
 #include <regex.h>
 
 // I tested with regex, and it was slower :-)
-long part1(int count, va_list args)
+luint part1(va_list args)
 {
-    if (count != 2)
-    {
-        printf("ERROR WITH ARGUMENTS\n");
-        return -1;
-    }
-
     char *input = va_arg(args, char *);
     int size = va_arg(args, int);
 
-    long sum = 0;
+    luint sum = 0;
 
     int x, y;
     for (char *offset_input = input; offset_input < input + size; offset_input++)
@@ -36,18 +30,12 @@ long part1(int count, va_list args)
 
 // -----------------------------------------------------------------
 
-long part2(int count, va_list args)
+luint part2(va_list args)
 {
-    if (count != 2)
-    {
-        printf("ERROR WITH ARGUMENTS\n");
-        return -1;
-    }
-
     char *input = va_arg(args, char *);
     int size = va_arg(args, int);
 
-    long sum = 0;
+    luint sum = 0;
 
     int x, y;
     int enabled = 1;

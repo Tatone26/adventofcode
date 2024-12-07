@@ -1,6 +1,6 @@
 #include "runner.h"
 
-// I think part 2 could be faster, but I don't see how right now. ~35 ms on my laptop on a single core is pretty good.
+// I think part 2 could be faster, but I don't see how right now. ~35 ms on my laptop on a single core is pretty good, I guess
 
 typedef struct
 {
@@ -13,14 +13,8 @@ const Pos DIRECTIONS[4] = {{0, -1},
                            {0, 1},
                            {-1, 0}};
 
-long part1(int count, va_list args)
+luint part1(va_list args)
 {
-    if (count != 3)
-    {
-        printf("ERROR WITH ARGUMENTS\n");
-        return -1;
-    }
-
     char *input = va_arg(args, char *);
     int width = va_arg(args, int);
     int height = va_arg(args, int);
@@ -31,15 +25,15 @@ long part1(int count, va_list args)
         for (int j = 0; start.x == -1 && j < width; j++)
             if (input[INDEX(i, j)] == '^')
                 start = (Pos){j, i};
-    // safety net
-    if (start.y < 0 || start.y >= height || start.x < 0 || start.x >= width)
+    // safety check
+    if (start.x == -1)
         return 0;
-    // testing = nb of times on this spot (only one is useful, but ++ isn't slower), and starting position does count
-    bool *testing = (bool *)calloc(sizeof(bool), width * height);
+    // seen[INDEX(y, x)] = true if position already seen
+    bool *seen = (bool *)calloc(sizeof(bool), width * height);
 
     // counting the starting position
-    (testing[INDEX(start.y, start.x)]) = true;
-    int res = 1;
+    (seen[INDEX(start.y, start.x)]) = true;
+    luint res = 1;
 
     int direction = 0;
     Pos position = start;
@@ -59,21 +53,21 @@ long part1(int count, va_list args)
         {
             position = next;
             // if never seen before, count it
-            if (testing[index] == false)
+            if (!seen[index])
             {
                 res++;
-                testing[index] = true;
+                seen[index] = true;
             }
         }
     }
 
-    free(testing);
+    free(seen);
     return res;
 }
 
 // ----------------------------------------------------------------
 
-int checkForLoop(char *input, char *path, int width, int height, Pos position, int direction, Pos blocked)
+bool checkForLoop(char *input, bool (*path)[4], int width, int height, Pos position, int direction, Pos blocked)
 {
     while (1)
     {
@@ -83,28 +77,22 @@ int checkForLoop(char *input, char *path, int width, int height, Pos position, i
         // If can't move, turn
         if (input[INDEX(next.y, next.x)] == '#' || (next.x == blocked.x && next.y == blocked.y))
             direction = (direction + 1) % 4; // turn 90°
-        // If can move, do and update testing
+        // If can move, do and update seen
         else
         {
             // If we have already been on this position with this direction, loop found
-            if (path[INDEX(next.y, next.x)] & (1 << direction))
-                return 1;
-
-            path[INDEX(next.y, next.x)] |= (1 << direction);
+            if (path[INDEX(next.y, next.x)][direction])
+                return true;
+            // update path
+            path[INDEX(next.y, next.x)][direction] = true;
             position = next;
         }
     }
-    return 0;
+    return false;
 }
 
-long part2(int count, va_list args)
+luint part2(va_list args)
 {
-    if (count != 3)
-    {
-        printf("ERROR WITH ARGUMENTS\n");
-        return -1;
-    }
-
     char *input = va_arg(args, char *);
     int width = va_arg(args, int);
     int height = va_arg(args, int);
@@ -115,18 +103,18 @@ long part2(int count, va_list args)
         for (int j = 0; start.y == -1 && j < width; j++)
             if (input[INDEX(i, j)] == '^')
                 start = (Pos){j, i};
-    // safety net
-    if (start.x < 0 || start.x >= width || start.y < 0 || start.y >= height)
+    // safety check
+    if (start.x == -1)
         return 0;
-    // using the 5th bit to check if we have already tested this position -> it shouldn't be tested twice !!
-    // 1 - 4 is used to set if we have been on this position with the x position
-    // (that's just to save a bit of memory)
-    char *path = (char *)calloc(sizeof(char), width * height);
-    char *temp_path = (char *)malloc(sizeof(char) * width * height);
-    // cannot put anything on the starting position.
-    path[INDEX(start.y, start.x)] |= (1 << 5);
+    // path[INDEX][i] = true means that we have already been on pos INDEX with direction i
+    bool(*path)[4] = (bool(*)[4])calloc(sizeof(bool[4]), width * height);
+    bool(*temp_path)[4] = (bool(*)[4])malloc(sizeof(bool[4]) * width * height);
 
-    int res = 0;
+    bool *tested = (bool *)calloc(sizeof(bool), width * height);
+    // cannot put anything on the starting position.
+    tested[INDEX(start.y, start.x)] = true;
+
+    luint res = 0;
 
     Pos current_pos = start;
     int current_direction = 0;
@@ -145,19 +133,21 @@ long part2(int count, va_list args)
         else
         {
             // If we haven't already, analyze the rest of the path considering that the next pos is blocked.
-            if (!(path[index] & (1 << 5)))
+            if (!tested[index])
             {
-                memcpy(temp_path, path, sizeof(char) * width * height);
-                res += checkForLoop(input, temp_path, width, height, current_pos, current_direction, next_position);
-                path[index] |= (1 << 5);
+                memcpy(temp_path, path, sizeof(bool[4]) * width * height);
+                if (checkForLoop(input, temp_path, width, height, current_pos, current_direction, next_position))
+                    res++;
+                tested[index] = true;
             }
-            // update global pos and path anyway
-            path[index] |= (1 << current_direction);
+            // update global pos and path
+            path[index][current_direction] = true;
             current_pos = next_position;
         }
     }
 
     free(path);
+    free(tested);
     free(temp_path);
     return res;
 }
@@ -169,19 +159,10 @@ char *readInput(char *filename, int *width, int *height)
     char buffer[MAX_LINE_LEN];
 
     FILE *f = fopen(filename, "r");
+    *height = fileSize(f);
     fpos_t start;
     fgetpos(f, &start);
-    int n = 0;
-    while (!feof(f) && fgets(buffer, MAX_LINE_LEN, f))
-        n++;
-    if (n == 0)
-    {
-        printf("Error reading input.\n");
-        return 0;
-    }
-    *height = n;
 
-    fsetpos(f, &start);
     fgets(buffer, MAX_LINE_LEN, f);
     *width = strlen(buffer) - 1;
 

@@ -1,6 +1,7 @@
 #include "runner.h"
 
-#define INPUT(y, x) input[(y) * width + (x)]
+// #define INPUT(y, x) input[(y) * width + (x)]
+#define INPUT(y, x) input[INDEX(y, x)]
 
 int checkPattern(char *input, int y, int x, int dy, int dx, int width)
 {
@@ -28,19 +29,13 @@ int checkPattern(char *input, int y, int x, int dy, int dx, int width)
 }
 
 // > 1ms, which is pretty bad for this simple function.
-long part1(int count, va_list args)
+luint part1(va_list args)
 {
-    if (count != 3)
-    {
-        printf("ERROR WITH ARGUMENTS\n");
-        return -1;
-    }
-
     char *input = va_arg(args, char *);
     int width = va_arg(args, int);
     int height = va_arg(args, int);
 
-    int result = 0;
+    luint result = 0;
 
     for (int y = 0; y < height; y++)
     {
@@ -84,19 +79,13 @@ long part1(int count, va_list args)
 
 // -----------------------------------------------------------------
 
-long part2(int count, va_list args)
+luint part2(va_list args)
 {
-    if (count != 3)
-    {
-        printf("ERROR WITH ARGUMENTS\n");
-        return -1;
-    }
-
     char *input = va_arg(args, char *);
     int width = va_arg(args, int);
     int height = va_arg(args, int);
 
-    int result = 0;
+    luint result = 0;
     for (int y = 1; y < height - 1; y++)
     {
         for (int x = 1; x < width - 1; x++) // we test only diagonals going to the right so no need to check to close to the right

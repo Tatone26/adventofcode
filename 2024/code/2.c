@@ -26,18 +26,12 @@ int test_line(int *input)
     return 1;
 }
 
-long part1(int count, va_list args)
+luint part1(va_list args)
 {
-    if (count != 2)
-    {
-        printf("ERROR WITH ARGUMENTS\n");
-        return -1;
-    }
-
     int nb_reports = va_arg(args, int);
     int **input = va_arg(args, int **);
 
-    int count_safe = 0;
+    luint count_safe = 0;
 
     for (int i = 0; i < nb_reports; i++)
     {
@@ -49,17 +43,12 @@ long part1(int count, va_list args)
 
 // -----------------------------------------------------------------
 
-long part2(int count, va_list args)
+luint part2(va_list args)
 {
-    if (count != 2)
-    {
-        printf("ERROR WITH ARGUMENTS\n");
-        return -1;
-    }
     int nb_reports = va_arg(args, int);
     int **input = va_arg(args, int **);
 
-    int count_safe = 0;
+    luint count_safe = 0;
 
     // On all reports (line of input)
     for (int i = 0; i < nb_reports; i++)
@@ -103,17 +92,10 @@ void readInput(char *filename, int *nb_reports, int ***reports)
     buffer[0] = 'a';
 
     FILE *f = fopen(filename, "r");
-    fpos_t start;
-    fgetpos(f, &start);
-
-    *nb_reports = 0;
-    while (!feof(f) && fgets(buffer, MAX_LINE_LEN, f))
-        (*nb_reports)++;
+    *nb_reports = fileSize(f);
 
     if (*nb_reports == 0)
         return;
-
-    fsetpos(f, &start);
 
     *reports = (int **)malloc(sizeof(int *) * *nb_reports);
 

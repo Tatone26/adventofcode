@@ -1,63 +1,131 @@
 #include "runner.h"
 
-long part1(int count, va_list args)
+/// @brief Returns true if the given array has a way to give the total
+/// Goes backwards, because it is a LOT faster !
+bool isArrayGood(luint total, luint start, int index, luint *array)
 {
-    if (count != 2)
-    {
-        printf("ERROR WITH ARGUMENTS\n");
-        return -1;
-    }
+    if (index == 0)
+        return start == 0;
+    if (start % array[index] == 0 && isArrayGood(total, start / array[index], index - 1, array))
+        return true;
+    if (array[index] <= start && isArrayGood(total, start - array[index], index - 1, array))
+        return true;
+    return false;
+}
 
-    char *input = va_arg(args, char *);
+luint part1(va_list args)
+{
+    luint **input = va_arg(args, luint **);
     int size = va_arg(args, int);
 
-    printf("input : %s ; size %d\n", input, size);
-    return 0;
+    luint res = 0;
+
+    for (int i = 0; i < size; i++)
+    {
+        int start_index = 0;
+        while (input[i][start_index] != 0)
+            start_index++;
+        start_index--;
+        if (isArrayGood(input[i][0], input[i][0], start_index, input[i]))
+            res += input[i][0];
+    }
+    return res;
 }
 
 // -----------------------------------------------------------------
 
-long part2(int count, va_list args)
+luint pow_ten(int n)
 {
-    if (count != 2)
-    {
-        printf("ERROR WITH ARGUMENTS\n");
-        return -1;
-    }
+    luint temp = 1;
+    for (int i = 0; i < n; i++)
+        temp *= 10;
+    return temp;
+}
 
-    char *input = va_arg(args, char *);
+/// @brief Returns true if the given array has a way to give the total
+/// Goes backwards, because that's a lot faster ! -> went from 40ms forward to ~1ms backwards !
+bool isArrayGoodBis(luint total, luint start, int index, luint *array)
+{
+    if (index == 0)
+        return start == 0;
+    // if can divide
+    if (start % array[index] == 0 && isArrayGoodBis(total, start / array[index], index - 1, array))
+        return true;
+    // if can un-concatenate
+    luint temp = pow_ten(nbOfDigits(array[index]));
+    if ((start - array[index]) % temp == 0 && isArrayGoodBis(total, (start - array[index]) / temp, index - 1, array))
+        return true;
+    // if can substract
+    if (array[index] <= start && isArrayGoodBis(total, start - array[index], index - 1, array))
+        return true;
+
+    return false;
+}
+
+luint part2(va_list args)
+{
+    luint **input = va_arg(args, luint **);
     int size = va_arg(args, int);
 
-    printf("input : %s : size %d\n", input, size);
-    return 0;
+    luint res = 0;
+
+    for (int i = 0; i < size; i++)
+    {
+        int start_index = 0;
+        while (input[i][start_index] != 0)
+            start_index++;
+        start_index--;
+        if (isArrayGoodBis(input[i][0], input[i][0], start_index, input[i]))
+            res += input[i][0];
+    }
+    return res;
 }
 
 // ----------------------------------------------------------------
 
-char *readInput(char *filename, int *size)
+/// @brief It works please don't judge me
+luint **readInput(char *filename, int *size)
 {
     char buffer[MAX_LINE_LEN];
 
     FILE *f = fopen(filename, "r");
-    fpos_t start;
-    fgetpos(f, &start);
-    int n = 0;
-    while (!feof(f) && fgets(buffer, MAX_LINE_LEN, f))
-        n += strlen(buffer) + 1;
-    if (n == 0)
-    {
-        printf("Error reading input.\n");
-        return 0;
-    }
-    *size = n;
-    char *input = (char *)malloc(sizeof(char) * n);
+    *size = fileSize(f);
 
-    fsetpos(f, &start);
-    int offset = 0;
-    while (!feof(f) && fgets(buffer, MAX_LINE_LEN, f))
+    luint **input = (luint **)(malloc(sizeof(luint *) * *size));
+    for (int i = 0; i < *size; i++)
     {
-        strncpy(input + offset, buffer, strlen(buffer) - 1); // -1 to remove \n
-        offset += strlen(buffer) - 1;
+        fgets(buffer, MAX_LINE_LEN, f);
+        luint first;
+        if (sscanf(buffer, "%llu:", &first) != 1)
+        {
+            printf("ERRROR INPUT READING\n");
+            for (int j = 0; j < i; j++)
+                free(input[j]);
+            free(input);
+            return 0;
+        }
+        int size = 1;         // the nb before ':'
+        int start_offset = 2; // ': '
+        start_offset += nbOfDigits(first);
+        int offset = start_offset;
+        luint a;
+        while (sscanf(buffer + offset, "%llu", &a) == 1)
+        {
+            size++;
+            offset += nbOfDigits(a) + 1;
+        }
+        // printf("%s : size %d\n", buffer, size);
+        input[i] = (luint *)malloc(sizeof(luint) * (size + 1));
+        input[i][0] = first;
+        offset = start_offset;
+        int j = 1;
+        while (sscanf(buffer + offset, "%llu", &a) == 1)
+        {
+            input[i][j] = a;
+            j++;
+            offset += nbOfDigits(a) + 1;
+        }
+        input[i][size] = 0;
     }
 
     fclose(f);
@@ -67,8 +135,11 @@ char *readInput(char *filename, int *size)
 int main()
 {
     int size = 0;
-    char *input = readInput("input/foo.txt", &size);
-    run(1, part1, part2, 2, input, size);
+    luint **input = readInput("input/7.txt", &size);
+    run(7, part1, part2, 2, input, size);
+
+    for (int i = 0; i < size; i++)
+        free(input[i]);
     free(input);
     return 0;
 }

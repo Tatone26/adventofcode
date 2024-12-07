@@ -1,6 +1,6 @@
 #include "runner.h"
 
-long part1(int count, va_list args)
+luint part1(int count, va_list args)
 {
     if (count != 2)
     {
@@ -17,7 +17,7 @@ long part1(int count, va_list args)
 
 // -----------------------------------------------------------------
 
-long part2(int count, va_list args)
+luint part2(int count, va_list args)
 {
     if (count != 2)
     {
@@ -39,20 +39,9 @@ char *readInput(char *filename, int *size)
     char buffer[MAX_LINE_LEN];
 
     FILE *f = fopen(filename, "r");
-    fpos_t start;
-    fgetpos(f, &start);
-    int n = 0;
-    while (!feof(f) && fgets(buffer, MAX_LINE_LEN, f))
-        n += strlen(buffer) + 1;
-    if (n == 0)
-    {
-        printf("Error reading input.\n");
-        return 0;
-    }
-    *size = n;
-    char *input = (char *)malloc(sizeof(char) * n);
+    *size = fileSize(f);
+    char *input = (char *)malloc(sizeof(char) * *size);
 
-    fsetpos(f, &start);
     int offset = 0;
     while (!feof(f) && fgets(buffer, MAX_LINE_LEN, f))
     {
