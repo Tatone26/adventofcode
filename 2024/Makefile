@@ -8,11 +8,11 @@ INPUTFOLDER = ./input# folder with text inputs
 CODEFOLDER = ./code# folder with code
 
 # list of all days done
-DAYS = 1 2 3 4 5 6 7
+DAYS = 1 2 3 4 5 6 7 8
 # list of all missed days
 NOT_DONE_DAYS = 
 # day currently working on
-CURRENTDAY = 6
+CURRENTDAY = 8
 
 .PHONY : clean all runall valgrind
 

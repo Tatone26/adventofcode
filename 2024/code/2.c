@@ -2,11 +2,10 @@
 
 int test_line(int *input)
 {
-    // safety net
+    // safety check
     if (input[0] == 0 || input[1] == 0)
-    {
         return 0;
-    }
+
     // ascending or descending
     int ascending = input[1] - input[0];
     if (ascending < 0)
@@ -18,9 +17,8 @@ int test_line(int *input)
         int diff = input[j] - previous_number;
         if ((abs(diff) == 0) || (abs(diff) > 3) ||
             (ascending && diff < 0) || (!ascending && diff > 0))
-        {
             return 0;
-        }
+
         previous_number = input[j];
     }
     return 1;
@@ -34,9 +32,7 @@ luint part1(va_list args)
     luint count_safe = 0;
 
     for (int i = 0; i < nb_reports; i++)
-    {
         count_safe += test_line(input[i]);
-    }
 
     return count_safe;
 }
@@ -106,10 +102,9 @@ void readInput(char *filename, int *nb_reports, int ***reports)
         int count = sscanf(buffer, "%d %d %d %d %d %d %d %d", &temp[0], &temp[1], &temp[2], &temp[3], &temp[4], &temp[5], &temp[6], &temp[7]);
         (*reports)[i] = (int *)malloc(sizeof(int) * (count + 1));
         for (int j = 0; j < count; j++)
-        {
             (*reports)[i][j] = temp[j];
-        }
-        (*reports)[i][count] = 0; // I had a "0" at the end to know the end of the array (like a string)
+
+        (*reports)[i][count] = 0; // I add a "0" at the end to know the end of the array (like a string)
     }
 
     fclose(f);

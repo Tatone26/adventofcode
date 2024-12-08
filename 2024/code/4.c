@@ -147,6 +147,5 @@ int main()
     run(4, part1, part2, 3, input, width, height);
 
     free(input);
-
     return 0;
 }

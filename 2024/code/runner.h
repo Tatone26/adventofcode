@@ -15,6 +15,8 @@
 
 #define INDEX(y, x) ((y) * width + (x))
 
+#define INBOUNDS(pos, width, height) (pos.x >= 0 && pos.y >= 0 && pos.x < width && pos.y < height)
+
 typedef unsigned long long luint;
 
 /// @brief Runs a given adventofcode.com problem.

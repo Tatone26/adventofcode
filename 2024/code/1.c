@@ -56,9 +56,8 @@ int *count_numbers(int size, int *list, int *new_size)
     int *result = (int *)calloc(*new_size + 1, sizeof(int)); // +1 necessary because it is indices stored in the array.
 
     for (int i = 0; i < size; i++)
-    {
         result[list[i]]++;
-    }
+
     return result;
 }
 

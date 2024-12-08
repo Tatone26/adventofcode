@@ -1,7 +1,5 @@
 #include "runner.h"
 
-// I think part 2 could be faster, but I don't see how right now. ~35 ms on my laptop on a single core is pretty good, I guess
-
 typedef struct
 {
     int x;
@@ -13,6 +11,7 @@ const Pos DIRECTIONS[4] = {{0, -1},
                            {0, 1},
                            {-1, 0}};
 
+/// @brief Part 1 : just move the guard step by step, counting every new one.
 luint part1(va_list args)
 {
     char *input = va_arg(args, char *);
@@ -26,95 +25,14 @@ luint part1(va_list args)
             if (input[INDEX(i, j)] == '^')
                 start = (Pos){j, i};
     // safety check
-    if (start.x == -1)
+    if (start.x == -1 || start.y == -1)
         return 0;
+
     // seen[INDEX(y, x)] = true if position already seen
     bool *seen = (bool *)calloc(sizeof(bool), width * height);
-
     // counting the starting position
     (seen[INDEX(start.y, start.x)]) = true;
     luint res = 1;
-
-    int direction = 0;
-    Pos position = start;
-    // Looping while we are in the map
-    while (1)
-    {
-        Pos next = (Pos){position.x + DIRECTIONS[direction].x, position.y + DIRECTIONS[direction].y};
-        // Break if the next position is outside of the map
-        if (next.x < 0 || next.x >= width || next.y < 0 || next.y >= height)
-            break;
-        int index = INDEX(next.y, next.x);
-        // if can't move, turn
-        if (input[index] == '#')
-            direction = (direction + 1) % 4; // turn 90°
-        // If can move, move
-        else
-        {
-            position = next;
-            // if never seen before, count it
-            if (!seen[index])
-            {
-                res++;
-                seen[index] = true;
-            }
-        }
-    }
-
-    free(seen);
-    return res;
-}
-
-// ----------------------------------------------------------------
-
-bool checkForLoop(char *input, bool (*path)[4], int width, int height, Pos position, int direction, Pos blocked)
-{
-    while (1)
-    {
-        Pos next = (Pos){position.x + DIRECTIONS[direction].x, position.y + DIRECTIONS[direction].y};
-        if (next.x < 0 || next.x >= width || next.y < 0 || next.y >= height)
-            break;
-        // If can't move, turn
-        if (input[INDEX(next.y, next.x)] == '#' || (next.x == blocked.x && next.y == blocked.y))
-            direction = (direction + 1) % 4; // turn 90°
-        // If can move, do and update seen
-        else
-        {
-            // If we have already been on this position with this direction, loop found
-            if (path[INDEX(next.y, next.x)][direction])
-                return true;
-            // update path
-            path[INDEX(next.y, next.x)][direction] = true;
-            position = next;
-        }
-    }
-    return false;
-}
-
-luint part2(va_list args)
-{
-    char *input = va_arg(args, char *);
-    int width = va_arg(args, int);
-    int height = va_arg(args, int);
-
-    // Find starting position
-    Pos start = {-1, -1};
-    for (int i = 0; start.y == -1 && i < height; i++)
-        for (int j = 0; start.y == -1 && j < width; j++)
-            if (input[INDEX(i, j)] == '^')
-                start = (Pos){j, i};
-    // safety check
-    if (start.x == -1)
-        return 0;
-    // path[INDEX][i] = true means that we have already been on pos INDEX with direction i
-    bool(*path)[4] = (bool(*)[4])calloc(sizeof(bool[4]), width * height);
-    bool(*temp_path)[4] = (bool(*)[4])malloc(sizeof(bool[4]) * width * height);
-
-    bool *tested = (bool *)calloc(sizeof(bool), width * height);
-    // cannot put anything on the starting position.
-    tested[INDEX(start.y, start.x)] = true;
-
-    luint res = 0;
 
     Pos current_pos = start;
     int current_direction = 0;
@@ -126,29 +44,189 @@ luint part2(va_list args)
             break;
 
         int index = INDEX(next_position.y, next_position.x);
-        // if can't move, turn
+        // if can't move, turn 90° else move
+        if (input[index] == '#')
+            current_direction = (current_direction + 1) % 4;
+        else
+        {
+            if (!seen[index])
+            {
+                res++;
+                seen[index] = true;
+            }
+            current_pos = next_position;
+        }
+    }
+
+    free(seen);
+    return res;
+}
+
+// ----------------------------------------------------------------
+
+/// @brief Looks for a loop in the guard's path
+///
+/// Uses the already-computed path, pre-processed rows and columns and a given position to block too.
+bool checkForLoop(int (*path)[4], int width, Pos position, int direction, int **columns, int **rows, Pos blocked, int counter)
+{
+    while (1)
+    {
+        Pos next = {-1, -1};
+        // Find next obstacle and get the position just before it
+        switch (direction) // north
+        {
+        case 0:
+            next.x = position.x; // x doesn't change
+            for (int i = columns[position.x][0]; i > 0; i--)
+                // loop over all obstacles on this column, starting from the bottom
+                if (columns[position.x][i] < position.y)
+                {
+                    // stop at the first obstacle on the path
+                    next.y = columns[position.x][i] + 1;
+                    break;
+                }
+            // if need, consider the "blocked" position too
+            if (blocked.x == position.x && blocked.y < position.y && (blocked.y >= next.y || next.y == -1))
+                next.y = blocked.y + 1;
+            break;
+        case 1: // east
+            next.y = position.y;
+            for (int i = 1; i < rows[position.y][0] + 1; i++)
+                if (rows[position.y][i] > position.x)
+                {
+                    next.x = rows[position.y][i] - 1;
+                    break;
+                }
+            if (blocked.y == position.y && blocked.x > position.x && (blocked.x <= next.x || next.x == -1))
+                next.x = blocked.x - 1;
+            break;
+        case 2: // south
+            next.x = position.x;
+            for (int i = 1; i < columns[position.x][0] + 1; i++)
+                if (columns[position.x][i] > position.y)
+                {
+                    next.y = columns[position.x][i] - 1;
+                    break;
+                }
+            if (blocked.x == position.x && blocked.y > position.y && (blocked.y <= next.y || next.y == -1))
+                next.y = blocked.y - 1;
+            break;
+        case 3: // west
+            next.y = position.y;
+            for (int i = rows[position.y][0]; i > 0; i--)
+                if (rows[position.y][i] < position.x)
+                {
+                    next.x = rows[position.y][i] + 1;
+                    break;
+                }
+            if (blocked.y == position.y && blocked.x < position.x && (blocked.x >= next.x || next.x == -1))
+                next.x = blocked.x + 1;
+            break;
+        }
+
+        // if there were no obstacles on the path, then we are out of the map.
+        if (next.x == -1 || next.y == -1)
+            return false;
+        // turn 90°
+        direction = (direction + 1) % 4;
+        // check if position already seen
+        if (path[INDEX(next.y, next.x)][direction] == 1 || path[INDEX(next.y, next.x)][direction] == counter)
+            return true;
+        // update path, will never change a "1"
+        path[INDEX(next.y, next.x)][direction] = counter;
+        position = next;
+    }
+}
+
+/// @brief Processes the input into lists of positions of obstacles, one per column (or row). First value being the total number of obstacles.
+int **processInput(char *input, int width, int height, bool columns)
+{
+    int **array = (int **)malloc(sizeof(int *) * (columns ? width : height));
+    for (int i = 0; i < (columns ? width : height); i++)
+    {
+        array[i] = (int *)malloc(sizeof(int) * (columns ? width + 1 : height + 1));
+        int d = 1;
+        for (int j = 0; j < (columns ? height : width); j++)
+            if (input[INDEX(columns ? j : i, columns ? i : j)] == '#')
+            {
+                array[i][d] = j;
+                d++;
+            }
+        array[i][0] = d - 1; // nb of obstacles found
+    }
+    return array;
+}
+
+/// @brief Part 2 : pre-process the input into lists of obstacles positions per row or column. Allows "teleporting" to the next obstacle more efficiently
+/// when looking for loops. Still moves step by step like part one to find the start of the path and the possible positions.
+luint part2(va_list args)
+{
+    char *input = va_arg(args, char *);
+    int width = va_arg(args, int);
+    int height = va_arg(args, int);
+
+    luint res = 0;
+
+    // Find starting position
+    Pos start = {-1, -1};
+    for (int i = 0; start.y == -1 && i < height; i++)
+        for (int j = 0; start.y == -1 && j < width; j++)
+            if (input[INDEX(i, j)] == '^')
+                start = (Pos){j, i};
+
+    // To gain time later : pre-processing the input into two arrays, for the column and the rows, keeping only the coordinates of the blocks
+    // Each array is made as [size, pos1, pos2]... with size being the number of positions
+    int **columns = processInput(input, width, height, true);
+    int **rows = processInput(input, width, height, false);
+
+    // path[INDEX][i] = true means that we have already been on pos INDEX with direction i
+    int(*path)[4] = (int(*)[4])calloc(sizeof(int[4]), width * height);
+    bool *tested = (bool *)calloc(sizeof(bool), width * height);
+    // this "test_counter" value allows multiple instances of the checkLoop function and the main loop to share the same "path" instead of copying it
+    int test_counter = 2;
+    // safety check
+    if (start.x == -1)
+        goto end;
+    // cannot put anything on the starting position.
+    tested[INDEX(start.y, start.x)] = true;
+
+    Pos current_pos = start;
+    int current_direction = 0;
+    while (1)
+    {
+        Pos next_position = (Pos){current_pos.x + DIRECTIONS[current_direction].x, current_pos.y + DIRECTIONS[current_direction].y};
+        // Break if the next position is outside of the map
+        if (next_position.x < 0 || next_position.x >= width || next_position.y < 0 || next_position.y >= height)
+            break;
+
+        int index = INDEX(next_position.y, next_position.x);
         if (input[index] == '#')
             current_direction = (current_direction + 1) % 4; // turn 90°
-        // If can move, move
         else
         {
             // If we haven't already, analyze the rest of the path considering that the next pos is blocked.
             if (!tested[index])
             {
-                memcpy(temp_path, path, sizeof(bool[4]) * width * height);
-                if (checkForLoop(input, temp_path, width, height, current_pos, current_direction, next_position))
+                if (checkForLoop(path, width, current_pos, current_direction, columns, rows, next_position, test_counter))
                     res++;
                 tested[index] = true;
+                test_counter++;
             }
             // update global pos and path
-            path[index][current_direction] = true;
+            path[index][current_direction] = 1;
             current_pos = next_position;
         }
     }
+end:
+    for (int i = 0; i < width; i++)
+        free(columns[i]);
+    free(columns);
+    for (int i = 0; i < height; i++)
+        free(rows[i]);
+    free(rows);
 
     free(path);
     free(tested);
-    free(temp_path);
     return res;
 }
 
@@ -181,14 +259,8 @@ char *readInput(char *filename, int *width, int *height)
 
 int main()
 {
-    int width = 0;
-    int height = 0;
+    int width = 0, height = 0;
     char *input = readInput("input/6.txt", &width, &height);
-    if (!input)
-    {
-        printf("error\n");
-        return 1;
-    }
     run(6, part1, part2, 3, input, width, height);
     free(input);
     return 0;

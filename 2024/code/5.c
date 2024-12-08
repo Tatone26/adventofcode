@@ -154,7 +154,6 @@ luint part2(va_list args)
 
 // ----------------------------------------------------------------
 
-// A few input perks : only 2 digits number and rules are positioned by blocks, but those can be at multiple spaces
 rule *readInput(char *filename, int *nb_rules, int *nb_updates, short ***updates)
 {
     char buffer[MAX_LINE_LEN];
@@ -180,7 +179,7 @@ rule *readInput(char *filename, int *nb_rules, int *nb_updates, short ***updates
         int a, b;
         if (sscanf(buffer, "%d|%d\n", &a, &b) != 2)
         {
-            printf("error\n");
+            printf("Error reading input bis.\n");
             free(rules);
             return 0;
         }
@@ -192,7 +191,7 @@ rule *readInput(char *filename, int *nb_rules, int *nb_updates, short ***updates
     if (*nb_updates == 0)
     {
         free(rules);
-        printf("error 2\n");
+        printf("Error reading input ter.\n");
         return 0;
     }
 
@@ -227,8 +226,7 @@ rule *readInput(char *filename, int *nb_rules, int *nb_updates, short ***updates
 
 int main()
 {
-    int nb_rules = 0;
-    int nb_updates = 0;
+    int nb_rules = 0, nb_updates = 0;
     short **updates = 0;
     rule *rules = readInput("input/5.txt", &nb_rules, &nb_updates, &updates);
     if (!updates || !rules)
@@ -241,7 +239,6 @@ int main()
                 free(updates[i]);
             free(updates);
         }
-
         printf("ERROR INPUT READING\n");
         return 1;
     }
