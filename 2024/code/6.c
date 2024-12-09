@@ -40,7 +40,7 @@ luint part1(va_list args)
     {
         Pos next_position = (Pos){current_pos.x + DIRECTIONS[current_direction].x, current_pos.y + DIRECTIONS[current_direction].y};
         // Break if the next position is outside of the map
-        if (next_position.x < 0 || next_position.x >= width || next_position.y < 0 || next_position.y >= height)
+        if (!INBOUNDS(next_position, width, height))
             break;
 
         int index = INDEX(next_position.y, next_position.x);
@@ -196,7 +196,7 @@ luint part2(va_list args)
     {
         Pos next_position = (Pos){current_pos.x + DIRECTIONS[current_direction].x, current_pos.y + DIRECTIONS[current_direction].y};
         // Break if the next position is outside of the map
-        if (next_position.x < 0 || next_position.x >= width || next_position.y < 0 || next_position.y >= height)
+        if (!INBOUNDS(next_position, width, height))
             break;
 
         int index = INDEX(next_position.y, next_position.x);

@@ -8,7 +8,7 @@ bool isArrayGood(luint total, luint start, int index, luint *array)
         return start == 0;
     if (start % array[index] == 0 && isArrayGood(total, start / array[index], index - 1, array))
         return true;
-    if (array[index] <= start && isArrayGood(total, start - array[index], index - 1, array))
+    if (isArrayGood(total, start - array[index], index - 1, array))
         return true;
     return false;
 }
@@ -22,10 +22,11 @@ luint part1(va_list args)
 
     for (int i = 0; i < size; i++)
     {
-        int start_index = 0;
+        int start_index = 1;
         while (input[i][start_index] != 0)
             start_index++;
         start_index--;
+
         if (isArrayGood(input[i][0], input[i][0], start_index, input[i]))
             res += input[i][0];
     }
@@ -55,8 +56,8 @@ bool isArrayGoodBis(luint total, luint start, int index, luint *array)
     luint temp = pow_ten(nbOfDigits(array[index]));
     if ((start - array[index]) % temp == 0 && isArrayGoodBis(total, (start - array[index]) / temp, index - 1, array))
         return true;
-    // if can substract
-    if (array[index] <= start && isArrayGoodBis(total, start - array[index], index - 1, array))
+    // if can substract (you can always substract, worst case scenario is overflowing)
+    if (isArrayGoodBis(total, start - array[index], index - 1, array))
         return true;
 
     return false;
@@ -71,10 +72,11 @@ luint part2(va_list args)
 
     for (int i = 0; i < size; i++)
     {
-        int start_index = 0;
+        int start_index = 1;
         while (input[i][start_index] != 0)
             start_index++;
         start_index--;
+
         if (isArrayGoodBis(input[i][0], input[i][0], start_index, input[i]))
             res += input[i][0];
     }
