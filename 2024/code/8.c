@@ -2,13 +2,6 @@
 
 #define MAX_IDENTICAL_ANTENNAS 10
 #define MAX_ANTENNA_INDEX 62
-#define INDEX_POS(pos) (INDEX(pos.y, pos.x))
-
-typedef struct
-{
-    int x;
-    int y;
-} Pos;
 
 // 0 - 61 inclus
 int charIndex(char c)

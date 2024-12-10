@@ -1,11 +1,5 @@
 #include "runner.h"
 
-typedef struct
-{
-    int x;
-    int y;
-} Pos;
-
 const Pos DIRECTIONS[4] = {{0, -1},
                            {1, 0},
                            {0, 1},

@@ -13,7 +13,14 @@
 
 #define CLOCKS_PER_MS (CLOCKS_PER_SEC / 1000)
 
+typedef struct
+{
+    int x;
+    int y;
+} Pos;
+
 #define INDEX(y, x) ((y) * width + (x))
+#define INDEX_POS(pos) (INDEX(pos.y, pos.x))
 
 #define INBOUNDS(pos, width, height) (pos.x >= 0 && pos.y >= 0 && pos.x < width && pos.y < height)
 
