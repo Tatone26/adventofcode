@@ -7,6 +7,7 @@
 #include <stdarg.h>
 #include <time.h>
 #include <stdbool.h>
+#include <math.h>
 
 /// @brief Max characters to read in a file line. Can be increased.
 #define MAX_LINE_LEN 20000

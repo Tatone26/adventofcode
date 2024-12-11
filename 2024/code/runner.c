@@ -47,17 +47,16 @@ void run(int dayNum, luint (*part1)(va_list args), luint (*part2)(va_list args),
     printf(DIM "Total Time :%s %.3fms\n" COLOR_OFF, colorTotal, timePart1 + timePart2);
 }
 
-/// @brief Counts the number of digits of the given number in base 10
-/// @param n
-/// @return
+/// @brief Counts the number of digits of the given number in base 10, by divisions
+/// @param n The number
+/// @return The number of digits
 int nbOfDigits(luint n)
 {
-    int res = 0;
-    while (n)
-    {
-        n /= 10;
+    if (n == 0)
+        return 1;
+    int res = 1;
+    while (n /= 10)
         res++;
-    }
     return res;
 }
 
