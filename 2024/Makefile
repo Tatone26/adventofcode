@@ -8,11 +8,11 @@ INPUTFOLDER = ./input# folder with text inputs
 CODEFOLDER = ./code# folder with code
 
 # list of all days done
-DAYS = 1 2 3 4 5 6 7 8 9 10 11
+DAYS = 1 2 3 4 5 6 7 8 9 10 11 12
 # list of all missed days
 NOT_DONE_DAYS = 
 # day currently working on
-CURRENTDAY = 11
+DAY = 12
 
 .PHONY : clean all runall valgrind
 
@@ -20,16 +20,20 @@ CURRENTDAY = 11
 all : $(foreach d, $(DAYS), $(OUTFOLDER)/$(d))
 
 # compiles and runs the current day
-run : $(OUTFOLDER)/$(CURRENTDAY)
-	$<
+run : $(OUTFOLDER)/$(DAY)
+	$< $(INPUTFOLDER)/$(DAY).txt
+
+# compiles and runs the current day with foo.txt
+test :$(OUTFOLDER)/$(DAY)
+	$< $(INPUTFOLDER)/foo.txt
 
 # run valgrind on the current day
-valgrind : $(OUTFOLDER)/$(CURRENTDAY)
-	valgrind $<
+valgrind : $(OUTFOLDER)/$(DAY)
+	valgrind $< $(INPUTFOLDER)/$(DAY).txt
 
 # run all days (not useful for now)
 runall : $(foreach d, $(DAYS), $(OUTFOLDER)/$(d))
-	time ($(foreach d, $(DAYS), $(OUTFOLDER)/$(d) ;))
+	time ($(foreach d, $(DAYS), $(OUTFOLDER)/$(d) $(INPUTFOLDER)/$(d).txt;))
 	@echo -e "\n\033[4m"Days missed"\033[m" :
 	@echo $(foreach d, $(NOT_DONE_DAYS), $(d) )
 

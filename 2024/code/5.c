@@ -6,12 +6,12 @@ typedef struct rule_
     short second;
 } rule;
 
-luint part1(va_list args)
+luint part1(void *input_v, void **args)
 {
-    rule *rules = va_arg(args, rule *);
-    int nb_rules = va_arg(args, int);
-    short **updates = va_arg(args, short **);
-    int nb_updates = va_arg(args, int);
+    rule *rules = (rule *)input_v;
+    int nb_rules = *(int *)args[0];
+    short **updates = (short **)args[1];
+    int nb_updates = *(int *)args[2];
 
     // Reading the rules (only two digits number allow making a fixed size array), inverted (at array x you have all y|x)
     short *read_rules[100] = {0};
@@ -97,12 +97,12 @@ void quicksort(short *update, int first, int last, short **read_rules)
 }
 
 // I allowed sorting the input in-line in part two, because I didn't want to copy every line when it won't be used again.
-luint part2(va_list args)
+luint part2(void *input_v, void **args)
 {
-    rule *rules = va_arg(args, rule *);
-    int nb_rules = va_arg(args, int);
-    short **updates = va_arg(args, short **);
-    int nb_updates = va_arg(args, int);
+    rule *rules = (rule *)input_v;
+    int nb_rules = *(int *)args[0];
+    short **updates = (short **)args[1];
+    int nb_updates = *(int *)args[2];
 
     // Reading the rules (only two digits number allow making a fixed size array), inverted : at array x, you have the y that needs to be BEFORE (so y|x)
     short *read_rules[100] = {0};
@@ -224,11 +224,13 @@ rule *readInput(char *filename, int *nb_rules, int *nb_updates, short ***updates
     return rules;
 }
 
-int main()
+int main(int argc, char **argv)
 {
+    if (argc != 2)
+        return 2;
     int nb_rules = 0, nb_updates = 0;
     short **updates = 0;
-    rule *rules = readInput("input/5.txt", &nb_rules, &nb_updates, &updates);
+    rule *rules = readInput(argv[1], &nb_rules, &nb_updates, &updates);
     if (!updates || !rules)
     {
         if (rules)
@@ -242,8 +244,9 @@ int main()
         printf("ERROR INPUT READING\n");
         return 1;
     }
+    void *args[3] = {&nb_rules, updates, &nb_updates};
 
-    run(5, part1, part2, 4, rules, nb_rules, updates, nb_updates);
+    run(5, part1, part2, rules, args);
 
     for (int i = 0; i < nb_updates; i++)
         free(updates[i]);

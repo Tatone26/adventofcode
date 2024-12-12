@@ -4,10 +4,10 @@
 
 /// @brief Calculate the checksum directly by reading the input, with carefully updated variables to know where we at.
 /// @return The checksum
-luint part1(va_list args)
+luint part1(void *input_v, void **args)
 {
-    short *input = va_arg(args, short *);
-    int size = va_arg(args, int);
+    short *input = (short *)input_v;
+    int size = ((int *)args)[0];
     if (size == 0)
         return 0;
 
@@ -152,10 +152,10 @@ luint defragmentation(File *files, int nb_files, FreeSpaces spaces)
 
 // -----------------------------------------------------------------
 
-luint part2(va_list args)
+luint part2(void *input_v, void **args)
 {
-    short *input = va_arg(args, short *);
-    int size = va_arg(args, int);
+    short *input = (short *)input_v;
+    int size = ((int *)args)[0];
     if (size == 0)
         return 0;
 
@@ -228,11 +228,13 @@ short *readInput(char *filename, int *size)
     return input;
 }
 
-int main()
+int main(int argc, char **argv)
 {
+    if (argc != 2)
+        return 2;
     int size = 0;
-    short *input = readInput("input/9.txt", &size);
-    run(9, part1, part2, 2, input, size);
+    short *input = readInput(argv[1], &size);
+    run(9, part1, part2, input, (void **)&size);
 
     free(input);
     return 0;

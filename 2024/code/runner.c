@@ -13,28 +13,21 @@
 /// @param part2
 /// @param count
 /// @param parameters The parameters to pass to the functions.
-void run(int dayNum, luint (*part1)(va_list args), luint (*part2)(va_list args), int count, ...)
+void run(int dayNum, luint (*part1)(void *input, void **args), luint (*part2)(void *input, void **args), void *input, void **args)
 {
     printf(BOLD GREEN "\n  -- Day %d --  " COLOR_OFF "\n\n", dayNum);
 
-    va_list list;
-
-    clock_t startPart1 = clock();    // Timer
-    va_start(list, count);           // Copying variadic arguments into list
-    luint res1 = (luint)part1(list); // First part
+    clock_t startPart1 = clock();           // Timer
+    luint res1 = (luint)part1(input, args); // First part
     clock_t endPart1 = clock();
 
     printf(UNDERLINE "Part 1" COLOR_OFF " : %llu\n", res1);
 
-    clock_t startPart2 = clock();    // Timer
-    va_start(list, count);           // Copying variadic arguments into list
-    luint res2 = (luint)part2(list); // Second part
+    clock_t startPart2 = clock();           // Timer
+    luint res2 = (luint)part2(input, args); // Second part
     clock_t endPart2 = clock();
 
     printf(UNDERLINE "Part 2" COLOR_OFF " : %llu\n\n", res2);
-
-    va_end(list);
-
     // Timing calculations
     float timePart1 = (float)(endPart1 - startPart1) / CLOCKS_PER_MS;
     float timePart2 = (float)(endPart2 - startPart2) / CLOCKS_PER_MS;

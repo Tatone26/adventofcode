@@ -2,21 +2,22 @@
 #include <regex.h>
 
 // I tested with regex, and it was slower :-)
-luint part1(va_list args)
+luint part1(void *input_v, void **args)
 {
-    char *input = va_arg(args, char *);
-    int size = va_arg(args, int);
+    char *input = (char *)input_v;
+    int size = ((int *)args)[0];
 
     luint sum = 0;
 
     int x, y;
-    for (char *offset_input = input; offset_input < input + size; offset_input++)
+    for (int offset_input = 0;
+         offset_input < size; offset_input++)
     {
         char dummy[2]; // used for forcing the pattern matching
-        if (strncmp(offset_input, "mul(", 4) == 0)
+        if (offset_input + 4 <= size && strncmp(input + offset_input, "mul(", 4) == 0)
         {
             // "mul(%d,%d%1[)]" -> the last "%1[)]" forces sscanf to check for a closing parenthesis following the number.
-            if (sscanf(offset_input, "mul(%d,%d%1[)]", &x, &y, dummy) == 3)
+            if (sscanf(input + offset_input, "mul(%d,%d%1[)]", &x, &y, dummy) == 3)
             {
                 sum += (x) * (y);
                 offset_input += 3; // "%d,%d)" - 1
@@ -30,23 +31,23 @@ luint part1(va_list args)
 
 // -----------------------------------------------------------------
 
-luint part2(va_list args)
+luint part2(void *input_v, void **args)
 {
-    char *input = va_arg(args, char *);
-    int size = va_arg(args, int);
+    char *input = (char *)input_v;
+    int size = ((int *)args)[0];
 
     luint sum = 0;
 
     int x, y;
     int enabled = 1;
-    for (char *offset_input = input; offset_input < input + size; offset_input++)
+    for (int offset_input = 0; offset_input < size; offset_input++)
     {
-        if (strncmp(offset_input, "do()", 4) == 0)
+        if (strncmp(input + offset_input, "do()", 4) == 0)
         {
             enabled = 1;
             offset_input += 3; // "do()" - 1
         }
-        else if (strncmp(offset_input, "don't()", 7) == 0)
+        else if (strncmp(input + offset_input, "don't()", 7) == 0)
         {
             enabled = 0;
             offset_input += 6; // "don't()" - 1
@@ -55,9 +56,9 @@ luint part2(va_list args)
         {
             // copy of part 1
             char dummy[2];
-            if (strncmp(offset_input, "mul(", 4) == 0)
+            if (strncmp(input + offset_input, "mul(", 4) == 0)
             {
-                if (sscanf(offset_input, "mul(%d,%d%1[)]", &x, &y, dummy) == 3)
+                if (sscanf(input + offset_input, "mul(%d,%d%1[)]", &x, &y, dummy) == 3)
                 {
                     sum += (x) * (y);
                     offset_input += 3;
@@ -87,7 +88,6 @@ char *readInput(char *filename, int *size)
         printf("Error reading input.\n");
         return 0;
     }
-    *size = n;
     char *input = (char *)malloc(sizeof(char) * n);
 
     fsetpos(f, &start);
@@ -96,17 +96,21 @@ char *readInput(char *filename, int *size)
     {
         strncpy(input + offset, buffer, strlen(buffer) - 1); // -1 to remove \n
         offset += strlen(buffer) - 1;
+        input[offset] = '\0';
     }
+    *size = strlen(input);
 
     fclose(f);
     return input;
 }
 
-int main()
+int main(int argc, char **argv)
 {
+    if (argc != 2)
+        return 2;
     int size = 0;
-    char *input = readInput("input/3.txt", &size);
-    run(3, part1, part2, 2, input, size);
+    char *input = readInput(argv[1], &size);
+    run(3, part1, part2, input, (void *)&size);
     free(input);
     return 0;
 }

@@ -13,10 +13,10 @@ bool isArrayGood(luint total, luint start, int index, luint *array)
     return false;
 }
 
-luint part1(va_list args)
+luint part1(void *input_v, void **args)
 {
-    luint **input = va_arg(args, luint **);
-    int size = va_arg(args, int);
+    luint **input = (luint **)input_v;
+    int size = ((int *)args)[0];
 
     luint res = 0;
 
@@ -63,10 +63,10 @@ bool isArrayGoodBis(luint total, luint start, int index, luint *array)
     return false;
 }
 
-luint part2(va_list args)
+luint part2(void *input_v, void **args)
 {
-    luint **input = va_arg(args, luint **);
-    int size = va_arg(args, int);
+    luint **input = (luint **)input_v;
+    int size = ((int *)args)[0];
 
     luint res = 0;
 
@@ -134,11 +134,13 @@ luint **readInput(char *filename, int *size)
     return input;
 }
 
-int main()
+int main(int argc, char **argv)
 {
+    if (argc != 2)
+        return 2;
     int size = 0;
-    luint **input = readInput("input/7.txt", &size);
-    run(7, part1, part2, 2, input, size);
+    luint **input = readInput(argv[1], &size);
+    run(7, part1, part2, input, (void **)&size);
 
     for (int i = 0; i < size; i++)
         free(input[i]);

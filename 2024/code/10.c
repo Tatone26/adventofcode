@@ -36,12 +36,8 @@ int trailPath(short *input, bool *seen, Pos position, int width, int height)
 }
 
 /// @brief Both parts are so similar that copying all the code would be stupid
-luint commonPart(va_list args, bool part2)
+luint commonPart(short *input, int width, int height, bool part2)
 {
-    short *input = va_arg(args, short *);
-    int width = va_arg(args, int);
-    int height = va_arg(args, int);
-
     luint res = 0;
 
     bool *seen = (bool *)malloc(width * height * sizeof(bool));
@@ -59,16 +55,16 @@ luint commonPart(va_list args, bool part2)
     return res;
 }
 
-luint part1(va_list args)
+luint part1(void *input_v, void **args)
 {
-    return commonPart(args, false);
+    return commonPart((short *)input_v, ((int *)args)[0], ((int *)args)[1], false);
 }
 
 // -----------------------------------------------------------------
 
-luint part2(va_list args)
+luint part2(void *input_v, void **args)
 {
-    return commonPart(args, true);
+    return commonPart((short *)input_v, ((int *)args)[0], ((int *)args)[1], true);
 }
 
 // ----------------------------------------------------------------
@@ -98,12 +94,15 @@ short *readInput(char *filename, int *width, int *height)
     return input;
 }
 
-int main()
+int main(int argc, char **argv)
 {
-    int width = 0, height = 0;
-    short *input = readInput("input/10.txt", &width, &height);
+    if (argc != 2)
+        return 2;
+    int sizes[2] = {0,
+                    0};
+    short *input = readInput(argv[1], &sizes[0], &sizes[1]);
 
-    run(10, part1, part2, 3, input, width, height);
+    run(10, part1, part2, input, (void **)sizes);
     free(input);
     return 0;
 }

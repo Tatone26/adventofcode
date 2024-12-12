@@ -1,5 +1,5 @@
-#ifndef MAIN_H
-#define MAIN_H
+#ifndef RUNNER_H
+#define RUNNER_H
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -33,7 +33,7 @@ typedef unsigned long long luint;
 /// @param part2 The function for the second part. Works like the first one, and takes the same arguments.
 /// @param count The number of arguments to give to both functions.
 /// @param all The arguments to give to both functions.
-void run(int dayNum, luint (*part1)(va_list args), luint (*part2)(va_list args), int count, ...);
+void run(int dayNum, luint (*part1)(void *input, void **args), luint (*part2)(void *input, void **args), void *input, void **args);
 
 int nbOfDigits(luint n);
 

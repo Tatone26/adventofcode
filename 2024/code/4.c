@@ -29,11 +29,11 @@ int checkPattern(char *input, int y, int x, int dy, int dx, int width)
 }
 
 // > 1ms, which is pretty bad for this simple function.
-luint part1(va_list args)
+luint part1(void *input_v, void **args)
 {
-    char *input = va_arg(args, char *);
-    int width = va_arg(args, int);
-    int height = va_arg(args, int);
+    char *input = (char *)input_v;
+    int width = ((int *)args)[0];
+    int height = ((int *)args)[1];
 
     luint result = 0;
 
@@ -79,11 +79,11 @@ luint part1(va_list args)
 
 // -----------------------------------------------------------------
 
-luint part2(va_list args)
+luint part2(void *input_v, void **args)
 {
-    char *input = va_arg(args, char *);
-    int width = va_arg(args, int);
-    int height = va_arg(args, int);
+    char *input = (char *)input_v;
+    int width = ((int *)args)[0];
+    int height = ((int *)args)[1];
 
     luint result = 0;
     for (int y = 1; y < height - 1; y++)
@@ -139,12 +139,15 @@ char *readInput(char *filename, int *width, int *height)
     return input;
 }
 
-int main()
+int main(int argc, char **argv)
 {
-    int width = 0, height = 0;
-    char *input = readInput("input/4.txt", &width, &height);
+    if (argc != 2)
+        return 2;
+    int sizes[2] = {0,
+                    0};
+    char *input = readInput(argv[1], &sizes[0], &sizes[1]);
 
-    run(4, part1, part2, 3, input, width, height);
+    run(4, part1, part2, input, (void **)sizes);
 
     free(input);
     return 0;

@@ -41,11 +41,8 @@ luint nbStones(long value, int n, Caching cache[][MAX])
     return t;
 }
 
-luint commonPart(va_list args, int n)
+luint commonPart(int *input, int size, int n)
 {
-    int *input = va_arg(args, int *);
-    int size = va_arg(args, int);
-
     luint res = 0;
     Caching(*cache)[MAX] = (Caching(*)[MAX])calloc(n + 1, sizeof(Caching[MAX]));
 
@@ -55,16 +52,16 @@ luint commonPart(va_list args, int n)
     return res;
 }
 
-luint part1(va_list args)
+luint part1(void *input_v, void **args)
 {
-    return commonPart(args, 25);
+    return commonPart((int *)input_v, ((int *)args)[0], 25);
 }
 
 // -----------------------------------------------------------------
 
-luint part2(va_list args)
+luint part2(void *input_v, void **args)
 {
-    return commonPart(args, 75);
+    return commonPart((int *)input_v, ((int *)args)[0], 75);
 }
 
 // ----------------------------------------------------------------
@@ -97,11 +94,13 @@ int *readInput(char *filename, int *size)
     return input;
 }
 
-int main()
+int main(int argc, char **argv)
 {
+    if (argc != 2)
+        return 2;
     int size = 0;
-    int *input = readInput("input/11.txt", &size);
-    run(1, part1, part2, 2, input, size);
+    int *input = readInput(argv[1], &size);
+    run(11, part1, part2, input, (void **)&size);
     free(input);
     return 0;
 }

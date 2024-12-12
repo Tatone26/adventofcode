@@ -24,10 +24,10 @@ int test_line(int *input)
     return 1;
 }
 
-luint part1(va_list args)
+luint part1(void *input_v, void **args)
 {
-    int nb_reports = va_arg(args, int);
-    int **input = va_arg(args, int **);
+    int **input = (int **)input_v;
+    int nb_reports = ((int *)args)[0];
 
     luint count_safe = 0;
 
@@ -39,10 +39,10 @@ luint part1(va_list args)
 
 // -----------------------------------------------------------------
 
-luint part2(va_list args)
+luint part2(void *input_v, void **args)
 {
-    int nb_reports = va_arg(args, int);
-    int **input = va_arg(args, int **);
+    int **input = (int **)input_v;
+    int nb_reports = ((int *)args)[0];
 
     luint count_safe = 0;
 
@@ -110,15 +110,17 @@ void readInput(char *filename, int *nb_reports, int ***reports)
     fclose(f);
 }
 
-int main()
+int main(int argc, char **argv)
 {
+    if (argc != 2)
+        return 2;
     int nb_reports = 0;
     int **reports = 0;
-    readInput("input/2.txt", &nb_reports, &reports);
+    readInput(argv[1], &nb_reports, &reports);
     if (nb_reports == 0)
         return 1;
 
-    run(2, part1, part2, 2, nb_reports, reports);
+    run(2, part1, part2, reports, (void *)&nb_reports);
 
     for (int r = 0; r < nb_reports; r++)
         free(reports[r]);

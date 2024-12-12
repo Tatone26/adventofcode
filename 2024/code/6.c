@@ -6,11 +6,11 @@ const Pos DIRECTIONS[4] = {{0, -1},
                            {-1, 0}};
 
 /// @brief Part 1 : just move the guard step by step, counting every new one.
-luint part1(va_list args)
+luint part1(void *input_v, void **args)
 {
-    char *input = va_arg(args, char *);
-    int width = va_arg(args, int);
-    int height = va_arg(args, int);
+    char *input = (char *)input_v;
+    int width = ((int *)args)[0];
+    int height = ((int *)args)[1];
 
     // Finding the start Position
     Pos start = {-1, -1};
@@ -153,11 +153,11 @@ int **processInput(char *input, int width, int height, bool columns)
 
 /// @brief Part 2 : pre-process the input into lists of obstacles positions per row or column. Allows "teleporting" to the next obstacle more efficiently
 /// when looking for loops. Still moves step by step like part one to find the start of the path and the possible positions.
-luint part2(va_list args)
+luint part2(void *input_v, void **args)
 {
-    char *input = va_arg(args, char *);
-    int width = va_arg(args, int);
-    int height = va_arg(args, int);
+    char *input = (char *)input_v;
+    int width = ((int *)args)[0];
+    int height = ((int *)args)[1];
 
     luint res = 0;
 
@@ -251,11 +251,13 @@ char *readInput(char *filename, int *width, int *height)
     return input;
 }
 
-int main()
+int main(int argc, char **argv)
 {
-    int width = 0, height = 0;
-    char *input = readInput("input/6.txt", &width, &height);
-    run(6, part1, part2, 3, input, width, height);
+    if (argc != 2)
+        return 2;
+    int sizes[2] = {0, 0};
+    char *input = readInput(argv[1], &sizes[0], &sizes[1]);
+    run(6, part1, part2, input, (void **)&sizes);
     free(input);
     return 0;
 }

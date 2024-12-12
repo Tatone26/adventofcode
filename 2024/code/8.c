@@ -34,11 +34,11 @@ void processInput(Pos table[MAX_ANTENNA_INDEX][MAX_IDENTICAL_ANTENNAS], char *in
         }
 }
 
-luint part1(va_list args)
+luint part1(void *input_v, void **args)
 {
-    char *input = va_arg(args, char *);
-    int width = va_arg(args, int);
-    int height = va_arg(args, int);
+    char *input = (char *)input_v;
+    int width = ((int *)args)[0];
+    int height = ((int *)args)[1];
     // one line / character, max 100 positions for each
     Pos table[MAX_ANTENNA_INDEX][MAX_IDENTICAL_ANTENNAS];
     for (int i = 0; i < MAX_ANTENNA_INDEX; i++)
@@ -82,11 +82,11 @@ luint part1(va_list args)
 
 // -----------------------------------------------------------------
 
-luint part2(va_list args)
+luint part2(void *input_v, void **args)
 {
-    char *input = va_arg(args, char *);
-    int width = va_arg(args, int);
-    int height = va_arg(args, int);
+    char *input = (char *)input_v;
+    int width = ((int *)args)[0];
+    int height = ((int *)args)[1];
     // one line / character, max 100 positions for each
     Pos table[MAX_ANTENNA_INDEX][MAX_IDENTICAL_ANTENNAS];
     for (int i = 0; i < MAX_ANTENNA_INDEX; i++)
@@ -156,11 +156,14 @@ char *readInput(char *filename, int *width, int *height)
     return input;
 }
 
-int main()
+int main(int argc, char **argv)
 {
-    int width = 0, height = 0;
-    char *input = readInput("input/8.txt", &width, &height);
-    run(8, part1, part2, 3, input, width, height);
+    if (argc != 2)
+        return 2;
+    int sizes[2] = {0,
+                    0};
+    char *input = readInput(argv[1], &sizes[0], &sizes[1]);
+    run(8, part1, part2, input, (void **)sizes);
     free(input);
     return 0;
 }

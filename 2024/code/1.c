@@ -9,12 +9,11 @@ int comp(const void *elem1, const void *elem2)
     return f - s;
 }
 
-luint part1(va_list args)
+luint part1(void *input_v, void **args)
 {
-    int size = va_arg(args, int);
-
-    int *list1 = va_arg(args, int *);
-    int *list2 = va_arg(args, int *);
+    int *list1 = (int *)input_v;
+    int *list2 = ((int **)args)[0];
+    int size = *((int **)args)[1];
 
     // sorting COPIES of the arrays (not modifying input)
     int *new_list1 = (int *)malloc(sizeof(int) * size);
@@ -61,11 +60,11 @@ int *count_numbers(int size, int *list, int *new_size)
     return result;
 }
 
-luint part2(va_list args)
+luint part2(void *input_v, void **args)
 {
-    int size = va_arg(args, int);
-    int *list1 = va_arg(args, int *);
-    int *list2 = va_arg(args, int *);
+    int *list1 = (int *)input_v;
+    int *list2 = ((int **)args)[0];
+    int size = *((int **)args)[1];
 
     int new_size2 = 0;
     int *res2 = count_numbers(size, list2, &new_size2);
@@ -106,15 +105,19 @@ void readInput(char *filename, int *size, int **list1, int **list2)
     fclose(f);
 }
 
-int main()
+int main(int argc, char **argv)
 {
+    if (argc != 2)
+        return 2;
     int size = 0;
     int *list1, *list2;
-    readInput("input/1.txt", &size, &list1, &list2);
+    readInput(argv[1], &size, &list1, &list2);
     if (size == 0)
         return 1;
 
-    run(1, part1, part2, 3, size, list1, list2);
+    int *args[2] = {list2, &size};
+
+    run(1, part1, part2, list1, (void **)args);
 
     free(list1);
     free(list2);
