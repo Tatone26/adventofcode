@@ -16,8 +16,8 @@
 
 typedef struct
 {
-    int x;
-    int y;
+    long long x;
+    long long y;
 } Pos;
 
 #define INDEX(y, x) ((y) * width + (x))
