@@ -67,3 +67,30 @@ int fileSize(FILE *f)
     fsetpos(f, &start);
     return n;
 }
+
+/// @brief Uses euclide's algorithm to calculate the pgcd and the two Bezout's coefficient
+/// @param a
+/// @param b
+/// @param u First Bezout coeff (for a) (CAN BE NEGATIVE)
+/// @param v Second Bezout coeff (for b) (CAN BE NEGATIVE)
+/// @return pgcd(a, b)
+luint euclide(luint a, luint b, long long *u, long long *v)
+{
+    long long r1 = a, u1 = 1, v1 = 0, r2 = b, u2 = 0, v2 = 1;
+    while (r2)
+    {
+        long long q = r1 / r2;
+        long long rs = r1;
+        long long us = u1;
+        long long vs = v1;
+        r1 = r2;
+        u1 = u2;
+        v1 = v2;
+        r2 = rs - q * r2;
+        u2 = us - q * u2;
+        v2 = vs - q * v2;
+    }
+    *u = u1;
+    *v = v1;
+    return r1;
+}
