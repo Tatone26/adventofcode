@@ -77,33 +77,28 @@ void display(Robot *robots, int size)
     }
 }
 
-typedef int Quadrants[5];
-
-void calculateQuadrants(Robot *input, int size, Quadrants res)
-{
-    for (int i = 0; i < 5; i++)
-        res[i] = 0;
-    for (int r = 0; r < size; r++)
-        (res[quadrant(input[r].position)])++;
-}
 // Strange repartition in quadrants probably means that the Tree has been found -> looking for a quadrant with > 30% of robots seems to work to find patterns.
+// This strategy seems to work pretty well with the given inputs.
 bool suspect(Robot *robots, int size, int *quadOne, int *quadTwo)
 {
-    Quadrants quad;
-    calculateQuadrants(robots, size, quad);
+    int quad[] = {0, 0, 0, 0, 0};
+    int limit = size / 3;
+    *quadOne = 5;
+    *quadTwo = 5;
     bool first = true;
-    for (int i = 0; i < 4; i++)
+    for (int r = 0; r < size; r++)
     {
-        if (quad[i] > size / 3)
+        int q = quadrant(robots[r].position);
+        if ((++quad[q]) > limit && q < 4 && q != *quadOne)
         {
             if (first)
             {
-                *quadOne = i;
+                *quadOne = q;
                 first = false;
             }
             else
             {
-                *quadTwo = i;
+                *quadTwo = q;
                 return true;
             }
         }
@@ -116,8 +111,9 @@ luint part2(void *input_v, void **args)
     Robot *input = (Robot *)input_v;
     int size = ((int *)args)[0];
 
-    int first = -1, firstQuadOne = -1, firstQuadTwo = -1;
+    int first = -1, firstQuadOne = -1, firstQuadTwo = -1, period = -1;
     int second = -1;
+    bool possibleJump = false;
     for (int i = 0; i < 20000; i++) // security, start at
     {
         // test for potential pattern found
@@ -127,35 +123,55 @@ luint part2(void *input_v, void **args)
             if (first == -1)
             {
                 // if we find a first pattern, keep it.
-                {
-                    first = i;
-                    firstQuadOne = a;
-                    firstQuadTwo = b;
-                }
+                first = i;
+                firstQuadOne = a;
+                firstQuadTwo = b;
             }
             else
             {
                 // if we find the second pattern, keep it
                 if (second == -1 && (a != firstQuadOne || b != firstQuadTwo))
-                    second = i;
-                // that means we found the first AGAIN, so we have its period and we can find the answer !
-                else if (a == firstQuadOne && b == firstQuadTwo)
                 {
-                    int firstModulo = i - first;
-                    if (firstModulo != WIDTH && firstModulo != HEIGHT)
-                        printf("WRONG : %d\n", firstModulo);
-                    int secondModulo = (firstModulo == WIDTH ? HEIGHT : WIDTH);
-                    // we know those two modulos are 101 and 103, which are primes relative to one another
-                    // so we can use the theorem directly to find the answer : (modulo 101 * 103)
-                    luint bigModulo = WIDTH * HEIGHT;
-                    long long u, v;
-                    euclide(firstModulo, secondModulo, &u, &v);
-                    long long x = firstModulo * u * second + secondModulo * v * first;
-                    while (x < 0)
-                        x += bigModulo;
-                    return x;
+                    second = i;
+                    possibleJump = true;
+                }
+                // if we found the period for the first pattern before finding the second one (doesn't happen in the input, because of the sizes too)
+                else if (a == firstQuadOne && b == firstQuadTwo)
+                    period = i - first;
+            }
+        }
+        // if both patterns have been found, jump to next possible pattern for the first one
+        if (possibleJump)
+        {
+            int jump = (HEIGHT < WIDTH ? HEIGHT : WIDTH) - i + first - 1;
+            if (jump > 0)
+            {
+                for (int r = 0; r < size; r++)
+                {
+                    Pos nextTurn = (Pos){(input[r].position.x + jump * input[r].velocity.x) % WIDTH, (input[r].position.y + jump * input[r].velocity.y) % HEIGHT};
+                    if (nextTurn.x < 0)
+                        nextTurn.x += WIDTH;
+                    if (nextTurn.y < 0)
+                        nextTurn.y += HEIGHT;
+                    input[r].position = nextTurn;
                 }
             }
+            possibleJump = false;
+            i += jump;
+        }
+        // if we found the period for the first one, we can deduce the period for the second one and the first time they will meet
+        if (period != -1)
+        {
+            if (period != WIDTH && period != HEIGHT)
+                printf("WRONG : %d\n", period);
+            int secondPeriod = (period == WIDTH ? HEIGHT : WIDTH);
+            luint bigModulo = WIDTH * HEIGHT; // use ppcm here, but we consider HEIGHT and WIDTH to be prime relative to each other
+            long long u, v;
+            euclide(period, secondPeriod, &u, &v);                        // get Bezout's identity
+            long long x = period * u * second + secondPeriod * v * first; // Find a solution
+            while (x < 0)                                                 // get the first positive answer
+                x += bigModulo;
+            return x;
         }
 
         // update position
@@ -201,7 +217,7 @@ int main(int argc, char **argv)
         return 2;
     int size = 0;
     Robot *input = readInput(argv[1], &size);
-    run(1, part1, part2, input, (void **)&size);
+    run(14, part1, part2, input, (void **)&size);
     free(input);
     return 0;
 }

@@ -103,7 +103,7 @@ int main(int argc, char **argv)
         return 2;
     int size = 0;
     Machine *input = readInput(argv[1], &size);
-    run(1, part1, part2, input, (void **)&size);
+    run(13, part1, part2, input, (void **)&size);
     free(input);
     return 0;
 }
