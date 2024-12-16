@@ -176,6 +176,7 @@ int moveWorldBis(char *world, int width, Pos robot, Pos direction)
     return false;
 }
 
+/// This could be done more efficiently iteratively by "grouping" together all blocks that need to move.
 luint part2(void *input_v, void **args)
 {
     char *input = (char *)input_v;
