@@ -8,7 +8,7 @@ const Pos DIRECTIONS[4] = {{1, 0}, {0, 1}, {-1, 0}, {0, -1}};
 
 typedef struct
 {
-    int value;
+    int cost;
     Pos position;
     int direction;
 } Node;
@@ -43,9 +43,9 @@ void updateHeap(Heap *heap, int i)
     int l = LEFT(i);
     int r = RIGHT(i);
     int smallest = i;
-    if (l < heap->size && heap->nodes[l].value < heap->nodes[i].value)
+    if (l < heap->size && heap->nodes[l].cost < heap->nodes[i].cost)
         smallest = l;
-    if (r < heap->size && heap->nodes[r].value < heap->nodes[i].value)
+    if (r < heap->size && heap->nodes[r].cost < heap->nodes[i].cost)
         smallest = r;
     if (smallest != i)
     {
@@ -80,7 +80,7 @@ void insertNode(Heap *heap, Node node)
     heap->nb_insertions++;
     int i = heap->size++;
     heap->nodes[i] = node;
-    while (i != 0 && heap->nodes[PARENT(i)].value > heap->nodes[i].value)
+    while (i != 0 && heap->nodes[PARENT(i)].cost > heap->nodes[i].cost)
     {
         swap(&heap->nodes[i], &heap->nodes[PARENT(i)]);
         i = PARENT(i);
@@ -114,15 +114,15 @@ luint part1(void *input_v, void **args)
             int direction = (current.direction + toTest[d]) % 4;
             Pos dir = DIRECTIONS[direction];
             Pos next = (Pos){current.position.x + dir.x, current.position.y + dir.y};
-            if (input[INDEX_POS(next)] != '#' && current.value + valToTest[d] < seen[INDEX_POS(next)][direction] - (d == 0 ? 1 : 0))
+            if (input[INDEX_POS(next)] != '#' && current.cost + valToTest[d] < seen[INDEX_POS(next)][direction] - (d == 0 ? 1 : 0))
             {
-                Node new = {current.value + valToTest[d] + 1, next, direction};
+                Node new = {current.cost + valToTest[d] + 1, next, direction};
                 insertNode(&heap, new);
-                seen[INDEX_POS(next)][direction] = current.value + valToTest[d] + 1;
+                seen[INDEX_POS(next)][direction] = current.cost + valToTest[d] + 1;
             }
         }
         current = extractMin(&heap);
-        if (current.value == __INT_MAX__)
+        if (current.cost == __INT_MAX__)
         {
             break;
         }
@@ -132,7 +132,7 @@ luint part1(void *input_v, void **args)
 
     free(heap.nodes);
     free(seen);
-    return current.value;
+    return current.cost;
 }
 
 // -----------------------------------------------------------------
@@ -194,15 +194,15 @@ luint part2(void *input_v, void **args)
             int direction = (current.direction + toTest[d]) % 4;
             Pos dir = DIRECTIONS[direction];
             Pos next = (Pos){current.position.x + dir.x, current.position.y + dir.y};
-            if (input[INDEX_POS(next)] != '#' && current.value + valToTest[d] < seen[INDEX_POS(next)][direction] - (d == 0 ? 1 : 0))
+            if (input[INDEX_POS(next)] != '#' && current.cost + valToTest[d] < seen[INDEX_POS(next)][direction] - (d == 0 ? 1 : 0))
             {
-                Node new = {current.value + valToTest[d] + 1, next, direction};
+                Node new = {current.cost + valToTest[d] + 1, next, direction};
                 insertNode(&heap, new);
-                seen[INDEX_POS(next)][direction] = current.value + valToTest[d] + 1;
+                seen[INDEX_POS(next)][direction] = current.cost + valToTest[d] + 1;
             }
         }
         current = extractMin(&heap);
-        if (current.value == __INT_MAX__)
+        if (current.cost == __INT_MAX__)
         {
             break;
         }
