@@ -14,7 +14,6 @@ typedef struct
     int cost;
     int heuristic;
     Pos position;
-    int direction;
 } Node;
 
 typedef struct
@@ -61,7 +60,7 @@ void updateHeap(Heap *heap, int i)
 Node extractMin(Heap *heap)
 {
     if (heap->size == 0)
-        return (Node){__INT_MAX__, __INT_MAX__, (Pos){0, 0}, 0};
+        return (Node){__INT_MAX__, __INT_MAX__, (Pos){0, 0}};
     if (heap->size == 1)
     {
         heap->size--;
@@ -107,11 +106,11 @@ luint part1(void *input_v, void **args)
     Pos start = (Pos){0, 0};
     Pos end = (Pos){width - 1, height - 1};
     // used to know if we have already found the best way of going there
-    int(*seen)[4] = (int(*)[4])malloc(width * height * sizeof(int[4]));
-    memset(seen, 127, width * height * sizeof(int[4]));
+    int(*seen) = (int(*))malloc(width * height * sizeof(int));
+    memset(seen, 127, width * height * sizeof(int));
 
     Heap heap = newHeap(width * height);
-    Node s = {0, end.x + end.y, start, 0};
+    Node s = {0, end.x + end.y, start};
     insertNode(&heap, s);
 
     Node current = extractMin(&heap);
@@ -119,15 +118,14 @@ luint part1(void *input_v, void **args)
     {
         for (int d = 0; d < 4; d++)
         {
-            int direction = (current.direction + d) % 4;
-            Pos dir = DIRECTIONS[direction];
+            Pos dir = DIRECTIONS[d];
             Pos next = (Pos){current.position.x + dir.x, current.position.y + dir.y};
             int nextHeuristic = current.cost + 1 + (end.x - next.x) + (end.y - next.y);
-            if (INBOUNDS(next, width, height) && world[INDEX_POS(next)] != '#' && nextHeuristic < seen[INDEX_POS(next)][direction])
+            if (INBOUNDS(next, width, height) && world[INDEX_POS(next)] != '#' && nextHeuristic < seen[INDEX_POS(next)])
             {
-                Node new = {current.cost + 1, nextHeuristic, next, direction};
+                Node new = {current.cost + 1, nextHeuristic, next};
                 insertNode(&heap, new);
-                seen[INDEX_POS(next)][direction] = nextHeuristic;
+                seen[INDEX_POS(next)] = nextHeuristic;
             }
         }
         current = extractMin(&heap);
@@ -156,7 +154,7 @@ luint part2(void *input_v, void **args)
     for (int i = 0; i < (size < 1024 ? 12 : 1024); i++) // for testing : only the first 12 bytes.
         world[INDEX_POS(input[i])] = '#';
 
-    int(*seen)[4] = (int(*)[4])malloc(width * height * sizeof(int[4]));
+    int(*seen) = (int(*))malloc(width * height * sizeof(int));
     Heap heap = newHeap(width * height);
 
     int min = (size < 1024 ? 12 : 1024) - 1; // with Part 1, we know that the first 1024 bytes (or 12 for testing) are not blocking the
@@ -179,10 +177,10 @@ luint part2(void *input_v, void **args)
         Pos start = (Pos){0, 0};
         Pos end = (Pos){width - 1, height - 1};
         // reset
-        memset(seen, 127, width * height * sizeof(int[4]));
+        memset(seen, 127, width * height * sizeof(int));
         heap.size = 0;
 
-        Node s = {0, end.x + end.y, start, 0};
+        Node s = {0, end.x + end.y, start};
         insertNode(&heap, s);
 
         Node current = extractMin(&heap);
@@ -190,16 +188,15 @@ luint part2(void *input_v, void **args)
         {
             for (int d = 0; d < 4; d++)
             {
-                int direction = (current.direction + d) % 4;
-                Pos dir = DIRECTIONS[direction];
+                Pos dir = DIRECTIONS[d];
                 Pos next = (Pos){current.position.x + dir.x, current.position.y + dir.y};
                 // this heuristic serves no purpose apparently (and that would be logical)
                 int nextHeuristic = current.cost + 1 + (end.x - next.x) + (end.y - next.y);
-                if (INBOUNDS(next, width, height) && world[INDEX_POS(next)] != '#' && nextHeuristic < seen[INDEX_POS(next)][direction])
+                if (INBOUNDS(next, width, height) && world[INDEX_POS(next)] != '#' && nextHeuristic < seen[INDEX_POS(next)])
                 {
-                    Node new = {current.cost + 1, nextHeuristic, next, direction};
+                    Node new = {current.cost + 1, nextHeuristic, next};
                     insertNode(&heap, new);
-                    seen[INDEX_POS(next)][direction] = nextHeuristic;
+                    seen[INDEX_POS(next)] = nextHeuristic;
                 }
             }
             current = extractMin(&heap);
