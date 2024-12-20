@@ -5,15 +5,46 @@ int comp(const void *a, const void *b)
     return (strlen(*(char **)a) - strlen(*(char **)b));
 }
 
-bool isPossible(char **patterns, int nbPatterns, char *test)
+int compBis(const void *a, const void *b)
+{
+    return ((*(char **)a)[0]) - ((*(char **)b)[0]);
+}
+
+int charToInt(char c)
+{
+    switch (c)
+    {
+    case 'w':
+        return 0;
+    case 'u':
+        return 1;
+    case 'b':
+        return 2;
+    case 'g':
+        return 3;
+    default:
+        return 4;
+    }
+}
+
+int patternCheck(char *str, char *pat)
+{
+    int size;
+    for (size = 0; pat[size] != '\0'; size++)
+        if (str[size] == '\0' || str[size] != pat[size])
+            return 0;
+    return size;
+}
+
+bool isPossible(char **patterns, int nbPatterns, char *test, const int indexes[5])
 {
     if (test[0] == '\0')
         return true;
-    for (int i = 0; i < nbPatterns; i++)
+    for (int i = indexes[charToInt(test[0])]; i < nbPatterns && patterns[i][0] == test[0]; i++)
     {
-        int offset = strlen(patterns[i]);
-        if (!strncmp(test, patterns[i], offset))
-            if (isPossible(patterns, nbPatterns, test + offset))
+        int offset = patternCheck(test, patterns[i]);
+        if (offset)
+            if (isPossible(patterns, nbPatterns, test + offset, indexes))
                 return true;
     }
     return false;
@@ -25,16 +56,22 @@ luint part1(void *input_v, void **args)
     int nbPatterns = *((int **)args)[0];
     char **designs = *((char ****)args)[1];
     int nbDesigns = *((int **)args)[2];
-
+    // sorting the patterns by putting the smallest ones first seem to speed up immensely the process here
     char **temp = (char **)malloc(sizeof(char *) * nbPatterns);
     memcpy(temp, patterns, sizeof(char *) * nbPatterns);
     qsort(temp, nbPatterns, sizeof(char *), comp);
+    // sorting the patterns by starting character and then getting the indexes (allows looking at a few patterns)
+    qsort(temp, nbPatterns, sizeof(char *), compBis);
+    int indexes[5] = {-1, -1, -1, -1, -1};
+    for (int i = 0; i < nbPatterns; i++)
+        if (indexes[charToInt(temp[i][0])] == -1)
+            indexes[charToInt(temp[i][0])] = i;
 
     luint res = 0;
 
     for (int i = 0; i < nbDesigns; i++)
     {
-        if (isPossible(temp, nbPatterns, designs[i]))
+        if (isPossible(temp, nbPatterns, designs[i], indexes))
             res++;
     }
     free(temp);
@@ -51,6 +88,7 @@ typedef struct
     long hash;
 } CacheNode;
 
+/// @brief I have no idea why the unsigned - long - index conversion works. But it does with my input so :shrug:
 long hash(char *test)
 {
     unsigned x = 7;
@@ -59,12 +97,7 @@ long hash(char *test)
     return x;
 }
 
-int rev_comp(const void *a, const void *b)
-{
-    return (strlen(*(char **)b) - strlen(*(char **)a));
-}
-
-long isPossibleBis(char **(patterns), int nbPatterns, char *test, CacheNode cache[CACHE_SIZE])
+long isPossibleBis(char **(patterns), int nbPatterns, char *test, CacheNode cache[CACHE_SIZE], const int indexes[5])
 {
     if (test[0] == '\0')
         return 1;
@@ -74,10 +107,11 @@ long isPossibleBis(char **(patterns), int nbPatterns, char *test, CacheNode cach
         return cache[hb].value;
 
     long total = 0;
-    for (int i = 0; i < nbPatterns; i++)
+    for (int i = indexes[charToInt(test[0])]; i < nbPatterns && patterns[i][0] == test[0]; i++)
     {
-        if (!strncmp(test, patterns[i], strlen(patterns[i])))
-            total += isPossibleBis(patterns, nbPatterns, test + strlen(patterns[i]), cache);
+        int offset = patternCheck(test, patterns[i]);
+        if (offset)
+            total += isPossibleBis(patterns, nbPatterns, test + offset, cache, indexes);
     }
     cache[hb].hash = h;
     cache[hb].value = total;
@@ -91,7 +125,16 @@ luint part2(void *input_v, void **args)
     char **designs = *((char ****)args)[1];
     int nbDesigns = *((int **)args)[2];
 
-    // qsort(patterns, nbPatterns, sizeof(char *), comp);
+    char **temp = (char **)malloc(sizeof(char *) * nbPatterns);
+    memcpy(temp, patterns, sizeof(char *) * nbPatterns);
+    // qsort(temp, nbPatterns, sizeof(char *), comp);
+
+    // could technically made even better by sorting completely the strings ? I guess ? First character is pretty good for now
+    qsort(temp, nbPatterns, sizeof(char *), compBis);
+    int indexes[5] = {-1, -1, -1, -1, -1};
+    for (int i = 0; i < nbPatterns; i++)
+        if (indexes[charToInt(temp[i][0])] == -1)
+            indexes[charToInt(temp[i][0])] = i;
 
     CacheNode cache[CACHE_SIZE] = {0};
 
@@ -99,10 +142,10 @@ luint part2(void *input_v, void **args)
 
     for (int i = 0; i < nbDesigns; i++)
     {
-        long t = isPossibleBis(patterns, nbPatterns, designs[i], cache);
+        long t = isPossibleBis(temp, nbPatterns, designs[i], cache, indexes);
         res += t;
     }
-
+    free(temp);
     return res;
 }
 
