@@ -134,7 +134,7 @@ int main(int argc, char **argv)
         return 2;
     int sizes[2] = {0, 0};
     char *input = readInput(argv[1], &sizes[0], &sizes[1]);
-    run(16, part1, part2, input, (void **)&sizes);
+    run(20, part1, part2, input, (void **)&sizes);
     free(input);
     return 0;
 }
