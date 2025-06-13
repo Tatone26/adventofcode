@@ -1,6 +1,15 @@
 {
     "files.associations": {
         "*.c": "c",
-        "stdbool.h": "c"
-    }
+        "*.h": "c",
+        "stdio.h": "c",
+        "utils.h": "c",
+        "glib.h": "c",
+        "cstdint": "c",
+        "functional": "c",
+        "runner.h": "c",
+    },
+    "C_Cpp.codeAnalysis.clangTidy.checks.disabled": [
+        "clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling"
+    ],
 }

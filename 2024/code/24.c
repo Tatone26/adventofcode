@@ -35,18 +35,9 @@ int getValue(char text[4], uint64_t *x, uint64_t *y, Register *regs, int nb_regs
     return -1;
 }
 
-// 1557948145 too low
-// 1557953482 wrong
-// 1557947505 too low
-// 1557938177 wrong
-luint part1(void *input_v, void **args)
+uint64_t compute(Op *input, uint64_t size, uint64_t x, uint64_t y)
 {
-    Op *input = (Op *)input_v;
-    uint64_t size = ((uint64_t *)args)[0];
-    uint64_t x = ((uint64_t *)args)[1];
-    uint64_t y = ((uint64_t *)args)[2];
     uint64_t z = 0;
-
     Register *regs = (Register *)malloc(size * sizeof(Register));
     int nb_regs = 0;
 
@@ -59,16 +50,12 @@ luint part1(void *input_v, void **args)
         {
             if (done[i])
                 continue;
-            // printf("%c%c%c\n", input[i].first[0], input[i].first[1], input[i].first[2]);
             int v1, v2;
             int dec3 = atoi(input[i].result + 1);
-            // printf("(%s %s)\n", input[i].first, input[i].second);
             v1 = getValue(input[i].first, &x, &y, regs, nb_regs);
             v2 = getValue(input[i].second, &x, &y, regs, nb_regs);
             if (v1 == -1 || v2 == -1)
                 continue;
-            // printf("%s %s : %d %d\n", input[i].first, input[i].second, v1, v2);
-            //  printf("possible\n");
             int value;
             switch (input[i].operation)
             {
@@ -84,8 +71,6 @@ luint part1(void *input_v, void **args)
             default:
                 value = 0;
             }
-            // printf("value : %d\n", value);
-            // printf("dec : %d\n", dec);
             if (input[i].result[0] == 'z')
             {
                 uint64_t f = 1ULL << dec3;
@@ -123,11 +108,34 @@ luint part1(void *input_v, void **args)
     return z;
 }
 
+luint part1(void *input_v, void **args)
+{
+    Op *input = (Op *)input_v;
+    uint64_t size = ((uint64_t *)args)[0];
+    uint64_t x = ((uint64_t *)args)[1];
+    uint64_t y = ((uint64_t *)args)[2];
+    return compute(input, size, x, y);
+}
+
 // -----------------------------------------------------------------
+
+// can find wrong ones going forward on the z i think
+// need to find possible wrong ones, and swap then and try some stuff
+// pretty difficult wtf
+// lets start by getting which output bits are wrong, maybe ?
 
 luint part2(void *input_v, void **args)
 {
-
+    Op *input = (Op *)input_v;
+    uint64_t size = ((uint64_t *)args)[0];
+    uint64_t x = ((uint64_t *)args)[1];
+    uint64_t y = ((uint64_t *)args)[2];
+    uint64_t good_res = x + y;
+    uint64_t bad_res = compute(input, size, x, y);
+    for (int i = 0; i < 64; i++)
+    {
+        printf("%d : %lu - %lu\n", i, (good_res >> i) & 1U, (bad_res >> i) & 1U);
+    }
     return 0;
 }
 
