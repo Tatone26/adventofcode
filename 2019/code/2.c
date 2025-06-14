@@ -7,7 +7,7 @@ luint part1(void *input_v, void **args)
     int *input = (int *)input_v;
     int size = ((int *)args)[0];
 
-    return run_intcode(input, size, 12, 2, 0, 0);
+    return run_intcode(input, size, 12, 2, NULL, 0);
 }
 
 // -----------------------------------------------------------------
@@ -19,7 +19,7 @@ luint part2(void *input_v, void **args)
 
     for (int noun = 0; noun < 100; noun++)
         for (int verb = 0; verb < 100; verb++)
-            if (run_intcode(input, size, noun, verb, 0, 0) == 19690720)
+            if (run_intcode(input, size, noun, verb, NULL, 0) == 19690720)
                 return 100 * noun + verb;
 
     printf("No result found.");

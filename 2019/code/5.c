@@ -6,7 +6,8 @@ luint part1(void *input_v, void **args)
     int *input = (int *)input_v;
     int size = ((int *)args)[0];
 
-    return run_intcode(input, size, -1, -1, 1, -1);
+    int in[1] = {1};
+    return run_intcode(input, size, -1, -1, in, -1);
 }
 
 // -----------------------------------------------------------------
@@ -16,7 +17,8 @@ luint part2(void *input_v, void **args)
     int *input = (int *)input_v;
     int size = ((int *)args)[0];
 
-    return run_intcode(input, size, -1, -1, 5, -1);
+    int in[1] = {5};
+    return run_intcode(input, size, -1, -1, in, -1);
     return 0;
 }
 

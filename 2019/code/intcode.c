@@ -52,7 +52,7 @@ int *read_intcode(char *filename, int *size)
 /// @param in the value of the input (cf day5)
 /// @param res what to output : -1 for output, else memory[res]
 /// @return the result of the program
-int run_intcode(int *input, int size, int arg1, int arg2, int in, int res)
+int run_intcode(int *input, int size, int arg1, int arg2, int *in, int res)
 {
     int *memory = (int *)malloc(sizeof(int) * size);
     memcpy(memory, input, size * sizeof(int));
@@ -68,6 +68,7 @@ int run_intcode(int *input, int size, int arg1, int arg2, int in, int res)
 
     int addr = 0; // code pointer
 
+    int in_n = 0;   // the next input
     int output = 0; // value of the output
     int tick = 0;   // just to know how many cycles it took
 
@@ -102,7 +103,8 @@ int run_intcode(int *input, int size, int arg1, int arg2, int in, int res)
             addr += 4;
             break;
         case 3: // input
-            memory[parameters[0]] = in;
+            memory[parameters[0]] = in[in_n];
+            in_n++;
             addr += 2;
             break;
         case 4: // output
