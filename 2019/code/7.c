@@ -6,6 +6,10 @@ luint part1(void *input_v, void **args)
     int *input = (int *)input_v;
     int size = ((int *)args)[0];
 
+    IntcodeComputer *comp[5];
+    for (int i = 0; i < 5; i++)
+        comp[i] = init_computer(input, size);
+
     int max_res = 0;
     int sequence[5] = {0, 1, 2, 3, 4};
     while (1)
@@ -13,8 +17,12 @@ luint part1(void *input_v, void **args)
         int in = 0;
         for (int x = 0; x < 5; x++)
         {
-            int current_input[2] = {sequence[x], in};
-            in = run_intcode(input, size, -1, -1, current_input, -1);
+            reset_computer(comp[x], input);
+            give_input(comp[x], sequence[x]);
+            run_intcode(comp[x]);
+            give_input(comp[x], in);
+            run_intcode(comp[x]);
+            in = comp[x]->output;
         }
         if (in > max_res)
             max_res = in;
@@ -45,6 +53,9 @@ luint part1(void *input_v, void **args)
         for (int i = k + 1; i < 5; i++)
             sequence[i] = new_sequence[i];
     }
+
+    for (int i = 0; i < 5; i++)
+        free_computer(comp[i]);
     return max_res;
 }
 
@@ -55,15 +66,31 @@ luint part2(void *input_v, void **args)
     int *input = (int *)input_v;
     int size = ((int *)args)[0];
 
+    IntcodeComputer *comp[5];
+    for (int i = 0; i < 5; i++)
+        comp[i] = init_computer(input, size);
+
     int max_res = 0;
     int sequence[5] = {5, 6, 7, 8, 9};
     while (1)
     {
-        int in = 0;
-        for (int x = 0; x < 5; x++)
+        // init with sequence
+        for (int i = 0; i < 5; i++)
         {
-            int current_input[2] = {sequence[x], in};
-            in = run_intcode(input, size, -1, -1, current_input, -1);
+            reset_computer(comp[i], input);
+            give_input(comp[i], sequence[i]);
+        }
+
+        int in = 0;
+        int x = 0;
+        // run as long as the last amplifier hasn't finished
+        while (!comp[4]->finished)
+        {
+            run_intcode(comp[x]);    // go to next input
+            give_input(comp[x], in); // give it the input
+            run_intcode(comp[x]);    // go forward (if that finished the last, then good)
+            in = comp[x]->output;    // the next input is the output of the one before
+            x = (x + 1) % 5;         // looping
         }
         if (in > max_res)
             max_res = in;
@@ -94,6 +121,9 @@ luint part2(void *input_v, void **args)
         for (int i = k + 1; i < 5; i++)
             sequence[i] = new_sequence[i];
     }
+
+    for (int i = 0; i < 5; i++)
+        free_computer(comp[i]);
     return max_res;
 }
 

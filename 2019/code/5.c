@@ -6,8 +6,12 @@ luint part1(void *input_v, void **args)
     int *input = (int *)input_v;
     int size = ((int *)args)[0];
 
-    int in[1] = {1};
-    return run_intcode(input, size, -1, -1, in, -1);
+    IntcodeComputer *comp = init_computer(input, size);
+    give_input(comp, 1);
+    run_intcode(comp);
+    int res = comp->output;
+    free_computer(comp);
+    return res;
 }
 
 // -----------------------------------------------------------------
@@ -17,9 +21,12 @@ luint part2(void *input_v, void **args)
     int *input = (int *)input_v;
     int size = ((int *)args)[0];
 
-    int in[1] = {5};
-    return run_intcode(input, size, -1, -1, in, -1);
-    return 0;
+    IntcodeComputer *comp = init_computer(input, size);
+    give_input(comp, 5);
+    run_intcode(comp);
+    int res = comp->output;
+    free_computer(comp);
+    return res;
 }
 
 // ----------------------------------------------------------------

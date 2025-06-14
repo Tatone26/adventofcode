@@ -1,5 +1,42 @@
 #include "intcode.h"
 
+IntcodeComputer *init_computer(int *input, int size)
+{
+    int *memory = (int *)malloc(sizeof(int) * size);
+    memcpy(memory, input, size * sizeof(int));
+    IntcodeComputer *comp = (IntcodeComputer *)malloc(sizeof(IntcodeComputer));
+    comp->memory = memory;
+    comp->memory_size = size;
+    comp->addr = 0;
+    comp->input = 0;
+    comp->has_input = 0;
+    comp->output = 0;
+    comp->finished = 0;
+    return comp;
+}
+
+void free_computer(IntcodeComputer *computer)
+{
+    free(computer->memory);
+    free(computer);
+}
+
+void give_input(IntcodeComputer *computer, int input)
+{
+    computer->input = input;
+    computer->has_input = 1;
+}
+
+void reset_computer(IntcodeComputer *computer, int *input)
+{
+    memcpy(computer->memory, input, computer->memory_size * sizeof(int));
+    computer->addr = 0;
+    computer->finished = 0;
+    computer->has_input = 0;
+    computer->input = 0;
+    computer->output = 0;
+}
+
 /// @brief Reads a file to return the list of number it contains
 /// @param filename
 /// @param size
@@ -44,43 +81,26 @@ int *read_intcode(char *filename, int *size)
     return input;
 }
 
-/// @brief Runs the given program, copies the input
-/// @param input the memory representation
-/// @param size the number of instruction
-/// @param arg1 the value to put at address 1 (cf day2), -1 if not necessary
-/// @param arg2 the value to put at address 2 (cf day2), -1 if not necessary
-/// @param in the value of the input (cf day5)
-/// @param res what to output : -1 for output, else memory[res]
-/// @return the result of the program
-int run_intcode(int *input, int size, int arg1, int arg2, int *in, int res)
+/// @brief Runs the program for as long as possible. Stops if input needed or if finished.
+/// @param computer
+void run_intcode(IntcodeComputer *computer)
 {
-    int *memory = (int *)malloc(sizeof(int) * size);
-    memcpy(memory, input, size * sizeof(int));
-
-    if (arg1 != -1)
-        memory[1] = arg1;
-    if (arg2 != -1)
-        memory[2] = arg2;
-
     /* for (int i = 0; i < size; i++)
         printf("%d,", memory[i]);
     printf("\n"); */
 
-    int addr = 0; // code pointer
+    // copying that here but really not necessary (but still, I like it)
+    int *memory = computer->memory;
+    int memory_size = computer->memory_size;
+    int addr = computer->addr;
 
-    int in_n = 0;   // the next input
-    int output = 0; // value of the output
-    int tick = 0;   // just to know how many cycles it took
-
-    int last_output = 0; // value of the output, one tick before (it is the one returned and check for real)
-    bool finished = 0;   // true if need to exit
-    // while (true) + safety
-    while (addr < size)
+    // while (true) + (little) safety
+    while (addr < memory_size)
     {
-        // get the parameters, depending on mode
+        // get the parameters, depending on mode (that is the SLOW part...)
         int test_modes = memory[addr] / 100;
         int parameters[10] = {0};
-        for (int i = 0; addr + i < size && i < 10; i++)
+        for (int i = 0; addr + i + 1 < memory_size && i < 10; i++)
         {
             int mode = test_modes % 10;
             if (mode == 1)
@@ -103,12 +123,17 @@ int run_intcode(int *input, int size, int arg1, int arg2, int *in, int res)
             addr += 4;
             break;
         case 3: // input
-            memory[parameters[0]] = in[in_n];
-            in_n++;
-            addr += 2;
+            if (computer->has_input)
+            {
+                memory[parameters[0]] = computer->input;
+                computer->has_input = 0;
+                addr += 2;
+            }
+            else
+                goto save; // waiting for input
             break;
         case 4: // output
-            output = memory[parameters[0]];
+            computer->output = memory[parameters[0]];
             addr += 2;
             break;
         case 5: // jump-if-true
@@ -138,43 +163,21 @@ int run_intcode(int *input, int size, int arg1, int arg2, int *in, int res)
             addr += 4;
             break;
         case 99: // end
-            finished = 1;
-            break;
+            computer->finished = 1;
+            goto save;
         default:
-            // printf("ERROR INTCODE\n");
-            goto bad_ending;
+            printf("ERROR INTCODE : %d\n", memory[addr]);
+            goto save;
         }
 
         /* for (int i = 0; i < size; i++)
             printf("%d,", memory[i]);
         printf("\n"); */
-
-        if (finished)
-        // good ending
-        {
-            int temp;
-            if (res != -1)
-                temp = memory[res];
-            else
-                temp = last_output;
-            free(memory);
-            return temp;
-        }
-        // if output != 0 not followed by ending, error
-        if (last_output != 0 && !finished)
-        {
-            printf("ERROR : at tick %d\n", tick);
-            goto bad_ending;
-        }
-        // save output, update tick etc etc
-        last_output = output;
-        output = 0;
-        tick++;
     }
-// just to make sure the memory is clean, does nothing really.
-bad_ending:
+
+save:
 {
-    free(memory);
-    return 0;
+    computer->addr = addr;
+    // may have other things to add here
 }
 }
