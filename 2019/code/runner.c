@@ -94,3 +94,140 @@ luint euclide(luint a, luint b, long long *u, long long *v)
     *v = v1;
     return r1;
 }
+
+/// @brief Can be used to update the flag too.
+/// @param table
+/// @param value
+/// @param flag
+void insert_pos(HashTable table, Pos value, int flag)
+{
+    int h = pos_hash(value);
+    HashNode *cur = table[h];
+    // checking if it is already there...
+    while (cur)
+    {
+        if (cur->value.x == value.x && cur->value.y == value.y)
+        {
+            cur->flag = flag;
+            return;
+        }
+        cur = cur->next;
+    }
+    HashNode *new = (HashNode *)malloc(sizeof(HashNode));
+    new->value = value;
+    new->next = table[h];
+    new->flag = flag;
+    table[h] = new;
+}
+
+void remove_pos(HashTable table, Pos value)
+{
+    int h = pos_hash(value);
+    HashNode *cur = table[h];
+    HashNode *prec = NULL;
+    while (cur)
+    {
+        if (cur->value.x == value.x && cur->value.y == value.y)
+        {
+            if (prec)
+                prec->next = cur->next;
+            else
+                table[h] = cur->next;
+
+            free(cur);
+            return;
+        }
+        prec = cur;
+        cur = cur->next;
+    }
+}
+
+bool is_in_hash(HashTable table, Pos value)
+{
+    int h = pos_hash(value);
+    HashNode *cur = table[h];
+    while (cur)
+    {
+        if (cur->value.x == value.x && cur->value.y == value.y)
+            return true;
+        cur = cur->next;
+    }
+    return false;
+}
+
+/// @brief Returns false if not found.
+/// @param table
+/// @param value
+/// @return
+int get_flag(HashTable table, Pos value)
+{
+    int h = pos_hash(value);
+    HashNode *cur = table[h];
+    while (cur)
+    {
+        if (cur->value.x == value.x && cur->value.y == value.y)
+            return cur->flag;
+        cur = cur->next;
+    }
+    return false;
+}
+
+int pos_hash(Pos value)
+{
+    luint combined = (luint)value.x * 2654435761 + (luint)value.y;
+    combined = combined ^ (combined >> 32);
+    combined = combined * 2654435761;
+    combined = combined ^ (combined >> 32);
+
+    // Ensure the result is within the bounds of the hash table
+    return combined % HASHTABLE_SIZE;
+}
+
+/// @brief Returns the number of element in the hashtable
+/// @param table
+/// @return
+int hash_size(HashTable table)
+{
+    int total = 0;
+    for (int i = 0; i < HASHTABLE_SIZE; i++)
+    {
+        HashNode *cur = table[i];
+        while (cur != NULL)
+        {
+            total++;
+            cur = cur->next;
+        }
+    }
+    return total;
+}
+
+int count_flags(HashTable table, int flag)
+{
+    int total = 0;
+    for (int i = 0; i < HASHTABLE_SIZE; i++)
+    {
+        HashNode *cur = table[i];
+        while (cur != NULL)
+        {
+            if (cur->flag == flag)
+                total++;
+            cur = cur->next;
+        }
+    }
+    return total;
+}
+
+void free_hash(HashTable table)
+{
+    for (int i = 0; i < HASHTABLE_SIZE; i++)
+    {
+        HashNode *cur = table[i];
+        while (cur != NULL)
+        {
+            HashNode *next = cur->next;
+            free(cur);
+
+            cur = next;
+        }
+    }
+}

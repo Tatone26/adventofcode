@@ -3,7 +3,7 @@
 
 luint part1(void *input_v, void **args)
 {
-    int *input = (int *)input_v;
+    lint *input = (lint *)input_v;
     int size = ((int *)args)[0];
 
     IntcodeComputer *comp[5];
@@ -19,9 +19,9 @@ luint part1(void *input_v, void **args)
         {
             reset_computer(comp[x], input);
             give_input(comp[x], sequence[x]);
-            run_intcode(comp[x]);
+            run_intcode(comp[x], false);
             give_input(comp[x], in);
-            run_intcode(comp[x]);
+            run_intcode(comp[x], false);
             in = comp[x]->output;
         }
         if (in > max_res)
@@ -63,7 +63,7 @@ luint part1(void *input_v, void **args)
 
 luint part2(void *input_v, void **args)
 {
-    int *input = (int *)input_v;
+    lint *input = (lint *)input_v;
     int size = ((int *)args)[0];
 
     IntcodeComputer *comp[5];
@@ -86,11 +86,11 @@ luint part2(void *input_v, void **args)
         // run as long as the last amplifier hasn't finished
         while (!comp[4]->finished)
         {
-            run_intcode(comp[x]);    // go to next input
-            give_input(comp[x], in); // give it the input
-            run_intcode(comp[x]);    // go forward (if that finished the last, then good)
-            in = comp[x]->output;    // the next input is the output of the one before
-            x = (x + 1) % 5;         // looping
+            run_intcode(comp[x], false); // go to next input
+            give_input(comp[x], in);     // give it the input
+            run_intcode(comp[x], false); // go forward (if that finished the last, then good)
+            in = comp[x]->output;        // the next input is the output of the one before
+            x = (x + 1) % 5;             // looping
         }
         if (in > max_res)
             max_res = in;
@@ -129,33 +129,12 @@ luint part2(void *input_v, void **args)
 
 // ----------------------------------------------------------------
 
-char *readInput(char *filename, int *size)
-{
-    char buffer[MAX_LINE_LEN];
-
-    FILE *f = fopen(filename, "r");
-    if (f == NULL)
-        return 0;
-    *size = fileSize(f);
-    char *input = (char *)malloc(sizeof(char) * *size);
-
-    int offset = 0;
-    while (!feof(f) && fgets(buffer, MAX_LINE_LEN, f))
-    {
-        strncpy(input + offset, buffer, strlen(buffer) - 1); // -1 to remove \n
-        offset += strlen(buffer) - 1;
-    }
-
-    fclose(f);
-    return input;
-}
-
 int main(int argc, char **argv)
 {
     if (argc != 2)
         return 2;
     int size = 0;
-    int *input = read_intcode(argv[1], &size);
+    lint *input = read_intcode(argv[1], &size);
     run(7, part1, part2, input, (void **)&size);
     free(input);
     return 0;

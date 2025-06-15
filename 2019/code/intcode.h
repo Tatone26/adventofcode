@@ -4,23 +4,41 @@
 #include <stdio.h>
 #include "runner.h"
 
+typedef long long lint;
+
+typedef struct _additional_memory
+{
+    int addr;
+    lint value;
+    struct _additional_memory *next;
+} AdditionalMemory;
+
 typedef struct
 {
-    int *memory;
+    lint *memory;
     int memory_size;
+    AdditionalMemory *additional_memory; // for whatever goes beyond the scope of the input, chained list
+
     int addr;
-    int input;
+    lint input;
     bool has_input; // true if the computer can read an input
-    int output;     // last recorder output value
-    bool finished;  // true if finished running
+    bool want_input;
+    lint output; // last recorder output value
+    bool has_output;
+    bool finished; // true if finished running
+    int relative_base;
+
+    int test_var;
 } IntcodeComputer;
 
-IntcodeComputer *init_computer(int *input, int size);
+IntcodeComputer *init_computer(lint *input, int size);
 void free_computer(IntcodeComputer *computer);
-void give_input(IntcodeComputer *computer, int input);
-void reset_computer(IntcodeComputer *computer, int *input);
+void give_input(IntcodeComputer *computer, lint input);
+void reset_computer(IntcodeComputer *computer, lint *input);
+lint get(IntcodeComputer *computer, int addr);
+void set(IntcodeComputer *computer, int addr, lint value);
 
-int *read_intcode(char *filename, int *size);
-void run_intcode(IntcodeComputer *computer);
+lint *read_intcode(char *filename, int *size);
+void run_intcode(IntcodeComputer *computer, bool blocking_output);
 
 #endif
