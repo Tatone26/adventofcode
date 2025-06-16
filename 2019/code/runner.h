@@ -15,6 +15,7 @@
 #define true 1
 
 typedef unsigned long long luint;
+typedef long long lint;
 
 /// @brief Max characters to read in a file line. Can be increased.
 #define MAX_LINE_LEN 20000
@@ -34,20 +35,21 @@ typedef struct
 typedef struct _hash_node
 {
     Pos value;
-    int flag;
+    char *text;
+    lint flags[10];
     struct _hash_node *next;
 } HashNode;
 
 #define HASHTABLE_SIZE 4096
 typedef HashNode *HashTable[HASHTABLE_SIZE];
 
-void insert_pos(HashTable table, Pos value, int flag);
-void remove_pos(HashTable table, Pos value);
-bool is_in_hash(HashTable table, Pos value);
-int get_flag(HashTable table, Pos value);
-int pos_hash(Pos value);
+void insert_hash(HashTable table, Pos *value, char *text, lint flag, int i);
+void remove_hash(HashTable table, Pos *value, char *text);
+bool is_in_hash(HashTable table, Pos *value, char *text);
+lint get_flag(HashTable table, Pos *value, char *text, int i);
+int get_hash(Pos *value, char *text);
 int hash_size(HashTable table);
-int count_flags(HashTable table, int flag);
+int count_flags(HashTable table, lint flag);
 void free_hash(HashTable table);
 
 /// @brief Runs a given adventofcode.com problem.

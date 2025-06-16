@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "*.c": "c",
+        "*.C": "c",
         "*.h": "c",
         "stdio.h": "c",
         "utils.h": "c",

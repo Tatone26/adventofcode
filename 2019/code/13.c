@@ -21,7 +21,7 @@ luint part1(void *input_v, void **args)
         current.y = comp->output;
         run_intcode(comp, 1);
         tile_id = comp->output;
-        insert_pos(tiles, current, tile_id);
+        insert_hash(tiles, &current, NULL, tile_id, 0);
     }
 
     luint res = (luint)count_flags(tiles, 2);

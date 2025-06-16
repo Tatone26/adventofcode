@@ -4,8 +4,6 @@
 #include <stdio.h>
 #include "runner.h"
 
-typedef long long lint;
-
 typedef struct _additional_memory
 {
     int addr;

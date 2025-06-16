@@ -99,35 +99,44 @@ luint euclide(luint a, luint b, long long *u, long long *v)
 /// @param table
 /// @param value
 /// @param flag
-void insert_pos(HashTable table, Pos value, int flag)
+void insert_hash(HashTable table, Pos *value, char *text, lint flag, int i)
 {
-    int h = pos_hash(value);
+    int h = get_hash(value, text);
     HashNode *cur = table[h];
     // checking if it is already there...
     while (cur)
     {
-        if (cur->value.x == value.x && cur->value.y == value.y)
+        if ((text && cur->text && !strncmp(text, cur->text, strlen(text))) || (value && cur->value.x == (*value).x && cur->value.y == (*value).y))
         {
-            cur->flag = flag;
+            cur->flags[i] = flag;
             return;
         }
         cur = cur->next;
     }
     HashNode *new = (HashNode *)malloc(sizeof(HashNode));
-    new->value = value;
+    if (value)
+        new->value = *value;
+    else
+        new->value = (Pos){0, 0};
+    if (text)
+        new->text = strndup(text, strlen(text));
+    else
+        new->text = NULL;
     new->next = table[h];
-    new->flag = flag;
+    for (int i = 0; i < 10; i++)
+        new->flags[i] = 0;
+    new->flags[i] = flag;
     table[h] = new;
 }
 
-void remove_pos(HashTable table, Pos value)
+void remove_hash(HashTable table, Pos *value, char *text)
 {
-    int h = pos_hash(value);
+    int h = get_hash(value, text);
     HashNode *cur = table[h];
     HashNode *prec = NULL;
     while (cur)
     {
-        if (cur->value.x == value.x && cur->value.y == value.y)
+        if ((text && cur->text && !strncmp(text, cur->text, strlen(text))) || (value && cur->value.x == (*value).x && cur->value.y == (*value).y))
         {
             if (prec)
                 prec->next = cur->next;
@@ -142,13 +151,13 @@ void remove_pos(HashTable table, Pos value)
     }
 }
 
-bool is_in_hash(HashTable table, Pos value)
+bool is_in_hash(HashTable table, Pos *value, char *text)
 {
-    int h = pos_hash(value);
+    int h = get_hash(value, text);
     HashNode *cur = table[h];
     while (cur)
     {
-        if (cur->value.x == value.x && cur->value.y == value.y)
+        if ((text && cur->text && !strncmp(text, cur->text, strlen(text))) || (value && cur->value.x == (*value).x && cur->value.y == (*value).y))
             return true;
         cur = cur->next;
     }
@@ -159,28 +168,43 @@ bool is_in_hash(HashTable table, Pos value)
 /// @param table
 /// @param value
 /// @return
-int get_flag(HashTable table, Pos value)
+lint get_flag(HashTable table, Pos *value, char *text, int i)
 {
-    int h = pos_hash(value);
+    int h = get_hash(value, text);
     HashNode *cur = table[h];
     while (cur)
     {
-        if (cur->value.x == value.x && cur->value.y == value.y)
-            return cur->flag;
+        if ((text && cur->text && !strncmp(text, cur->text, strlen(text))) || (value && cur->value.x == (*value).x && cur->value.y == (*value).y))
+            return cur->flags[i];
         cur = cur->next;
     }
     return false;
 }
 
-int pos_hash(Pos value)
+int get_hash(Pos *value, char *text)
 {
-    luint combined = (luint)value.x * 2654435761 + (luint)value.y;
-    combined = combined ^ (combined >> 32);
-    combined = combined * 2654435761;
-    combined = combined ^ (combined >> 32);
+    if (value)
+    {
+        luint combined = (luint)(*value).x * 2654435761 + (luint)(*value).y;
+        combined = combined ^ (combined >> 32);
+        combined = combined * 2654435761;
+        combined = combined ^ (combined >> 32);
 
-    // Ensure the result is within the bounds of the hash table
-    return combined % HASHTABLE_SIZE;
+        // Ensure the result is within the bounds of the hash table
+        return combined % HASHTABLE_SIZE;
+    }
+    else if (text)
+    {
+        unsigned long hash = 5381; // Initial seed value
+        int c;
+
+        while ((c = *text++))
+            hash = ((hash << 5) + hash) + c; // hash * 33 + c
+
+        return hash % HASHTABLE_SIZE;
+    }
+    else
+        return 0;
 }
 
 /// @brief Returns the number of element in the hashtable
@@ -201,7 +225,7 @@ int hash_size(HashTable table)
     return total;
 }
 
-int count_flags(HashTable table, int flag)
+int count_flags(HashTable table, lint flag)
 {
     int total = 0;
     for (int i = 0; i < HASHTABLE_SIZE; i++)
@@ -209,8 +233,9 @@ int count_flags(HashTable table, int flag)
         HashNode *cur = table[i];
         while (cur != NULL)
         {
-            if (cur->flag == flag)
-                total++;
+            for (int x = 0; x < 10; x++)
+                if (cur->flags[x] == flag)
+                    total++;
             cur = cur->next;
         }
     }
@@ -225,9 +250,11 @@ void free_hash(HashTable table)
         while (cur != NULL)
         {
             HashNode *next = cur->next;
+            if (cur->text)
+                free(cur->text);
             free(cur);
-
             cur = next;
         }
+        table[i] = NULL;
     }
 }

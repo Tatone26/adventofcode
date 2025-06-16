@@ -10,9 +10,9 @@ CODEFOLDER = ./code# folder with code
 # list of all days done
 DAYS = 1 2 3 4 5 6 7 8 9 11 13
 # list of all missed days
-NOT_DONE_DAYS = 10 12
+NOT_DONE_DAYS = 10 12 14
 # day currently working on
-DAY = 13
+DAY = 15
 
 .PHONY : clean all runall valgrind
 

@@ -16,13 +16,13 @@ luint part1(void *input_v, void **args)
 
     while (!comp->finished)
     {
-        give_input(comp, get_flag(painted_cells, current_pos));
+        give_input(comp, get_flag(painted_cells, &current_pos, NULL, 0));
         run_intcode(comp, true);
         next_color = comp->output;
         run_intcode(comp, true);
         int turn = comp->output;
         // paint current cell (will add or update)
-        insert_pos(painted_cells, current_pos, next_color);
+        insert_hash(painted_cells, &current_pos, NULL, next_color, 0);
         // turn robot
         direction = (unsigned)(direction + (turn ? 1 : -1)) % 4;
         // move forward
@@ -70,17 +70,17 @@ luint part2(void *input_v, void **args)
     int max_pos_y = -__INT32_MAX__;
 
     // inserting initial white cell
-    insert_pos(painted_cells, current_pos, 1);
+    insert_hash(painted_cells, &current_pos, NULL, 1, 0);
 
     while (!comp->finished)
     {
-        give_input(comp, get_flag(painted_cells, current_pos));
+        give_input(comp, get_flag(painted_cells, &current_pos, NULL, 0));
         run_intcode(comp, true);
         next_color = comp->output;
         run_intcode(comp, true);
         int turn = comp->output;
         // paint current cell (will add or update)
-        insert_pos(painted_cells, current_pos, next_color);
+        insert_hash(painted_cells, &current_pos, NULL, next_color, 0);
         // turn robot
         direction = (unsigned)(direction + (turn ? 1 : -1)) % 4;
         // move forward
@@ -113,7 +113,7 @@ luint part2(void *input_v, void **args)
     {
         for (int x = min_pos_x; x <= max_pos_x; x++)
         {
-            if (get_flag(painted_cells, (Pos){x, y}))
+            if (get_flag(painted_cells, &(Pos){x, y}, NULL, 0))
                 printf("#");
             else
                 printf(" ");
