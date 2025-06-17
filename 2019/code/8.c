@@ -94,7 +94,11 @@ char *readInput(char *filename, int *size)
     FILE *f = fopen(filename, "r");
     if (f == NULL)
         return 0;
-    fgets(buffer, MAX_LINE_LEN, f);
+    if (!fgets(buffer, MAX_LINE_LEN, f))
+    {
+        fclose(f);
+        return NULL;
+    }
     for (int i = strlen(buffer) - 1; i >= 0; i--)
         if (buffer[i] == ' ' || buffer[i] == '\n')
             buffer[i] = '\0';

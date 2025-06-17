@@ -113,11 +113,15 @@ lint *read_intcode(char *filename, int *size)
 
     FILE *f = fopen(filename, "r");
     if (f == NULL)
-        return 0;
+        return NULL;
 
     fpos_t start;
     fgetpos(f, &start);
-    fgets(buffer, MAX_LINE_LEN, f);
+    if (!fgets(buffer, MAX_LINE_LEN, f))
+    {
+        fclose(f);
+        return NULL;
+    }
     fsetpos(f, &start);
 
     for (int i = 0; i < MAX_LINE_LEN && buffer[i] != '\0' && buffer[i] != '\n'; i++)

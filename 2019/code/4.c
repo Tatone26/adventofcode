@@ -145,8 +145,12 @@ int *readInput(char *filename)
 
     FILE *f = fopen(filename, "r");
     if (f == NULL)
-        return 0;
-    fgets(buffer, MAX_LINE_LEN, f);
+        return NULL;
+    if (!fgets(buffer, MAX_LINE_LEN, f))
+    {
+        fclose(f);
+        return NULL;
+    }
     int *input = (int *)malloc(sizeof(int) * 2);
     input[0] = atoi(buffer);
     input[1] = atoi(buffer + 7);
