@@ -68,7 +68,7 @@ int fileSize(FILE *f)
     return n;
 }
 
-/// @brief Uses euclide's algorithm to calculate the pgcd and the two Bezout's coefficient
+/// @brief Uses euclide's algorithm to calculate the pgcd and the two Bezout's coefficient.
 /// @param a
 /// @param b
 /// @param u First Bezout coeff (for a) (CAN BE NEGATIVE)
@@ -92,7 +92,22 @@ luint euclide(luint a, luint b, long long *u, long long *v)
     }
     *u = u1;
     *v = v1;
-    return r1;
+    return r1 < 0 ? -r1 : r1;
+}
+
+/// @brief A simpler pgcd version than "euclide". Returns always a POSITIVE pgcd.
+/// @param a
+/// @param b
+/// @return
+int pgcd(int a, int b)
+{
+    while (b != 0)
+    {
+        int temp = b;
+        b = a % b;
+        a = temp;
+    }
+    return a < 0 ? -a : a;
 }
 
 /// @brief Can be used to update the flag too.

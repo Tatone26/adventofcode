@@ -65,5 +65,6 @@ int nbOfDigits(luint n);
 int fileSize(FILE *f);
 
 luint euclide(luint a, luint b, long long *u, long long *v);
+int pgcd(int a, int b);
 
 #endif
