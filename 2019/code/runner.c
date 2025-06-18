@@ -95,19 +95,19 @@ luint euclide(luint a, luint b, long long *u, long long *v)
     return r1 < 0 ? -r1 : r1;
 }
 
-/// @brief A simpler pgcd version than "euclide". Returns always a POSITIVE pgcd.
+/// @brief A simpler pgcd version than "euclide". Works only with positive numbers.
 /// @param a
 /// @param b
 /// @return
-int pgcd(int a, int b)
+luint pgcd(luint a, luint b)
 {
     while (b != 0)
     {
-        int temp = b;
+        luint temp = b;
         b = a % b;
         a = temp;
     }
-    return a < 0 ? -a : a;
+    return a;
 }
 
 /// @brief Can be used to update the flag too.

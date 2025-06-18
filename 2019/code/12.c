@@ -19,22 +19,40 @@ luint part1(void *input_v, void **args)
         // apply gravity
         for (int m = 0; m < size; m++)
         {
-            for (int n = 0; n < size; n++)
+            for (int n = m; n < size; n++)
             {
                 if (input[m].x < input[n].x)
+                {
                     input[m].dx++;
+                    input[n].dx--;
+                }
                 else if (input[m].x > input[n].x)
+                {
                     input[m].dx--;
+                    input[n].dx++;
+                }
 
                 if (input[m].y < input[n].y)
+                {
                     input[m].dy++;
+                    input[n].dy--;
+                }
                 else if (input[m].y > input[n].y)
+                {
                     input[m].dy--;
+                    input[n].dy++;
+                }
 
                 if (input[m].z < input[n].z)
+                {
                     input[m].dz++;
+                    input[n].dz--;
+                }
                 else if (input[m].z > input[n].z)
+                {
                     input[m].dz--;
+                    input[n].dz++;
+                }
             }
         }
         // move moons
@@ -77,34 +95,49 @@ luint part2(void *input_v, void **args)
     Moon initial_state[4];
     memcpy(initial_state, input, sizeof(Moon) * 4);
 
-    int first_reset[4] = {-1, -1, -1, -1};
-    int second_reset[4] = {-1, -1, -1, -1};
+    luint x_reset = 0;
+    luint y_reset = 0;
+    luint z_reset = 0;
 
-    bool skip = 0;
-    int first_reset_pos[4] = {-1, -1, -1, -1};
-    int second_reset_pos[4] = {-1, -1, -1, -1};
-
-    for (int tick = 0;; tick++)
+    for (int tick = 1;; tick++)
     {
         // apply gravity
         for (int m = 0; m < size; m++)
         {
-            for (int n = 0; n < size; n++)
+            for (int n = m; n < size; n++)
             {
                 if (input[m].x < input[n].x)
+                {
                     input[m].dx++;
+                    input[n].dx--;
+                }
                 else if (input[m].x > input[n].x)
+                {
                     input[m].dx--;
+                    input[n].dx++;
+                }
 
                 if (input[m].y < input[n].y)
+                {
                     input[m].dy++;
+                    input[n].dy--;
+                }
                 else if (input[m].y > input[n].y)
+                {
                     input[m].dy--;
+                    input[n].dy++;
+                }
 
                 if (input[m].z < input[n].z)
+                {
                     input[m].dz++;
+                    input[n].dz--;
+                }
                 else if (input[m].z > input[n].z)
+                {
                     input[m].dz--;
+                    input[n].dz++;
+                }
             }
         }
         // move moons
@@ -113,67 +146,43 @@ luint part2(void *input_v, void **args)
             input[m].x += input[m].dx;
             input[m].y += input[m].dy;
             input[m].z += input[m].dz;
+        }
+        // check reset on each axis (they are independant)
 
-            if (!skip && !(input[0].x != initial_state[0].x || input[0].y != initial_state[0].y || input[0].z != initial_state[0].z))
+        bool reset_x = 1;
+        bool reset_y = 1;
+        bool reset_z = 1;
+        for (int m = 0; m < size; m++)
+        {
+            if (input[m].x != initial_state[m].x || input[m].dx != initial_state[m].dx)
             {
-                if (first_reset_pos[m] == -1)
-                {
-                    first_reset_pos[m] = tick;
-                    printf("first pos for %d at %d\n", m, tick);
-                }
-                else if (second_reset_pos[m] == -1)
-                {
-                    second_reset_pos[m] = tick;
-                    printf("second pos for %d at %d\n", m, tick);
-                }
+                reset_x = 0;
             }
-            else
+            if (input[m].y != initial_state[m].y || input[m].dy != initial_state[m].dy)
             {
-                skip = 0;
+                reset_y = 0;
             }
-            if (!(input[0].dx != initial_state[0].dx || input[0].dy != initial_state[0].dy || input[0].dz != initial_state[0].dz))
+            if (input[m].z != initial_state[m].z || input[m].dz != initial_state[m].dz)
             {
-                if (first_reset[m] == -1)
-                {
-                    first_reset[m] = tick;
-                    printf("first for %d at %d\n", m, tick);
-                    skip = 1;
-                }
-                else if (second_reset[m] == -1)
-                {
-                    second_reset[m] = tick;
-                    printf("second for %d at %d\n", m, tick);
-                    skip = 1;
-                }
+                reset_z = 0;
             }
         }
-        bool stop = 1;
-        for (int m = 0; stop && m < size; m++)
-            if (second_reset[m] == -1 || second_reset_pos[m] == -1)
-                stop = 0;
-        if (stop)
+        if (!x_reset && reset_x)
+            x_reset = tick;
+        if (!y_reset && reset_y)
+            y_reset = tick;
+        if (!z_reset && reset_z)
+            z_reset = tick;
+
+        if (x_reset && y_reset && z_reset)
             break;
     }
 
-    for (int m = 0; m < size; m++)
-    {
-        printf("%d\n", second_reset[m] - first_reset[m]);
-    }
-
-    for (int m = 0; m < size; m++)
-    {
-        printf("%d\n", second_reset_pos[m] - first_reset_pos[m]);
-    }
-
-    int a = second_reset[1] - first_reset[1];
-    int b = second_reset_pos[1] - first_reset_pos[1];
-    long long u, v;
-    luint pgcd = euclide(a, b, &u, &v);
-
-    printf("%lld, pgcd %lld\n", a * u + b * v, pgcd);
+    luint ppcm_x_y = (x_reset * y_reset) / pgcd(x_reset, y_reset);
+    luint res = (ppcm_x_y * z_reset) / pgcd(ppcm_x_y, z_reset);
 
     free(input);
-    return 0;
+    return res;
 }
 
 // ----------------------------------------------------------------
