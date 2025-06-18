@@ -81,6 +81,7 @@ luint part2(void *input_v, void **args)
 
     // When offset is in second half, a given digit is just the sum of all the digits after it
     // we can then go from the end and just compute the sum
+    // seems very slow for what its doing :(
 
     for (int _ = 0; _ < 100; _++)
     {

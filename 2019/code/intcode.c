@@ -7,7 +7,8 @@ IntcodeComputer *init_computer(lint *input, int size)
     IntcodeComputer *comp = (IntcodeComputer *)malloc(sizeof(IntcodeComputer));
     comp->memory = memory;
     comp->memory_size = size;
-    comp->additional_memory = NULL;
+    for (int i = 0; i < ADDITIONAL_MEMORY_SIZE; i++)
+        comp->additional_memory[i] = NULL;
     comp->addr = 0;
     comp->input = 0;
     comp->has_input = 0;
@@ -23,11 +24,17 @@ IntcodeComputer *init_computer(lint *input, int size)
 void free_computer(IntcodeComputer *computer)
 {
     free(computer->memory);
-    while (computer->additional_memory)
+    for (int i = 0; i < ADDITIONAL_MEMORY_SIZE; i++)
     {
-        AdditionalMemory *next = computer->additional_memory->next;
-        free(computer->additional_memory);
-        computer->additional_memory = next;
+        if (!computer->additional_memory[i])
+            continue;
+        AdditionalMemoryNode *cur = computer->additional_memory[i];
+        while (cur)
+        {
+            AdditionalMemoryNode *temp = cur->next;
+            free(cur);
+            cur = temp;
+        }
     }
     free(computer);
 }
@@ -42,11 +49,18 @@ void give_input(IntcodeComputer *computer, lint input)
 void reset_computer(IntcodeComputer *computer, lint *input)
 {
     memcpy(computer->memory, input, computer->memory_size * sizeof(lint));
-    while (computer->additional_memory)
+    for (int i = 0; i < ADDITIONAL_MEMORY_SIZE; i++)
     {
-        AdditionalMemory *next = computer->additional_memory->next;
-        free(computer->additional_memory);
-        computer->additional_memory = next;
+        if (computer->additional_memory[i] == NULL)
+            continue;
+        AdditionalMemoryNode *cur = computer->additional_memory[i];
+        while (cur)
+        {
+            AdditionalMemoryNode *temp = cur->next;
+            free(cur);
+            cur = temp;
+        }
+        computer->additional_memory[i] = NULL;
     }
     computer->addr = 0;
     computer->finished = 0;
@@ -58,13 +72,18 @@ void reset_computer(IntcodeComputer *computer, lint *input)
     computer->relative_base = 0;
 }
 
+#define ADDR_HASH_MASK (ADDITIONAL_MEMORY_SIZE - 1)
+#define addr_hash(x) (((x >> 16) ^ x) & ADDR_HASH_MASK)
+
 void set(IntcodeComputer *computer, int addr, lint value)
 {
     if (addr < computer->memory_size)
         computer->memory[addr] = value;
     else
     {
-        AdditionalMemory *curr = computer->additional_memory;
+        // printf("Setting %d (%lld)\n", addr, value);
+
+        AdditionalMemoryNode *curr = computer->additional_memory[addr_hash(addr)];
         while (curr)
         {
             if (curr->addr == addr)
@@ -75,12 +94,12 @@ void set(IntcodeComputer *computer, int addr, lint value)
             curr = curr->next;
         }
         // not found -> add it
-        AdditionalMemory *new = (AdditionalMemory *)malloc(sizeof(AdditionalMemory));
+        AdditionalMemoryNode *new = (AdditionalMemoryNode *)malloc(sizeof(AdditionalMemoryNode));
         new->addr = addr;
         new->value = value;
         // add in front
-        new->next = computer->additional_memory;
-        computer->additional_memory = new;
+        new->next = computer->additional_memory[addr_hash(addr)];
+        computer->additional_memory[addr_hash(addr)] = new;
     }
 }
 
@@ -90,14 +109,19 @@ lint get(IntcodeComputer *computer, int addr)
         return computer->memory[addr];
     else
     {
-        AdditionalMemory *curr = computer->additional_memory;
+        // printf("Wanting %d", addr);
+        AdditionalMemoryNode *curr = computer->additional_memory[addr_hash(addr)];
         while (curr)
         {
             if (curr->addr == addr)
+            {
+                // printf(" ; got %lld\n", curr->value);
                 return curr->value;
+            }
             curr = curr->next;
         }
         // not found -> return 0 (no need to add it if it has not been modified)
+        // printf(" ; got nothing\n");
         return 0;
     }
 }
@@ -165,7 +189,7 @@ void run_intcode(IntcodeComputer *comp, bool blocking_output)
         lint parameters[3] = {0};
         for (int i = 0; i < 3; i++)
         {
-            int mode = test_modes % 10;
+            int mode = test_modes % 10; // again, that's SLOW.
             switch (mode)
             {
             case 0: // position mode

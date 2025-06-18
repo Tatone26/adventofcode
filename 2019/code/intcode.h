@@ -9,13 +9,16 @@ typedef struct _additional_memory
     int addr;
     lint value;
     struct _additional_memory *next;
-} AdditionalMemory;
+} AdditionalMemoryNode;
+
+#define ADDITIONAL_MEMORY_SIZE 64
+typedef AdditionalMemoryNode *AdditionalMemory[ADDITIONAL_MEMORY_SIZE];
 
 typedef struct
 {
     lint *memory;
     int memory_size;
-    AdditionalMemory *additional_memory; // for whatever goes beyond the scope of the input, chained list
+    AdditionalMemory additional_memory; // for whatever goes beyond the scope of the input, chained list
 
     int addr;
     lint input;
