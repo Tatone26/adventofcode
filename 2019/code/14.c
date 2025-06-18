@@ -7,7 +7,16 @@ typedef struct
     int quantities[11];  // 0-9 for inputs, 10 for output
 } Reaction;
 
-void update_table(HashTable table, Reaction *input, int size, char *todo, int multi)
+// Potential (big) boost : using a queue to use ingredients only once
+// When producing X * n, for each ingredient :
+// - IF NOT ALREADY IN QUEUE, add ingredients in queue (with n being multiplied like in the recursion)
+// - IF IN QUEUE, update n by adding to it
+// Then, as long as queue is not empty :
+// if thing is ORE, then add it to total
+// if thing is something else, then update queue
+// that's all
+// That should work, at worst it will process things multiple times (if the order is bad, it may process the lower-level ones first but that's not a problem)
+void update_table(HashTable table, Reaction *input, int size, char *todo, luint multi)
 {
     for (int i = 0; i < size; i++)
     {
@@ -53,14 +62,6 @@ luint part1(void *input_v, void **args)
     int size = ((int *)args)[0];
 
     HashTable table = {NULL};
-
-    /* for (int i = 0; i < size; i++)
-    {
-        printf("\nOutput : %d %s\n", input[i].quantities[10], input[i].output);
-        for (int x = 0; x < 10 && input[i].quantities[x] != 0; x++)
-            printf("Input : %d %s\n", input[i].quantities[x], input[i].inputs[x]);
-    } */
-
     update_table(table, input, size, "FUEL", 1);
     return get_flag(table, NULL, "ORE", 1);
 }
@@ -75,66 +76,28 @@ luint part2(void *input_v, void **args)
     if (size <= 0)
         return 0;
 
+    // getting an upper bound for binary searching (doesn't cost much, but pretty efficient)
     HashTable table = {NULL};
     update_table(table, input, size, "FUEL", 1);
-    luint per_fuel = (luint)get_flag(table, NULL, "ORE", 1);
+    luint upper_bound = 1000000000000 / (get_flag(table, NULL, "ORE", 1) / 2); // that's quite random but it feels good
 
-    luint *needed = (luint *)malloc(sizeof(luint) * size);
-    luint *excedent = (luint *)malloc(sizeof(luint) * size);
-    for (int i = 0; i < size; i++)
+    // lets try binary searching ! (I didn't think of it myself, but it's quite obvious :( )
+    luint low = 1;
+    luint high = upper_bound;
+    while (low < high)
     {
-        needed[i] = 1;
-        excedent[i] = 1;
+        luint mid = (low + high + 1) / 2;
+        HashTable table = {NULL};
+        update_table(table, input, size, "FUEL", mid);
+        luint tot = get_flag(table, NULL, "ORE", 1);
+        if (tot > 1000000000000)
+            high = mid - 1;
+        else
+            low = mid;
+        // reset table
+        free_hash(table);
     }
-
-    luint biggest_ratio = 0;
-    int biggest_ratio_output = 0;
-    ;
-    for (int i = 0; i < size; i++)
-    {
-        needed[i] = get_flag(table, NULL, input[i].output, 1);
-        excedent[i] = get_flag(table, NULL, input[i].output, 0) - needed[i];
-        luint ratio = excedent[i] > 0 ? needed[i] / excedent[i] : 0;
-        if (ratio > biggest_ratio)
-        {
-            biggest_ratio = ratio;
-            biggest_ratio_output = i;
-        }
-    }
-
-    printf("For %s, excedent %lld and needed %lld\n", input[biggest_ratio_output].output, excedent[biggest_ratio_output], needed[biggest_ratio_output]);
-    luint more_every = excedent[biggest_ratio_output] * needed[biggest_ratio_output];
-    luint total_single_big_loop = more_every + excedent[biggest_ratio_output]; // that's wrong :
-    printf("Getting more all %lld loops ; and total being %lld\n", more_every, total_single_big_loop);
-
-    luint big_loop_consommation = per_fuel * more_every;
-    printf("consommation : %lld\n", big_loop_consommation);
-    luint number_of_big_loops = (1000000000000 / big_loop_consommation);
-    printf("number of big loops : %lld\n", number_of_big_loops);
-    luint total_with_bonus = total_single_big_loop * number_of_big_loops;
-    printf("producing %lld\n", total_with_bonus);
-    luint excess_ore = 1000000000000 - (number_of_big_loops * big_loop_consommation);
-    printf("Ore left : %lld\n", excess_ore);
-
-    luint total = total_with_bonus + excess_ore / per_fuel;
-
-    free(needed);
-    free(excedent);
-    free_hash(table);
-
-    // Ici, récupérer aussi cb il faut pour l'excès (soit le nombre d'ore en excès, soit le nombre pour chaque truc produit par l'ore)
-    // ensuite, pour tester les loops, regarder si old - used == ce nombre par exemple -> alors la prochaine boucle est en fait double et on devrait
-    // ah bah non parce que ça voudrait dire qu'à la suivante on a flag 1 == flag 0 et c'est jamais le cas pttnnnn
-    // ptn wtfff
-
-    return total;
-
-    // 1333333333248
-    // 1937984496
-    // 150130974
-    // 83418309
-    // 82892292
-    // 82892753
+    return low;
 }
 
 // ----------------------------------------------------------------
