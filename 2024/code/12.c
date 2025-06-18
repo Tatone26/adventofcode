@@ -160,7 +160,7 @@ luint part2(void *input_v, void **args)
     // used to make sure we don't check any place twice
     bool *seen = (bool *)calloc(width * height, sizeof(bool));
     // used to make sure we don't count a side twice (use counter to know which value to use)
-    int(*counted)[4] = (int(*)[4])calloc(width * height, sizeof(int[4]));
+    int (*counted)[4] = (int (*)[4])calloc(width * height, sizeof(int[4]));
     int counter = 1;
     for (int i = 0; i < height; i++)
         for (int j = 0; j < width; j++)
@@ -184,17 +184,28 @@ char *readInput(char *filename, int *width, int *height)
     char buffer[MAX_LINE_LEN];
 
     FILE *f = fopen(filename, "r");
+    if (!f)
+        return NULL;
     *height = fileSize(f);
     fpos_t start;
     fgetpos(f, &start);
-    fgets(buffer, MAX_LINE_LEN, f);
+    if (!fgets(buffer, MAX_LINE_LEN, f))
+    {
+        fclose(f);
+        return NULL;
+    }
     fsetpos(f, &start);
     *width = strlen(buffer) - 1;
     char *input = (char *)malloc(sizeof(char) * *height * *width);
 
     for (int y = 0; y < *height; y++)
     {
-        fgets(buffer, MAX_LINE_LEN, f);
+        if (!fgets(buffer, MAX_LINE_LEN, f))
+        {
+            free(input);
+            fclose(f);
+            return NULL;
+        }
         strncpy(input + y * *width, buffer, *width);
     }
 

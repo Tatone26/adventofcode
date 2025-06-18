@@ -216,7 +216,13 @@ short *readInput(char *filename, int *size)
     char buffer[MAX_LINE_LEN];
 
     FILE *f = fopen(filename, "r");
-    fgets(buffer, MAX_LINE_LEN, f);
+    if (!f)
+        return NULL;
+    if (!fgets(buffer, MAX_LINE_LEN, f))
+    {
+        fclose(f);
+        return NULL;
+    }
     *size = strlen(buffer);
     if (buffer[*size - 1] == '\n')
         (*size)--;

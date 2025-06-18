@@ -71,7 +71,13 @@ int *readInput(char *filename, int *size)
     char buffer[MAX_LINE_LEN];
 
     FILE *f = fopen(filename, "r");
-    fgets(buffer, MAX_LINE_LEN, f);
+    if (!f)
+        return NULL;
+    if (!fgets(buffer, MAX_LINE_LEN, f))
+    {
+        fclose(f);
+        return NULL;
+    }
     *size = strlen(buffer);
     int *input = (int *)malloc(sizeof(int) * *size);
 
@@ -84,6 +90,7 @@ int *readInput(char *filename, int *size)
     }
     if (d == 0)
     {
+        fclose(f);
         free(input);
         return NULL;
     }

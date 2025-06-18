@@ -97,6 +97,8 @@ char **readInput(char *filename, int *height, int *width)
     char buffer[MAX_LINE_LEN];
 
     FILE *f = fopen(filename, "r");
+    if (!f)
+        return NULL;
     *height = fileSize(f);
     *width = WIDTH;
     char **input = (char **)malloc(sizeof(char *) * *height);
@@ -104,7 +106,14 @@ char **readInput(char *filename, int *height, int *width)
     int count = 0;
     for (int i = 0; i < *height; i++)
     {
-        fgets(buffer, MAX_LINE_LEN, f);
+        if (!fgets(buffer, MAX_LINE_LEN, f))
+        {
+            fclose(f);
+            for (int y = 0; y < count; y++)
+                free(input[y]);
+            free(input);
+            return NULL;
+        }
         if (strlen(buffer) <= 1)
             continue;
         input[count++] = strndup(buffer, *width);

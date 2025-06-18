@@ -10,6 +10,9 @@
 #include <math.h>
 #include <stdint.h>
 
+#define true 1
+#define false 0
+
 /// @brief Max characters to read in a file line. Can be increased.
 #define MAX_LINE_LEN 20000
 

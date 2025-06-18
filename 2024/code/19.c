@@ -156,7 +156,13 @@ char **readInput(char *filename, int *nbPatterns, char ***designs, int *nbDesign
     char buffer[MAX_LINE_LEN];
 
     FILE *f = fopen(filename, "r");
-    fgets(buffer, MAX_LINE_LEN, f);
+    if (!f)
+        return NULL;
+    if (!fgets(buffer, MAX_LINE_LEN, f))
+    {
+        fclose(f);
+        return NULL;
+    }
 
     *nbPatterns = 1;
     for (int c = 0; buffer[c] != '\n' && buffer[c] != '\0'; c++)
@@ -178,13 +184,30 @@ char **readInput(char *filename, int *nbPatterns, char ***designs, int *nbDesign
     }
     patterns[(*nbPatterns) - 1] = strndup(buffer + offset, strlen(buffer + offset) - 1);
 
-    fgets(buffer, MAX_LINE_LEN, f); // empty line
+    if (!fgets(buffer, MAX_LINE_LEN, f)) // empty line
+    {
+        fclose(f);
+        for (int i = 0; i < (*nbPatterns); i++)
+            free(patterns[i]);
+        free(patterns);
+        return NULL;
+    }
     *nbDesigns = fileSize(f);
     char **des = (char **)malloc(*nbDesigns * sizeof(char *));
 
     for (int i = 0; i < *nbDesigns; i++)
     {
-        fgets(buffer, MAX_LINE_LEN, f);
+        if (!fgets(buffer, MAX_LINE_LEN, f))
+        {
+            fclose(f);
+            for (int i = 0; i < (*nbPatterns); i++)
+                free(patterns[i]);
+            free(patterns);
+            for (int y = 0; y < i; y++)
+                free(des[y]);
+            free(des);
+            return NULL;
+        }
         des[i] = strndup(buffer, strlen(buffer) - 1);
     }
     *designs = des;

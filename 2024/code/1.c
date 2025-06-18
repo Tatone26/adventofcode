@@ -88,6 +88,8 @@ void readInput(char *filename, int *size, int **list1, int **list2)
     buffer[0] = 'a';
 
     FILE *f = fopen(filename, "r");
+    if (!f)
+        return;
     *size = fileSize(f);
 
     if (*size == 0)
@@ -98,7 +100,8 @@ void readInput(char *filename, int *size, int **list1, int **list2)
 
     for (int i = 0; i < *size; i++)
     {
-        fgets(buffer, MAX_LINE_LEN, f);
+        if (!fgets(buffer, MAX_LINE_LEN, f))
+            continue;
         sscanf(buffer, "%d   %d\n", &(*list1)[i], &(*list2)[i]);
     }
 

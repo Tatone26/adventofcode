@@ -174,7 +174,7 @@ luint part2(void *input_v, void **args)
     int **rows = processInput(input, width, height, false);
 
     // path[INDEX][i] = true means that we have already been on pos INDEX with direction i
-    int(*path)[4] = (int(*)[4])calloc(sizeof(int[4]), width * height);
+    int (*path)[4] = (int (*)[4])calloc(sizeof(int[4]), width * height);
     bool *tested = (bool *)calloc(sizeof(bool), width * height);
     // this "test_counter" value allows multiple instances of the checkLoop function and the main loop to share the same "path" instead of copying it
     int test_counter = 2;
@@ -231,11 +231,17 @@ char *readInput(char *filename, int *width, int *height)
     char buffer[MAX_LINE_LEN];
 
     FILE *f = fopen(filename, "r");
+    if (!f)
+        return NULL;
     *height = fileSize(f);
     fpos_t start;
     fgetpos(f, &start);
 
-    fgets(buffer, MAX_LINE_LEN, f);
+    if (!fgets(buffer, MAX_LINE_LEN, f))
+    {
+        fclose(f);
+        return NULL;
+    }
     *width = strlen(buffer) - 1;
 
     char *input = (char *)malloc(sizeof(char) * *width * *height);
@@ -243,7 +249,12 @@ char *readInput(char *filename, int *width, int *height)
     fsetpos(f, &start);
     for (int j = 0; j < *height; j++)
     {
-        fgets(buffer, MAX_LINE_LEN, f);
+        if (!fgets(buffer, MAX_LINE_LEN, f))
+        {
+            free(input);
+            fclose(f);
+            return NULL;
+        }
         strncpy(input + (j * *width), buffer, *width);
     }
 

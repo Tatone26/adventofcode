@@ -110,6 +110,8 @@ char *readInput(char *filename, int *width, int *height)
     char buffer[MAX_LINE_LEN];
 
     FILE *f = fopen(filename, "r");
+    if (!f)
+        return NULL;
     fpos_t start;
     fgetpos(f, &start);
 
@@ -118,11 +120,16 @@ char *readInput(char *filename, int *width, int *height)
     if (*height == 0)
     {
         printf("Error reading input.\n");
+        fclose(f);
         return 0;
     }
 
     fsetpos(f, &start);
-    fgets(buffer, MAX_LINE_LEN, f);
+    if (!fgets(buffer, MAX_LINE_LEN, f))
+    {
+        fclose(f);
+        return NULL;
+    }
     *width = strlen(buffer) - 1;
 
     fsetpos(f, &start);
@@ -131,7 +138,12 @@ char *readInput(char *filename, int *width, int *height)
 
     for (int y = 0; y < *height; y++)
     {
-        fgets(buffer, MAX_LINE_LEN, f);
+        if (!fgets(buffer, MAX_LINE_LEN, f))
+        {
+            free(input);
+            fclose(f);
+            return NULL;
+        }
         strncpy(&(input[y * *width]), buffer, *width);
     }
 

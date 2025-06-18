@@ -244,31 +244,39 @@ char *readInput(char *filename, int *width, int *height, char **moves, int *size
     buffer[0] = '\0';
 
     FILE *f = fopen(filename, "r");
+    if (!f)
+        return NULL;
     fpos_t start;
     fgetpos(f, &start);
     int n = 0;
-    fgets(buffer, MAX_LINE_LEN, f);
+    char *input = NULL;
+    if (!fgets(buffer, MAX_LINE_LEN, f))
+        goto clean;
     while (strlen(buffer) > 1)
     {
         n++;
-        fgets(buffer, MAX_LINE_LEN, f);
+        if (!fgets(buffer, MAX_LINE_LEN, f))
+            goto clean;
     }
 
     fsetpos(f, &start);
-    fgets(buffer, MAX_LINE_LEN, f);
+    if (!fgets(buffer, MAX_LINE_LEN, f))
+        goto clean;
     *width = strlen(buffer) - 1;
     *height = n;
     if (*width == 0 || *height == 0)
         return NULL;
 
-    char *input = (char *)malloc(sizeof(char) * *width * *height);
+    input = (char *)malloc(sizeof(char) * *width * *height);
     fsetpos(f, &start);
     for (int i = 0; i < *height; i++)
     {
-        fgets(buffer, MAX_LINE_LEN, f);
+        if (!fgets(buffer, MAX_LINE_LEN, f))
+            goto clean;
         strncpy(input + i * *width, buffer, *width);
     }
-    fgets(buffer, MAX_LINE_LEN, f); // empty line
+    if (!fgets(buffer, MAX_LINE_LEN, f))
+        goto clean; // empty line
     fpos_t start_bis;
     fgetpos(f, &start_bis);
 
@@ -288,13 +296,22 @@ char *readInput(char *filename, int *width, int *height, char **moves, int *size
     int offset = 0;
     for (int i = 0; i < lines; i++)
     {
-        fgets(buffer, MAX_LINE_LEN, f);
+        if (!fgets(buffer, MAX_LINE_LEN, f))
+            goto clean;
         strncpy(*moves + offset, buffer, strlen(buffer) - 1);
         offset += strlen(buffer) - 1;
     }
 
     fclose(f);
     return input;
+
+clean:
+{
+    if (input)
+        free(input);
+    fclose(f);
+    return NULL;
+}
 }
 
 int main(int argc, char **argv)

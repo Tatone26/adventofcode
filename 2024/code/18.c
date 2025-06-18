@@ -224,12 +224,19 @@ Pos *readInput(char *filename, int *size)
     char buffer[MAX_LINE_LEN];
 
     FILE *f = fopen(filename, "r");
+    if (!f)
+        return NULL;
     *size = fileSize(f);
     Pos *input = (Pos *)malloc(sizeof(Pos) * *size);
 
     for (int i = 0; i < *size; i++)
     {
-        fgets(buffer, MAX_LINE_LEN, f);
+        if (!fgets(buffer, MAX_LINE_LEN, f))
+        {
+            free(input);
+            fclose(f);
+            return NULL;
+        }
         int a, b;
         if (sscanf(buffer, "%d,%d", &a, &b) != 2)
             printf("ERROR READING INPUT\n");

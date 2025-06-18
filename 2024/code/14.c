@@ -195,12 +195,19 @@ Robot *readInput(char *filename, int *size)
     char buffer[MAX_LINE_LEN];
 
     FILE *f = fopen(filename, "r");
+    if (!f)
+        return NULL;
     *size = fileSize(f);
     Robot *input = (Robot *)malloc(sizeof(Robot) * *size);
 
     for (int i = 0; i < *size; i++)
     {
-        fgets(buffer, MAX_LINE_LEN, f);
+        if (!fgets(buffer, MAX_LINE_LEN, f))
+        {
+            fclose(f);
+            free(input);
+            return NULL;
+        }
         int a, b, c, d;
         if (sscanf(buffer, "p=%d,%d v=%d,%d", &a, &b, &c, &d) != 4)
             printf("WARNING INPUT READING\n");

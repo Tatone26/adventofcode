@@ -96,7 +96,7 @@ luint part1(void *input_v, void **args)
     Pos start = (Pos){1, height - 2};
     Pos end = (Pos){width - 2, 1};
     // used to know if we have already found the best way of going there
-    int(*seen)[4] = (int(*)[4])malloc(width * height * sizeof(int[4]));
+    int (*seen)[4] = (int (*)[4])malloc(width * height * sizeof(int[4]));
     memset(seen, 127, width * height * sizeof(int[4]));
 
     Heap heap = newHeap(width * height);
@@ -176,7 +176,7 @@ luint part2(void *input_v, void **args)
     Pos start = (Pos){1, height - 2};
     Pos end = (Pos){width - 2, 1};
     // used to know if we have already found the best way of going there
-    int(*seen)[4] = (int(*)[4])malloc(width * height * sizeof(int[4]));
+    int (*seen)[4] = (int (*)[4])malloc(width * height * sizeof(int[4]));
     memset(seen, 127, width * height * sizeof(int[4]));
 
     Heap heap = newHeap(width * height);
@@ -224,17 +224,28 @@ char *readInput(char *filename, int *width, int *height)
     char buffer[MAX_LINE_LEN];
 
     FILE *f = fopen(filename, "r");
+    if (!f)
+        return NULL;
     *height = fileSize(f);
     fpos_t start;
     fgetpos(f, &start);
-    fgets(buffer, MAX_LINE_LEN, f);
+    if (!fgets(buffer, MAX_LINE_LEN, f))
+    {
+        fclose(f);
+        return NULL;
+    }
     *width = strlen(buffer) - 1;
     fsetpos(f, &start);
     char *input = (char *)malloc(sizeof(char) * *width * *height);
 
     for (int i = 0; i < *height; i++)
     {
-        fgets(buffer, MAX_LINE_LEN, f);
+        if (!fgets(buffer, MAX_LINE_LEN, f))
+        {
+            free(input);
+            fclose(f);
+            return NULL;
+        }
         strncpy(input + i * *width, buffer, *width);
     }
 

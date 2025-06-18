@@ -74,10 +74,16 @@ short *readInput(char *filename, int *width, int *height)
     char buffer[MAX_LINE_LEN];
 
     FILE *f = fopen(filename, "r");
+    if (!f)
+        return NULL;
     *height = fileSize(f);
     fpos_t start;
     fgetpos(f, &start);
-    fgets(buffer, MAX_LINE_LEN, f);
+    if (!fgets(buffer, MAX_LINE_LEN, f))
+    {
+        fclose(f);
+        return NULL;
+    }
     *width = strlen(buffer) - 1;
 
     short *input = (short *)malloc(sizeof(short) * *width * *height);
@@ -85,7 +91,12 @@ short *readInput(char *filename, int *width, int *height)
     fsetpos(f, &start);
     for (int i = 0; i < *height; i++)
     {
-        fgets(buffer, MAX_LINE_LEN, f);
+        if (!fgets(buffer, MAX_LINE_LEN, f))
+        {
+            fclose(f);
+            free(input);
+            return NULL;
+        }
         for (int j = 0; j < *width; j++)
             input[i * *width + j] = buffer[j] - '0';
     }

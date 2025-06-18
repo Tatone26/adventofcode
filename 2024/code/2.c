@@ -88,6 +88,8 @@ void readInput(char *filename, int *nb_reports, int ***reports)
     buffer[0] = 'a';
 
     FILE *f = fopen(filename, "r");
+    if (!f)
+        return;
     *nb_reports = fileSize(f);
 
     if (*nb_reports == 0)
@@ -98,7 +100,8 @@ void readInput(char *filename, int *nb_reports, int ***reports)
     int temp[8];
     for (int i = 0; i < *nb_reports; i++)
     {
-        fgets(buffer, MAX_LINE_LEN, f);
+        if (!fgets(buffer, MAX_LINE_LEN, f))
+            continue;
         int count = sscanf(buffer, "%d %d %d %d %d %d %d %d", &temp[0], &temp[1], &temp[2], &temp[3], &temp[4], &temp[5], &temp[6], &temp[7]);
         (*reports)[i] = (int *)malloc(sizeof(int) * (count + 1));
         for (int j = 0; j < count; j++)

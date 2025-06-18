@@ -15,6 +15,11 @@
 /// @param parameters The parameters to pass to the functions.
 void run(int dayNum, luint (*part1)(void *input, void **args), luint (*part2)(void *input, void **args), void *input, void **args)
 {
+    if (!input)
+    {
+        printf("Error input !\n");
+        return;
+    }
     printf(BOLD GREEN "\n  -- Day %d --  " COLOR_OFF "\n\n", dayNum);
 
     clock_t startPart1 = clock();           // Timer

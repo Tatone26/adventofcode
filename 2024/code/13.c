@@ -75,19 +75,25 @@ Machine *readInput(char *filename, int *size)
     char buffer[MAX_LINE_LEN];
 
     FILE *f = fopen(filename, "r");
+    if (!f)
+        return NULL;
     *size = fileSize(f) / 4 + 1;
     Machine *input = (Machine *)malloc(sizeof(Machine) * *size);
     for (int i = 0; i < *size; i++)
     {
         int a = -1, b = -1, c = -1, d = -1, e = -1, g = -1;
         // thats like... the worst way of doing it but it works
-        fgets(buffer, MAX_LINE_LEN, f);
+        if (!fgets(buffer, MAX_LINE_LEN, f))
+            goto clean;
         sscanf(buffer, "Button A: X+%d, Y+%d", &a, &b);
-        fgets(buffer, MAX_LINE_LEN, f);
+        if (!fgets(buffer, MAX_LINE_LEN, f))
+            goto clean;
         sscanf(buffer, "Button B: X+%d, Y+%d", &c, &d);
-        fgets(buffer, MAX_LINE_LEN, f);
+        if (!fgets(buffer, MAX_LINE_LEN, f))
+            goto clean;
         sscanf(buffer, "Prize: X=%d, Y=%d", &e, &g);
-        fgets(buffer, MAX_LINE_LEN, f);
+        if (!fgets(buffer, MAX_LINE_LEN, f))
+            goto clean;
         if (b == -1 || d == -1 || g == -1)
             printf("WARNING : error reading input.\n");
         input[i] = (Machine){(Pos){a, b}, (Pos){c, d}, (Pos){e, g}};
@@ -95,6 +101,13 @@ Machine *readInput(char *filename, int *size)
 
     fclose(f);
     return input;
+
+clean:
+{
+    free(input);
+    fclose(f);
+    return NULL;
+}
 }
 
 int main(int argc, char **argv)

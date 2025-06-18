@@ -91,14 +91,16 @@ luint **readInput(char *filename, int *size)
     char buffer[MAX_LINE_LEN];
 
     FILE *f = fopen(filename, "r");
+    if (!f)
+        return NULL;
     *size = fileSize(f);
 
     luint **input = (luint **)(malloc(sizeof(luint *) * *size));
     for (int i = 0; i < *size; i++)
     {
-        fgets(buffer, MAX_LINE_LEN, f);
         luint first;
-        if (sscanf(buffer, "%llu:", &first) != 1)
+
+        if (!fgets(buffer, MAX_LINE_LEN, f) || sscanf(buffer, "%llu:", &first) != 1)
         {
             printf("ERRROR INPUT READING\n");
             for (int j = 0; j < i; j++)

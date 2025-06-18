@@ -159,20 +159,28 @@ ThreeBitsComputer *readInput(char *filename, int *init)
 {
     char buffer[MAX_LINE_LEN];
     FILE *f = fopen(filename, "r");
+    if (!f)
+        return NULL;
 
+    int *instructions = NULL;
     int a, b, c;
-    fgets(buffer, MAX_LINE_LEN, f);
+    if (!fgets(buffer, MAX_LINE_LEN, f))
+        goto clean;
     if (sscanf(buffer, "Register A: %d", &a) != 1)
         return NULL;
-    fgets(buffer, MAX_LINE_LEN, f);
+    if (!fgets(buffer, MAX_LINE_LEN, f))
+        goto clean;
     if (sscanf(buffer, "Register B: %d", &b) != 1)
         return NULL;
-    fgets(buffer, MAX_LINE_LEN, f);
+    if (!fgets(buffer, MAX_LINE_LEN, f))
+        goto clean;
     if (sscanf(buffer, "Register C: %d", &c) != 1)
         return NULL;
 
-    fgets(buffer, MAX_LINE_LEN, f); // empty line
-    fgets(buffer, MAX_LINE_LEN, f);
+    if (!fgets(buffer, MAX_LINE_LEN, f))
+        goto clean; // empty line
+    if (!fgets(buffer, MAX_LINE_LEN, f))
+        goto clean;
     if (!strncmp(buffer, "Program: ", 10))
         return NULL;
     int offset = 0;
@@ -180,7 +188,7 @@ ThreeBitsComputer *readInput(char *filename, int *init)
         offset += 2;
     int size = offset / 2 + 1;
 
-    int *instructions = (int *)malloc(size * sizeof(int));
+    instructions = (int *)malloc(size * sizeof(int));
     for (int i = 0; i < size; i++)
         instructions[i] = atoi((buffer + 9 + 2 * i));
 
@@ -189,6 +197,13 @@ ThreeBitsComputer *readInput(char *filename, int *init)
     *init = a;
     fclose(f);
     return computer;
+clean:
+{
+    fclose(f);
+    if (instructions)
+        free(instructions);
+    return NULL;
+}
 }
 
 int main(int argc, char **argv)

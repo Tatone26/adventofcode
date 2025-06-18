@@ -1,7 +1,7 @@
 SHELL := /bin/bash
 
 CFLAGS = -g -Wall -Wpedantic -Wextra -pedantic
-#CFLAGS = -Wall -o3 -pedantic
+#CFLAGS = -O3 -march=native -funroll-loops -flto -fomit-frame-pointer -ffast-math -fno-stack-protector
 
 OUTFOLDER = ./output# folder with binaries
 INPUTFOLDER = ./input# folder with text inputs

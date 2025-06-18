@@ -159,6 +159,8 @@ rule *readInput(char *filename, int *nb_rules, int *nb_updates, short ***updates
     char buffer[MAX_LINE_LEN];
 
     FILE *f = fopen(filename, "r");
+    if (!f)
+        return NULL;
     fpos_t start;
     fgetpos(f, &start);
     int number_of_rules = 0;
@@ -167,7 +169,8 @@ rule *readInput(char *filename, int *nb_rules, int *nb_updates, short ***updates
     if (number_of_rules == 0)
     {
         printf("Error reading input.\n");
-        return 0;
+        fclose(f);
+        return NULL;
     }
     *nb_rules = number_of_rules;
     rule *rules = (rule *)malloc(sizeof(rule) * *nb_rules);
@@ -175,30 +178,52 @@ rule *readInput(char *filename, int *nb_rules, int *nb_updates, short ***updates
     fsetpos(f, &start);
     for (int i = 0; i < *nb_rules; i++)
     {
-        fgets(buffer, MAX_LINE_LEN, f);
+        if (!fgets(buffer, MAX_LINE_LEN, f))
+        {
+            free(rules);
+            fclose(f);
+            return NULL;
+        }
         int a, b;
         if (sscanf(buffer, "%d|%d\n", &a, &b) != 2)
         {
             printf("Error reading input bis.\n");
             free(rules);
+            fclose(f);
             return 0;
         }
         rules[i] = (rule){a, b};
     }
 
-    fgets(buffer, MAX_LINE_LEN, f);
+    if (!fgets(buffer, MAX_LINE_LEN, f))
+    {
+        free(rules);
+        fclose(f);
+        return NULL;
+    }
     *nb_updates = fileSize(f);
     if (*nb_updates == 0)
     {
         free(rules);
+        fclose(f);
         printf("Error reading input ter.\n");
-        return 0;
+        return NULL;
     }
 
     *updates = (short **)(malloc(sizeof(short *) * *nb_updates));
     for (int i = 0; i < *nb_updates; i++)
     {
-        fgets(buffer, MAX_LINE_LEN, f);
+        if (!fgets(buffer, MAX_LINE_LEN, f))
+        {
+            for (int y = 0; y < i; y++)
+            {
+                free((*updates)[y]);
+                free(*updates);
+                free(rules);
+                *updates = NULL;
+                return NULL;
+            }
+        }
         int size = 0;
         int offset = 0;
         int a;
