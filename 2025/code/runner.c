@@ -73,6 +73,36 @@ int fileSize(FILE *f)
     return n;
 }
 
+/// @brief Reads the file as a list of integers (one int per line)
+/// @param input
+/// @return a allocated int list, and the size of the list in *size.
+int *toIntList(FILE *f, int *size)
+{
+    fpos_t start;
+    fgetpos(f, &start);
+
+    char buffer[MAX_LINE_LEN];
+    *size = fileSize(f);
+    if (*size == 0)
+        return NULL;
+
+    int *input = (int *)malloc(sizeof(int) * (*size));
+    if (!input)
+    {
+        *size = 0;
+        return NULL;
+    }
+
+    for (int i = 0; i < *size; i++)
+    {
+        fgets(buffer, MAX_LINE_LEN, f);
+        input[i] = atoi(buffer);
+    }
+
+    fsetpos(f, &start);
+    return input;
+}
+
 /// @brief Uses euclide's algorithm to calculate the pgcd and the two Bezout's coefficient
 /// @param a
 /// @param b

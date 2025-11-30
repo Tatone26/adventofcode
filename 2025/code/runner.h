@@ -43,6 +43,8 @@ int nbOfDigits(luint n);
 
 int fileSize(FILE *f);
 
+int *toIntList(FILE *f, int *size);
+
 luint euclide(luint a, luint b, long long *u, long long *v);
 
 #endif
