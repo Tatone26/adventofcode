@@ -30,11 +30,12 @@ char *readInput(char *filename, int *size)
     if (!f)
         exit(2);
     *size = fileSize(f);
-    char *input = (char *)malloc(sizeof(char) * *size);
+    char *input = (char *)malloc(sizeof(char) * (*size)); // WARNING : change size of alloc
 
     int offset = 0;
-    while (!feof(f) && fgets(buffer, MAX_LINE_LEN, f))
+    for (int i = 0; i < *size; i++)
     {
+        fgets(buffer, MAX_LINE_LEN, f);
         strncpy(input + offset, buffer, strlen(buffer) - 1); // -1 to remove \n
         offset += strlen(buffer) - 1;
     }

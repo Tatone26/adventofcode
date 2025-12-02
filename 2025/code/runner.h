@@ -45,6 +45,8 @@ int fileSize(FILE *f);
 
 int *toIntList(FILE *f, int *size);
 
+luint fast_pow(luint a, int power);
+
 luint euclide(luint a, luint b, long long *u, long long *v);
 
 #endif

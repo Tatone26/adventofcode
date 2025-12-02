@@ -129,3 +129,28 @@ luint euclide(luint a, luint b, long long *u, long long *v)
     *v = v1;
     return r1;
 }
+
+/// @brief Does a^power by squaring.
+/// @author Wikipedia
+/// @param a
+/// @param power negative power will return 1, like power = 0;
+/// @return
+luint fast_pow(luint a, int power)
+{
+    if (power <= 0)
+        return 1;
+    int n = power;
+    luint y = 1;
+    luint res = a;
+    while (n > 1)
+    {
+        if (n % 2 != 0)
+        {
+            y *= res;
+            n -= 1;
+        }
+        res = res * res;
+        n /= 2;
+    }
+    return y * res;
+}
