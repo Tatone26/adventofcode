@@ -8,11 +8,11 @@ INPUTFOLDER = ./input# folder with text inputs
 CODEFOLDER = ./code# folder with code
 
 # list of all days done
-DAYS = 1 2
+DAYS = 1 2 3
 # list of all missed days
 NOT_DONE_DAYS =
 # day currently working on
-DAY = 2
+DAY = 3
 
 .PHONY : clean all runall valgrind
 
@@ -47,5 +47,5 @@ $(OUTFOLDER)/% : $(OUTFOLDER)/%.o $(OUTFOLDER)/runner.o
 	gcc $(CFLAGS) -o $@ $^ -lm
 
 clean :
-	rm -f -r *.o ${OUTFOLDER}/*
+	rm -f -r *.o ${OUTFOLDER}/* *.out* vgcore* 
 	clear
