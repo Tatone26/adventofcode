@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-CFLAGS = -g -Wall -Wpedantic -Wextra -pedantic
+CFLAGS = -g -Wall -Wpedantic -Wextra -pedantic -DNDEBUG
 #CFLAGS = -O3 -march=native -funroll-loops -flto -fomit-frame-pointer -ffast-math -fno-stack-protector
 
 OUTFOLDER = ./output# folder with binaries
@@ -8,11 +8,11 @@ INPUTFOLDER = ./input# folder with text inputs
 CODEFOLDER = ./code# folder with code
 
 # list of all days done
-DAYS = 1 2 3 4
+DAYS = 1 2 3 4 5
 # list of all missed days
 NOT_DONE_DAYS =
 # day currently working on
-DAY = 4
+DAY = 5
 
 .PHONY : clean all runall valgrind
 

@@ -9,6 +9,7 @@
 #include <stdbool.h>
 #include <math.h>
 #include <stdint.h>
+#include <assert.h>
 
 #define true 1
 #define false 0
