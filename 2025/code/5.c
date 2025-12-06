@@ -38,6 +38,7 @@ luint part1(void *input_v, void **args)
 
 luint part2(void *input_v, void **args)
 {
+    (void)input_v;
     int nb_ranges = *(int *)((__ptr_t *)args)[1];
     Range *ranges = *(Range **)((__ptr_t *)args)[2];
 
@@ -107,11 +108,6 @@ luint part2(void *input_v, void **args)
     return count;
 }
 
-// 368596031847584 too high
-// 368596031847587
-// 359772124067630 too high
-// 343089439502475 ?
-
 // ----------------------------------------------------------------
 
 luint *readInput(char *filename, int *nb_items, Range **ranges, int *nb_ranges)
@@ -126,20 +122,25 @@ luint *readInput(char *filename, int *nb_items, Range **ranges, int *nb_ranges)
     fgetpos(f, &start);
 
     *nb_ranges = 0;
-    fgets(buffer, MAX_LINE_LEN, f);
+    if (!fgets(buffer, MAX_LINE_LEN, f))
+        return NULL;
+
     while (strlen(buffer) > 1)
     {
         (*nb_ranges)++;
-        buffer[0] = '\0';
-        fgets(buffer, MAX_LINE_LEN, f);
+        if (!fgets(buffer, MAX_LINE_LEN, f))
+            return NULL; // shouldn't have error and not being end of file without finding an empty line
     }
+
     *nb_items = 0;
-    fgets(buffer, MAX_LINE_LEN, f);
+    if (!fgets(buffer, MAX_LINE_LEN, f)) // empty line has been taken care of in the loop above
+        return NULL;
+
     while (strlen(buffer) > 1)
     {
         (*nb_items)++;
-        buffer[0] = '\0';
-        fgets(buffer, MAX_LINE_LEN, f);
+        if (!fgets(buffer, MAX_LINE_LEN, f)) // last one may be NULL at end of file so no return
+            break;
     }
 
     if (*nb_ranges <= 0 || *nb_items == 0)
@@ -149,14 +150,29 @@ luint *readInput(char *filename, int *nb_items, Range **ranges, int *nb_ranges)
     *ranges = (Range *)malloc(sizeof(Range) * (*nb_ranges));
     for (int i = 0; i < *nb_ranges; i++)
     {
-        fgets(buffer, MAX_LINE_LEN, f);
+        if (!fgets(buffer, MAX_LINE_LEN, f))
+        {
+            free(*ranges);
+            return NULL;
+        }
         sscanf(buffer, "%llu-%llu", &((*ranges)[i].a), &((*ranges)[i].b));
     }
-    fgets(buffer, MAX_LINE_LEN, f);
+
+    if (!fgets(buffer, MAX_LINE_LEN, f)) // empty line
+    {
+        free(*ranges);
+        return NULL;
+    }
+
     luint *input = (luint *)malloc(sizeof(luint) * (*nb_items));
     for (int i = 0; i < *nb_items; i++)
     {
-        fgets(buffer, MAX_LINE_LEN, f);
+        if (!fgets(buffer, MAX_LINE_LEN, f))
+        {
+            free(*ranges);
+            free(input);
+            return NULL;
+        }
         sscanf(buffer, "%llu", &input[i]);
     }
 
@@ -169,8 +185,15 @@ int main(int argc, char **argv)
     if (argc != 2)
         return 2;
     int nb_items = 0, nb_ranges = 0;
-    Range *ranges;
+    Range *ranges = NULL;
     luint *input = readInput(argv[1], &nb_items, &ranges, &nb_ranges);
+    if (!ranges)
+    {
+        printf("Error input !\n");
+        if (input)
+            free(input);
+        return 1;
+    }
     __ptr_t args[] = {&nb_items, &nb_ranges, &ranges};
     run(5, part1, part2, input, (void **)args);
     free(input);
