@@ -114,7 +114,7 @@ int main(int argc, char **argv)
     int height = 0, width = 0;
     char **input = readInput(argv[1], &width, &height);
     int args[2] = {width, height};
-    run(1, part1, part2, input, (void **)args);
+    run(7, part1, part2, input, (void **)args);
     for (int i = 0; i < height; i++)
         free(input[i]);
     free(input);
