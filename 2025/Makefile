@@ -1,18 +1,18 @@
 SHELL := /bin/bash
 
-CFLAGS = -g -Wall -Wpedantic -Wextra -pedantic -lglpk
-#CFLAGS = -O3 -march=native -funroll-loops -flto -fomit-frame-pointer -ffast-math -fno-stack-protector -DNDEBUG -lglpk
+CFLAGS = -g -Wall -Wpedantic -Wextra -pedantic
+#CFLAGS = -O3 -march=native -funroll-loops -flto -fomit-frame-pointer -ffast-math -fno-stack-protector -DNDEBUG
 
 OUTFOLDER = ./output# folder with binaries
 INPUTFOLDER = ./input# folder with text inputs
 CODEFOLDER = ./code# folder with code
 
 # list of all days done
-DAYS = 1 2 3 4 5 6 7 8 9 10 11
+DAYS = 1 2 3 4 5 6 7 8 9 10 11 12
 # list of all missed days
 NOT_DONE_DAYS =
 # day currently working on
-DAY = 11
+DAY = 12
 
 .PHONY : clean all runall valgrind
 
@@ -43,6 +43,9 @@ $(OUTFOLDER)/%.o : $(CODEFOLDER)/%.c Makefile
 	gcc $(CFLAGS) -o $@ -c $< -lm
 
 # binaries files
+$(OUTFOLDER)/10 : $(OUTFOLDER)/10.o $(OUTFOLDER)/runner.o
+	gcc $(CFLAGS) -o $@ $^ -lm -lglpk
+
 $(OUTFOLDER)/% : $(OUTFOLDER)/%.o $(OUTFOLDER)/runner.o
 	gcc $(CFLAGS) -o $@ $^ -lm
 

@@ -148,15 +148,16 @@ luint part2(void *input_v, void **args)
 
     luint res = 0;
 
-    // only two possibilities : svr-dac-fft-out or svr-fft-dac-out
+    // only two possibilities : svr-dac-fft-out or svr-fft-dac-out. One of them is probably null too... (DAG)
 
-    res += (luint)nb_paths_between(input, "svr", "dac") *
-           nb_paths_between(input, "dac", "fft") *
-           nb_paths_between(input, "fft", "out");
+    luint dac_to_fft = nb_paths_between(input, "dac", "fft");
+    luint fft_to_dac = nb_paths_between(input, "fft", "dac");
 
-    res += (luint)nb_paths_between(input, "svr", "fft") *
-           nb_paths_between(input, "fft", "dac") *
-           nb_paths_between(input, "dac", "out");
+    if (dac_to_fft)
+        res += (luint)nb_paths_between(input, "svr", "dac") * dac_to_fft * nb_paths_between(input, "fft", "out");
+
+    if (fft_to_dac)
+        res += (luint)nb_paths_between(input, "svr", "fft") * fft_to_dac * nb_paths_between(input, "dac", "out");
 
     return res;
 }
@@ -178,7 +179,7 @@ Graph *readInput(char *filename, int *size)
     fpos_t start;
     fgetpos(f, &start);
 
-    for (int i = 0; i < *size; i++)
+    for (int i = 0; i < (*size + 1); i++)
     {
         char buf[4];
         fgets(buffer, MAX_LINE_LEN, f);
@@ -228,7 +229,7 @@ Graph *readInput(char *filename, int *size)
             if (place_in_array == -1)
                 printf("NO NEIGHBORS FOR NODE - ERROR INPUT\n");
             input->nodes[i].next[j] = place_in_array;
-            if (place_in_array >= 0)
+            if (place_in_array >= 0 && place_in_array < input->nb_nodes)
                 input->nodes[place_in_array].nb_prec++;
         }
     }
