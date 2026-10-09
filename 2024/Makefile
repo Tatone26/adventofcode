@@ -12,7 +12,7 @@ DAYS = 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 22 23 25
 # list of all missed days
 NOT_DONE_DAYS = 21 24
 # day currently working on
-DAY = 24
+DAY = 21
 
 .PHONY : clean all runall valgrind
 
@@ -31,11 +31,19 @@ test :$(OUTFOLDER)/$(DAY)
 valgrind : $(OUTFOLDER)/$(DAY)
 	valgrind $< $(INPUTFOLDER)/$(DAY).txt
 
+# run valgrind on all
+valgrindall : all
+	$(foreach d, $(DAYS), valgrind $(OUTFOLDER)/$(d) $(INPUTFOLDER)/$(d).txt;)
+
+
 # run all days (not useful for now)
 runall : $(foreach d, $(DAYS), $(OUTFOLDER)/$(d))
 	time ($(foreach d, $(DAYS), $(OUTFOLDER)/$(d) $(INPUTFOLDER)/$(d).txt;))
 	@echo -e "\n\033[4m"Days missed"\033[m" :
 	@echo $(foreach d, $(NOT_DONE_DAYS), $(d) )
+
+createtxts : 
+	touch $(foreach d, $(DAYS), $(INPUTFOLDER)/$(d).txt)
 
 .PRECIOUS: $(OUTFOLDER)/%.o # forcing Make to keep all .o files
 # .o files

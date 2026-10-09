@@ -24,38 +24,29 @@ luint part1(void *input_v, void **args)
     char *input = (char *)input_v;
     int size = ((int *)args)[0];
 
-    bool **graph = (bool **)malloc(sizeof(bool *) * MAX_HASH);
-    for (int i = 0; i < MAX_HASH; i++)
-    {
-        graph[i] = (bool *)calloc(sizeof(bool), MAX_HASH);
-    }
+    bool *graph = (bool *)calloc(MAX_HASH * MAX_HASH, sizeof(bool));
     for (int i = 0; i < size; i++)
     {
         int a = hash(input + i * 6);
         int b = hash(input + i * 6 + 3);
-        graph[a][b] = true;
-        graph[b][a] = true;
+        graph[a * MAX_HASH + b] = true;
+        graph[b * MAX_HASH + a] = true;
     }
 
     int res = 0;
     bool done[26] = {0};
     int min_hash = hash("ta");
     int max_hash = hash("tz");
-    for (int x = 'a'; x <= 'z'; x++)
+    for (int h = min_hash; h <= max_hash; h++)
     {
-        char test[2] = {'t', x};
-        int h = hash(test);
-
         int interconnected[MAX_HASH];
         int count = 0;
         for (int i = 0; i < MAX_HASH; i++)
         {
-            if (min_hash <= i && max_hash >= i)
-            {
-                if (done[i - min_hash])
-                    continue;
-            }
-            if (graph[h][i])
+            if (min_hash <= i && max_hash >= i && done[i - min_hash]) // 'ta' -> 'tz' already tested, do not re-count
+                continue;
+
+            if (graph[h * MAX_HASH + i])
             {
                 interconnected[count] = i;
                 count++;
@@ -64,155 +55,72 @@ luint part1(void *input_v, void **args)
         for (int j = 0; j < count; j++)
         {
             int testing = interconnected[j];
-            for (int r = j; r < count; r++)
+            for (int r = j; r < count; r++) // three imbricated loops -> a three-member clique.
             {
-                if (graph[testing][interconnected[r]])
+                if (graph[testing * MAX_HASH + interconnected[r]])
                     res++;
             }
         }
         done[h - min_hash] = true;
     }
 
-    for (int i = 0; i < MAX_HASH; i++)
-    {
-        free(graph[i]);
-    }
     free(graph);
 
     return res;
 }
 
 // -----------------------------------------------------------------
+#define MAX_SET_SIZE 32
 
-// largest set of fully interconnected computers
-// wanted result for test:
-// size 6
-//
-// ka-co
-// ta-co
-// de-co
-// ta-ka
-// de-ta
-// ka-de
-
-// (ka, co, de, ta)
-// recursive version : from a given set S, made from a root R, try to add a point P to it. If possible, recursion with S u {P}. Test every single point not in S. If no point can be added, return S.
-// compare all S u {P}, and choose the biggest one to return. S being maximal, we know that it is the biggest one contening the root R. No need to test R again anywhere.
-
-typedef struct
+void rec_check(const bool *graph, int *cur_set, int cur_len,
+               const bool *cand, int prev_node,
+               int nb_nodes, int *best_find, int *best_len)
 {
-    int n;
-    int capacity;
-    int *points;
-} NodeSet;
+    if (nb_nodes <= 0)
+        return;
+    bool candidates[nb_nodes];
+    memcpy(candidates, cand, nb_nodes * sizeof(bool));
 
-/// capacity should be the total number of point in the graph.
-NodeSet *newSet(int capacity)
-{
-    NodeSet *new = (NodeSet *)malloc(sizeof(NodeSet));
-    new->n = 0;
-    new->capacity = capacity;
-    new->points = (int *)malloc(sizeof(int) * capacity);
-    return new;
-}
-
-void freeSet(NodeSet *set)
-{
-    free(set->points);
-    free(set);
-}
-
-void addPoint(NodeSet *set, int point)
-{
-    set->points[set->n] = point;
-    set->n += 1;
-}
-
-bool contains(const NodeSet *set, int point)
-{
-    for (int i = 0; i < set->n; i++)
-        if (set->points[i] == point)
-            return true;
-    return false;
-}
-
-void removePoint(NodeSet *set, int point)
-{
-    for (int i = 0; i < set->n; i++)
-        if (set->points[i] == point)
-        {
-            set->points[i] = set->points[set->n - 1];
-            set->n -= 1;
-            break;
-        }
-}
-
-NodeSet *copySet(NodeSet *set)
-{
-    NodeSet *new = newSet(set->capacity);
-    new->n = set->n;
-    memcpy(new->points, set->points, sizeof(int) * set->capacity);
-    return new;
-}
-
-// I just wrote a direct application of the Bron-Kerbosh algorithm, which finds all the maximal cliques in a graph. Finding the maximum is easy.
-// Slow : bad data structure and a lot of copies.
-NodeSet *bronKerbosch(bool **graph, NodeSet *r_set, NodeSet *p_set, NodeSet *x_set)
-{
-    // if P empty and X empty, then found maximal clique
-    if (p_set->n == 0 && x_set->n == 0)
-        return copySet(r_set);
-    // else do the recursion (and choose the biggest maximal clique)
-    int bestSize = 0;
-    NodeSet *bestSet = NULL;
-    for (int v_i = 0; v_i < p_set->n; v_i++)
+    for (int c = prev_node + 1; c < nb_nodes; c++)
     {
-        // v in P
-        int v = p_set->points[v_i];
-        removePoint(p_set, v);
+        if (!cand[c])
+            continue;
 
-        // R u {v}
-        NodeSet *r_set_new = copySet(r_set);
-        addPoint(r_set_new, v);
+        // Choose vertex c
+        cur_set[cur_len] = c;
 
-        // update P and X
-        NodeSet *p_set_new = copySet(p_set);
-        NodeSet *x_set_new = copySet(x_set);
-        for (int j = 0; j < MAX_HASH; j++)
+        int cand_count = 0;
+        memset(candidates, 0, nb_nodes * sizeof(bool));
+        for (int i = c + 1; i < nb_nodes; i++)
         {
-            if (!graph[v][j])
+            // choose new potential candidates (nodes linked to all nodes in current set)
+            // only iterate on nodes starting from this one, as we tested all the other ones.
+            if (cand[i] && graph[c * nb_nodes + i])
             {
-                if (contains(p_set_new, j))
-                    removePoint(p_set_new, j); // P inter N(v)
-                if (contains(x_set_new, j))
-                    removePoint(x_set_new, j); // X inter N(v)
+                candidates[i] = true;
+                cand_count++; // ALWAYS count instead of just putting "true". Same cost, may be useful.
             }
         }
-        NodeSet *next = bronKerbosch(graph, r_set_new, p_set_new, x_set_new);
-        addPoint(x_set, v);
-        // if found a maximal clique, keep the biggest one
-        if (next)
+
+        if (cur_len + cand_count < *best_len) // the last magical pruning. Most cliques have really little candidates.
+            continue;                         // This allow us to concentrate the efforts only on the big, lot-of-possibilities ones
+
+        if (cand_count)
         {
-            if (bestSet == NULL || next->n > bestSize)
-            {
-                bestSize = next->n;
-                if (bestSet)
-                    freeSet(bestSet);
-                bestSet = next;
-            }
-            else
-                freeSet(next);
+            // if any, then recursive search with node c included and length updated
+            rec_check(graph, cur_set, cur_len + 1, candidates, c,
+                      nb_nodes, best_find, best_len);
         }
-        freeSet(r_set_new);
-        freeSet(p_set_new);
-        freeSet(x_set_new);
+        else
+        {
+            // Maximal clique reached : we can't add anything to it.
+            if (cur_len + 1 > *best_len) // we check if it is the best we ever found (all branches)
+            {
+                *best_len = cur_len + 1;
+                memcpy(best_find, cur_set, (cur_len + 1) * sizeof(int));
+            }
+        }
     }
-    return bestSet;
-}
-
-int comp(const void *a, const void *b)
-{
-    return *(int *)a - *(int *)b;
 }
 
 luint part2(void *input_v, void **args)
@@ -220,58 +128,82 @@ luint part2(void *input_v, void **args)
     char *input = (char *)input_v;
     int size = ((int *)args)[0];
 
-    bool **graph = (bool **)malloc(sizeof(bool *) * MAX_HASH);
-    for (int i = 0; i < MAX_HASH; i++)
-    {
-        graph[i] = (bool *)calloc(sizeof(bool), MAX_HASH);
-    }
+    int nb_nodes = 0;
+    int *nodes = (int *)malloc(MAX_HASH * sizeof(int));
+    int *rev = (int *)malloc(MAX_HASH * sizeof(int));
+    memset(rev, -1, MAX_HASH * sizeof(int));
+
     for (int i = 0; i < size; i++)
     {
-        int a = hash(input + i * 6);
-        int b = hash(input + i * 6 + 3);
-        graph[a][b] = true;
-        graph[b][a] = true;
-        graph[a][a] = true;
-        graph[b][b] = true;
+        int h1 = hash(input + i * 6);
+        int h2 = hash(input + i * 6 + 3);
+
+        if (rev[h1] == -1)
+        {
+            rev[h1] = nb_nodes;
+            nodes[nb_nodes++] = h1;
+        }
+        if (rev[h2] == -1)
+        {
+            rev[h2] = nb_nodes;
+            nodes[nb_nodes++] = h2;
+        }
     }
 
-    NodeSet *p_set = newSet(MAX_HASH);
-    for (int i = 0; i < MAX_HASH; i++)
-        if (graph[i][i])
-            addPoint(p_set, i);
-    NodeSet *x_set = newSet(p_set->n); // p_set->n is the number of point in the graph
-    NodeSet *r_set = newSet(p_set->n);
-
-    NodeSet *best = bronKerbosch(graph, r_set, p_set, x_set);
-    freeSet(r_set);
-
-    qsort(best->points, best->n, sizeof(int), comp);
-
-    char res[MAX_LINE_LEN] = {0};
-    int offset = 0;
-    for (int i = 0; i < best->n; i++)
+    if (nb_nodes <= 0)
     {
-        doubleChar dc = unhash(best->points[i]);
-        res[offset++] = dc.text[0];
-        res[offset++] = dc.text[1];
-        res[offset++] = ',';
+        free(nodes);
+        free(rev);
+        return -1;
     }
-    res[offset - 1] = '\0';
-    printf("Answer Part 2 : %s\n", res);
 
-    luint temp = best->n;
-    freeSet(best);
-    freeSet(x_set);
-    freeSet(p_set);
+    bool *graph = (bool *)calloc(nb_nodes * nb_nodes, sizeof(bool));
+    for (int i = 0; i < size; i++)
+    {
+        int a = rev[hash(input + i * 6)];
+        int b = rev[hash(input + i * 6 + 3)];
+        graph[a * nb_nodes + b] = true;
+        graph[b * nb_nodes + a] = true;
+    }
+
+    int cur_set[MAX_SET_SIZE] = {0};
+    int best_find[MAX_SET_SIZE] = {0};
+    int best_len = 0;
+
+    bool candidates[nb_nodes];
+    for (int i = 0; i < nb_nodes; i++)
+        candidates[i] = true;
+
+    rec_check(graph, cur_set, 0, candidates, -1, nb_nodes, best_find, &best_len);
+
+    // Mark who is in best_find for quick sorted printing
+    bool in_best[MAX_HASH] = {false};
+    for (int i = 0; i < best_len; i++)
+        in_best[best_find[i]] = true;
+
+    printf("Answer : ");
     for (int i = 0; i < MAX_HASH; i++)
-        free(graph[i]);
-    free(graph);
+    {
+        if (rev[i] == -1)
+            continue;
+        int k = rev[i];
+        if (in_best[k])
+        {
+            printf("%c%c,", unhash(nodes[k]).text[0], unhash(nodes[k]).text[1]);
+        }
+    }
+    printf("\n(remove last comma)\n");
 
-    return temp;
+    free(graph);
+    free(nodes);
+    free(rev);
+
+    return (luint)best_len;
 }
 
 // ----------------------------------------------------------------
 
+// readInput here flattens the answer, each line is 6 chars longs (keeping the '\n')
 char *readInput(char *filename, int *size)
 {
     char buffer[MAX_LINE_LEN];

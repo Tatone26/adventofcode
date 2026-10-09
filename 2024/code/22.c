@@ -4,12 +4,13 @@
 
 // that... doesn't seem to make good assembly ?
 
-static inline long step(long n)
+static inline int step(int n)
 {
-    long res = n;
-    res = ((res * 64) ^ res) % 16777216;
-    res = ((res / 32) ^ res) % 16777216;
-    res = ((res * 2048) ^ res) % 16777216;
+    int res = n;
+    // modulo 16777216 = 2^24 => keeping low 24 bits. No need for modulo operation.
+    res = ((res << 6) & 0xFFFFFF) ^ res;
+    res = ((res >> 5) ^ res); // this modulo isn't necessary => division is keeping the number smaller.
+    res = ((res << 11) & 0xFFFFFF) ^ res;
     return res;
 }
 
@@ -22,7 +23,7 @@ luint part1(void *input_v, void **args)
 
     for (int i = 0; i < size; i++)
     {
-        long temp = input[i];
+        int temp = input[i];
         for (int j = 0; j < STEPS; j++)
             temp = step(temp);
         total += temp;
@@ -33,11 +34,9 @@ luint part1(void *input_v, void **args)
 
 // -----------------------------------------------------------------
 
-// most time spent on preparation (reading the input :( )
-
 #define MAX_HASH 608851
 
-int hash(short *sequence)
+static inline uint32_t hash(short *sequence)
 {
     int x = sequence[0] + 9;
     x = (x << 5) | (sequence[1] + 9);
@@ -46,7 +45,10 @@ int hash(short *sequence)
     return x;
 }
 
-// all preparation steps are SLOW, the rest is instant
+static inline uint32_t rollhash(uint32_t hash, short next) // avoiding full recomputation of hash.
+{
+    return ((hash & 32767) << 5) | (next + 9); // keep three previous values, and apply hash.
+}
 
 luint part2(void *input_v, void **args)
 {
@@ -56,81 +58,39 @@ luint part2(void *input_v, void **args)
     if (size <= 1)
         return 0;
 
-    // preparation
-
-    short **buyers = (short **)malloc(sizeof(short *) * size);
-    short **changes = (short **)malloc(sizeof(short *) * size);
+    int max_total = 0;
+    int *totals = (int *)calloc(MAX_HASH, sizeof(int));
+    int *done = (int *)calloc(MAX_HASH, sizeof(int));
 
     for (int i = 0; i < size; i++)
     {
-        buyers[i] = (short *)malloc(sizeof(short) * (STEPS + 1));
-        changes[i] = (short *)malloc(sizeof(short) * (STEPS + 1));
+        int h = 0;
+        int temp = input[i];
+        int t = temp % 10;
+        for (int j = 0; j < STEPS + 1; j++)
         {
-            long temp = input[i];
-            int t = temp % 10;
-            for (int j = 0; j < STEPS + 1; j++)
-            {
-                // prices
-                buyers[i][j] = t;
-                temp = step(temp);
-                t = temp % 10;
-                // changes
-                changes[i][j] = t - buyers[i][j];
-            }
-        }
-    }
+            // prices
+            int prev = t;
 
-    int *totals = (int *)calloc(sizeof(int), MAX_HASH);
-    int done[MAX_HASH] = {0};
-    for (int i = 0; i < size; i++)
-    {
-        for (int j = 0; j < STEPS - 3; j++)
-        {
-            int h = hash(changes[i] + j);
-            if (done[h] != i + 1)
+            temp = step(temp);
+            t = temp % 10;
+
+            if (j >= 4 && done[h] != i + 1)
             {
-                totals[h] += buyers[i][j + 4];
+                totals[h] += prev;
+                if (max_total < totals[h])
+                    max_total = totals[h];
                 done[h] = i + 1;
             }
+
+            h = rollhash(h, t - prev);
         }
     }
-
-    // calculation
-
-    int res = 0;
-    bool *cache = (bool *)calloc(sizeof(bool), MAX_HASH);
-    for (int x = 0; x < size; x++)
-    {
-        for (int d = 0; d < STEPS - 3; d++)
-        {
-            int test = 0;
-            int h = hash(changes[x] + d);
-            if (cache[h])
-                continue;
-
-            test = totals[h];
-
-            if (test > res)
-                res = test;
-            cache[h] = true;
-        }
-    }
-
-    // end
-
-    free(cache);
-    for (int i = 0; i < size; i++)
-        free(changes[i]);
-    free(changes);
-
-    for (int i = 0; i < size; i++)
-        free(buyers[i]);
-    free(buyers);
 
     free(totals);
-    return (luint)res;
+    free(done);
+    return (luint)max_total;
 }
-
 // ----------------------------------------------------------------
 
 int *readInput(char *filename, int *size)

@@ -264,7 +264,7 @@ luint part1(void *input_v, void **args)
             int test = (strlen(path3)) * atoi(p.input[i]);
             if (test < min)
             {
-                printf("%s : found %d\n", p.input[i], strlen(path3));
+                printf("%s : found %ld\n", p.input[i], strlen(path3));
                 min = test;
             }
             else

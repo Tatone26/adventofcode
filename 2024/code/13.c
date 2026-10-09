@@ -85,15 +85,20 @@ Machine *readInput(char *filename, int *size)
         // thats like... the worst way of doing it but it works
         if (!fgets(buffer, MAX_LINE_LEN, f))
             goto clean;
+
         sscanf(buffer, "Button A: X+%d, Y+%d", &a, &b);
         if (!fgets(buffer, MAX_LINE_LEN, f))
             goto clean;
+
         sscanf(buffer, "Button B: X+%d, Y+%d", &c, &d);
         if (!fgets(buffer, MAX_LINE_LEN, f))
             goto clean;
+
         sscanf(buffer, "Prize: X=%d, Y=%d", &e, &g);
-        if (!fgets(buffer, MAX_LINE_LEN, f))
-            goto clean;
+        if (i < *size - 1)
+            if (!fgets(buffer, MAX_LINE_LEN, f)) // issue here on last line, don't know why
+                goto clean;
+
         if (b == -1 || d == -1 || g == -1)
             printf("WARNING : error reading input.\n");
         input[i] = (Machine){(Pos){a, b}, (Pos){c, d}, (Pos){e, g}};
@@ -103,11 +108,11 @@ Machine *readInput(char *filename, int *size)
     return input;
 
 clean:
-{
-    free(input);
-    fclose(f);
-    return NULL;
-}
+    {
+        free(input);
+        fclose(f);
+        return NULL;
+    }
 }
 
 int main(int argc, char **argv)

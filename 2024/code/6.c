@@ -23,7 +23,7 @@ luint part1(void *input_v, void **args)
         return 0;
 
     // seen[INDEX(y, x)] = true if position already seen
-    bool *seen = (bool *)calloc(sizeof(bool), width * height);
+    bool *seen = (bool *)calloc(width * height, sizeof(bool));
     // counting the starting position
     (seen[INDEX(start.y, start.x)]) = true;
     luint res = 1;
@@ -174,8 +174,8 @@ luint part2(void *input_v, void **args)
     int **rows = processInput(input, width, height, false);
 
     // path[INDEX][i] = true means that we have already been on pos INDEX with direction i
-    int (*path)[4] = (int (*)[4])calloc(sizeof(int[4]), width * height);
-    bool *tested = (bool *)calloc(sizeof(bool), width * height);
+    int (*path)[4] = (int (*)[4])calloc(width * height, sizeof(int[4]));
+    bool *tested = (bool *)calloc(width * height, sizeof(bool));
     // this "test_counter" value allows multiple instances of the checkLoop function and the main loop to share the same "path" instead of copying it
     int test_counter = 2;
     // safety check

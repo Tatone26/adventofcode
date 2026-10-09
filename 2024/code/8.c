@@ -47,7 +47,7 @@ luint part1(void *input_v, void **args)
     processInput(table, input, width, height);
 
     luint res = 0;
-    bool *antinodes = (bool *)calloc(sizeof(bool), width * height);
+    bool *antinodes = (bool *)calloc(width * height, sizeof(bool));
 
     // for every type of antenna
     for (int type = 0; type < MAX_ANTENNA_INDEX; type++)
@@ -95,7 +95,7 @@ luint part2(void *input_v, void **args)
     processInput(table, input, width, height);
 
     luint res = 0;
-    bool *antinodes = (bool *)calloc(sizeof(bool), width * height);
+    bool *antinodes = (bool *)calloc(width * height, sizeof(bool));
 
     // for every type of antenna
     for (int type = 0; type < MAX_ANTENNA_INDEX; type++)
