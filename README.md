@@ -1,7 +1,8 @@
 # adventofcode
 
-I started in 2022 after learning coding online only. 
-It's a really fun and VERY interesting thing !!
-
-I'm using it to have a fun motivation to code complex algorithms and try to squeeze performance out of them. 
-Python, C, Rust... I think any language is interesting to learn here.
+- [ ] 2019 - C
+- [ ] 2021 - C
+- [x] 2022 - Python (live)
+- [x] 2023 - Rust (live)
+- [x] 2024 - C (live)
+- [x] 2025 - C (live)
