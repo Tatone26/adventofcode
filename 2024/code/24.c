@@ -119,10 +119,13 @@ luint part1(void *input_v, void **args)
 
 // -----------------------------------------------------------------
 
-// can find wrong ones going forward on the z i think
-// need to find possible wrong ones, and swap then and try some stuff
-// pretty difficult wtf
-// lets start by getting which output bits are wrong, maybe ?
+// I would not have found those 4 conditions myself, I have to admit.
+// But when you look at them, it is pretty obvisou : we are just forcing some adder properties on input/outputs.
+
+int cmp(const void *one, const void *two)
+{
+    return strncmp((*(Op **)one)->result, (*(Op **)two)->result, 3);
+}
 
 luint part2(void *input_v, void **args)
 {
@@ -130,13 +133,95 @@ luint part2(void *input_v, void **args)
     uint64_t size = ((uint64_t *)args)[0];
     uint64_t x = ((uint64_t *)args)[1];
     uint64_t y = ((uint64_t *)args)[2];
-    uint64_t good_res = x + y;
-    uint64_t bad_res = compute(input, size, x, y);
-    for (int i = 0; i < 64; i++)
+
+    bool flagged[size];
+    memset(flagged, false, sizeof(bool) * size);
+    for (int i = 0; i < size; i++)
     {
-        printf("%d : %lu - %lu\n", i, (good_res >> i) & 1U, (bad_res >> i) & 1U);
+        // 1. all "z" outputs come from XOR (not the last one, z45, which is a carry)
+        if (input[i].result[0] == 'z' && input[i].operation != 2 && !(input[i].result[1] == '4' && input[i].result[2] == '5'))
+        {
+            flagged[i] = true;
+            // printf("Case 1 : %s %d %s = %s\n", input[i].first, input[i].operation, input[i].second, input[i].result);
+        }
+
+        // 2. if not z, and input not x and y, can't be xor
+        bool has_xy_inputs = (input[i].first[0] == 'x' || input[i].first[0] == 'y' ||
+                              input[i].second[0] == 'x' || input[i].second[0] == 'y');
+        if (input[i].result[0] != 'z' && !has_xy_inputs && input[i].operation == 2)
+        {
+            flagged[i] = true;
+            // printf("Case 2 : %s %d %s = %s\n", input[i].first, input[i].operation, input[i].second, input[i].result);
+        }
+
+        // 3. if x ^ y, output must be fed into XOR.
+        bool has_only_xy_inputs = (input[i].first[0] == 'x' && input[i].second[0] == 'y') || (input[i].first[0] == 'y' && input[i].second[0] == 'x');
+        bool is_bit_00 = (!strncmp(input[i].first, "x00", 3) && !strncmp(input[i].second, "y00", 3)) ||
+                         (!strncmp(input[i].first, "y00", 3) && !strncmp(input[i].second, "x00", 3));
+        if (input[i].operation == 2 && has_only_xy_inputs)
+        {
+            bool found_correct_out = is_bit_00;
+            for (int j = 0; j < size; j++)
+            {
+                if (i == j || found_correct_out)
+                    continue;
+                if ((!strncmp(input[i].result, input[j].first, 3) || !strncmp(input[i].result, input[j].second, 3)) && input[j].operation == 2)
+                {
+                    found_correct_out = true;
+                    break;
+                }
+            }
+
+            if (!found_correct_out)
+            {
+                flagged[i] = true;
+                // printf("Case 3 : %s %d %s = %s\n", input[i].first, input[i].operation, input[i].second, input[i].result);
+            }
+        }
+
+        // 4. if AND -> fed into XOR
+        if (input[i].operation == 0)
+        {
+            bool found_correct_out = is_bit_00;
+            for (int j = 0; j < size; j++)
+            {
+                if (i == j)
+                    continue;
+                if ((!strncmp(input[i].result, input[j].first, 3) || !strncmp(input[i].result, input[j].second, 3)) && input[j].operation == 1)
+                {
+                    found_correct_out = true;
+                    break;
+                }
+            }
+
+            if (!found_correct_out)
+            {
+                flagged[i] = true;
+                // printf("Case 4 : %s %d %s = %s\n", input[i].first, input[i].operation, input[i].second, input[i].result);
+            }
+        }
     }
-    return 0;
+
+    Op *results[8];
+    int tot = 0;
+    for (int i = 0; i < size && tot <= 8; i++)
+        if (flagged[i])
+        {
+            results[tot++] = &input[i];
+        }
+    if (tot != 8)
+    {
+        printf("Error in initial conditions ; did not get 8 wires to move.\n");
+        return -1;
+    }
+    qsort(results, tot, sizeof(Op *), cmp);
+
+    printf("\n");
+    for (int i = 0; i < tot; i++)
+        printf("%s,", results[i]->result);
+    printf("\n(remove last comma)\n");
+
+    return tot;
 }
 
 // ----------------------------------------------------------------
@@ -169,6 +254,8 @@ Op *readInput(char *filename, int *size, uint64_t *x, uint64_t *y)
 
         fgets(buffer, MAX_LINE_LEN, f);
     }
+
+    // what is left, so all ops
     *size = fileSize(f);
 
     char **input = (char **)malloc(sizeof(char *) * *size);
@@ -210,7 +297,7 @@ int main(int argc, char **argv)
     uint64_t x = 0, y = 0;
     Op *input = readInput(argv[1], &size, &x, &y);
     uint64_t args[3] = {(uint64_t)size, x, y};
-    run(23, part1, part2, input, (void **)&args);
+    run(24, part1, part2, input, (void **)&args);
     free(input);
     return 0;
 }
